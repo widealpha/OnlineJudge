@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    include: dev
+  servlet:
+    multipart:
+      max-file-size: 40MB
+      max-request-size: 44MB
+  redis:
+    timeout: 30000
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
