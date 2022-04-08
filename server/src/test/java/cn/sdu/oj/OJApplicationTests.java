@@ -1,13 +1,12 @@
-package cn.sdu.sdupta;
+package cn.sdu.oj;
 
-import cn.sdu.sdupta.util.JwtUtil;
+import cn.sdu.oj.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootTest
-class SduPtaApplicationTests {
+class OJApplicationTests {
     @Autowired
     JwtUtil jwtUtil;
     @Test

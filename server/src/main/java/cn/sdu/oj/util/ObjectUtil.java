@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.util;
+package cn.sdu.oj.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -35,7 +35,7 @@ public class ObjectUtil {
      * @param letter
      * @return
      */
-    public static String upperFirstLetter(String letter) {
+    private static String upperFirstLetter(String letter) {
         if (StringUtil.isEmpty(letter)) {
             return letter;
         }

@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.util;
+package cn.sdu.oj.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

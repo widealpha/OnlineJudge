@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.util;
+package cn.sdu.oj.util;
 
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,16 +6,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * JWT工具类
  *
  * @author kmh
- * @date 2021/7/13
  */
-@Component
 public class JwtUtil {
     @Value("${jwt.secret}")
     private String SECRET; //JWT签证密钥

@@ -10,6 +10,8 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  mail:
+    host: smtp.163.com
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.util;
+package cn.sdu.oj.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.DataType;

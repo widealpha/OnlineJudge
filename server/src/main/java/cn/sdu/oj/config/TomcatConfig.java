@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.config;
+package cn.sdu.oj.config;
 
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;

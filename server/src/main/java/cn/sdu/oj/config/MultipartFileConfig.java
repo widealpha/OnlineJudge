@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.config;
+package cn.sdu.oj.config;
 
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;

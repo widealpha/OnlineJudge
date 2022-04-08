@@ -1,4 +1,4 @@
-package cn.sdu.sdupta.util;
+package cn.sdu.oj.util;
 
 import java.util.Random;
 
@@ -55,6 +55,15 @@ public class StringUtil {
     public static boolean allEmpty(String ...strings){
         for (String s :strings){
             if (s != null && !s.isEmpty()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean allAscii(String s){
+        for (int i = 0; i < s.length(); i++){
+            if (s.charAt(i) > 127){
                 return false;
             }
         }
