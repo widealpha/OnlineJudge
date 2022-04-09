@@ -1,9 +1,12 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,5 +31,10 @@ public class UserController {
     public ResultEntity sendValidateCode(@RequestParam String email) {
         userService.sendRegisterValidateCode(email);
         return ResultEntity.data(StatusCode.SUCCESS, null);
+    }
+
+    @RequestMapping("/logout")
+    public ResultEntity logout(@AuthenticationPrincipal User user) {
+        return ResultEntity.data(userService.logout(user), null);
     }
 }

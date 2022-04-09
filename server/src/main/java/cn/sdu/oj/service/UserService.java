@@ -5,13 +5,16 @@ import cn.sdu.oj.dao.UserMapper;
 import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.StatusCode;
+import cn.sdu.oj.util.JwtUtil;
 import cn.sdu.oj.util.RedisUtil;
+import cn.sdu.oj.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,8 @@ public class UserService {
     private RedisUtil redisUtil;
     @Autowired
     private MailSender mailSender;
+    @Autowired
+    private JwtUtil jwtUtil;
     @Value("${spring.mail.username}")
     String emailFrom;
 
@@ -39,6 +44,8 @@ public class UserService {
     public StatusCode register(String username, String password, String email) {
         if (username.isEmpty() || password.isEmpty()) {
             return StatusCode.PARAM_EMPTY;
+        } else if (!StringUtil.allLetter(username)) {
+            return StatusCode.PARAM_NOT_VALID;
         }
         User user = new User(username, passwordEncoder.encode(password));
         try {
@@ -65,6 +72,12 @@ public class UserService {
             redisUtil.delete("register:" + email);
             return register(username, password, email);
         }
+    }
+
+    public StatusCode logout(User user) {
+        String redisKey = "logout:" + user.getId();
+        redisUtil.setEx(redisKey, String.valueOf(System.currentTimeMillis()), jwtUtil.EXPIRATION, TimeUnit.SECONDS);
+        return StatusCode.SUCCESS;
     }
 
     @Async

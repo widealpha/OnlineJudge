@@ -30,13 +30,12 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         //授权
         http.authorizeRequests()
-                .antMatchers(whiteMappingList()).permitAll()
+                .antMatchers(permissiveRequestUrls()).permitAll()
                 .anyRequest().authenticated()
                 .and().csrf().disable()  //CSRF禁用，因为不使用session
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).disable()  //禁用session
-                .formLogin().disable() //禁用form登录
-                .cors()
-                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //禁用session
+                .and().formLogin().disable() //禁用form登录
+                .cors().configurationSource(corsConfigurationSource()).and() //配置cors
                 .addFilterAfter(new OptionsRequestFilter(), CorsFilter.class)
                 //添加登录filter
                 .apply(new UsernameLoginConfig<>())
@@ -45,7 +44,6 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //添加token的filter
                 .apply(new JwtLoginConfig<>())
                 .tokenValidSuccessHandler(jwtRefreshSuccessHandler())
-                .permissiveRequestUrls("/logout")
                 .and()
                 //使用默认的logoutFilter
                 .logout()
@@ -57,12 +55,14 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
      *
      * @return spring security拦截白名单
      */
-    private String[] whiteMappingList() {
+    private String[] permissiveRequestUrls() {
         return new String[]{
                 //注册
                 "/user/register", "/user/send_validate_code", "/user/email_register",
                 //登录
                 "/user/login",
+                //注销
+                "/user/logout",
                 //匿名访问
                 "anonymous/**",
         };

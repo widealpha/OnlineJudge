@@ -5,7 +5,6 @@ import java.util.Random;
 /**
  * String工具类
  * @author kmh
- * @date 2021/7/13
  */
 public class StringUtil {
     /**
@@ -61,9 +60,9 @@ public class StringUtil {
         return true;
     }
 
-    public static boolean allAscii(String s){
+    public static boolean allLetter(String s){
         for (int i = 0; i < s.length(); i++){
-            if (s.charAt(i) > 127){
+            if (!Character.isLetterOrDigit(s.charAt(i))){
                 return false;
             }
         }

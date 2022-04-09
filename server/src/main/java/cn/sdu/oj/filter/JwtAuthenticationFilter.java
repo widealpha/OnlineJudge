@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -40,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     RedisUtil redisUtil;
-    
+
     @Autowired
     JwtUtil jwtUtil;
 
@@ -55,52 +56,61 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        //不需要鉴权的请求直接放行
         if (!requiresAuthentication(request)) {
             chain.doFilter(request, response);
             return;
         }
         String tokenHeader = getJwtToken(request);
+        //token为空直接放行
         if (tokenHeader == null || !tokenHeader.startsWith(jwtUtil.TOKEN_PREFIX)) {
             chain.doFilter(request, response);
             return;
         }
         try {
-            if (!jwtUtil.isExpiration(tokenHeader.replace(jwtUtil.TOKEN_PREFIX, ""))) {
+            String token = tokenHeader.replace(jwtUtil.TOKEN_PREFIX, "");
+            if (!jwtUtil.isExpiration(token)) {
+                Date date = jwtUtil.getIssuedAt(token);
+                String logoutTime = redisUtil.get("logout:" + jwtUtil.getUserId(token));
+                // 判断用户退出的时间，退出之后所有签发在退出之前的token失效
+                if (logoutTime != null && date.before(new Date(Long.parseLong(logoutTime)))){
+                    throw new JwtException("token失效");
+                }
                 UsernamePasswordAuthenticationToken authentication = getAuthentication(tokenHeader);
+                if (authentication == null){
+                    throw new JwtException("token不完整");
+                }
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                //鉴权完成继续交由责任链处理
+                chain.doFilter(request, response);
             }
         } catch (ExpiredJwtException e) {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.USER_TOKEN_OVERDUE));
-            return;
         } catch (JwtException e) {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.USER_TOKEN_ERROR));
-            return;
         } catch (Exception e) {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.COMMON_FAIL));
-            return;
         }
-        chain.doFilter(request, response);
     }
 
     //获取用户信息
     private UsernamePasswordAuthenticationToken getAuthentication(String tokenHeader) {
         String token = tokenHeader.replace(jwtUtil.TOKEN_PREFIX, "");
-        String account = jwtUtil.getUsername(token);
+        String username = jwtUtil.getUsername(token);
         Integer userId = jwtUtil.getUserId(token);
-        if (account == null || userId == null) {
+        if (username == null || userId == null) {
             return null;
         }
         // 获得权限 添加到权限上去
         String roles = jwtUtil.getUserRole(token);
-        User User = new User(account, "[PROTECTED]", AuthorityUtils.commaSeparatedStringToAuthorityList(roles));
-        User.setId(userId);
-        return new UsernamePasswordAuthenticationToken(User, null, AuthorityUtils.commaSeparatedStringToAuthorityList(roles));
+        User user = new User(userId, username, "[PROTECTED]", AuthorityUtils.commaSeparatedStringToAuthorityList(roles));
+        return new UsernamePasswordAuthenticationToken(user, null, AuthorityUtils.commaSeparatedStringToAuthorityList(roles));
     }
 
     protected boolean requiresAuthentication(HttpServletRequest request) {

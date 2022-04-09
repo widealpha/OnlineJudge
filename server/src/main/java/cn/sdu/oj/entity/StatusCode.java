@@ -8,7 +8,7 @@ public enum StatusCode {
     COMMON_FAIL(-1, "失败"),
 
     /* 参数错误：1000～1999 */
-    PARAM_NOT_VALID(1001, "参数无效"),
+    PARAM_NOT_VALID(1001, "参数不合法"),
     PARAM_EMPTY(1002, "参数为空"),
     PARAM_TYPE_ERROR(1003, "参数类型错误"),
     PARAM_NOT_COMPLETE(1004, "参数缺失"),
@@ -20,7 +20,7 @@ public enum StatusCode {
 
     USER_ACCOUNT_DISABLE(2003, "账号被禁用"),
 
-    USER_TOKEN_ERROR(2004, "token错误，请求失败，请检查token是否被篡改"),
+    USER_TOKEN_ERROR(2004, "token校验失败，请检查token是否被篡改"),
 
     USER_NO_TOKEN_ERROR(2005, "无token"),
 

@@ -47,9 +47,7 @@ public class UserDetailService implements org.springframework.security.core.user
             }
             //所有经过验证的用户均携带COMMON身份
             authorities.add(new SimpleGrantedAuthority("ROLE_COMMON"));
-            User authorityUser = new User(username, user.getPassword(), authorities);
-            authorityUser.setId(authorityUser.getId());
-            return authorityUser;
+            return new User(user.getId(),username, user.getPassword(), authorities);
         } else {
             throw new UsernameNotFoundException(username + "Not Found");
         }

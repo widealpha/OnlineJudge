@@ -18,7 +18,7 @@ public class JwtUtil {
     private String SECRET; //JWT签证密钥
     private final String ROLE = "ROLE"; //Jwt中携带的身份key
     private final String USER_ID = "USER_ID"; //Jwt中携带的用户ID的key
-    private final Long EXPIRATION = 60 * 60 * 24 * 7L; //过期时间7天
+    public final Long EXPIRATION = 60 * 60 * 24 * 7L; //过期时间7天，单位秒
     public final String TOKEN_HEADER = "Authorization"; //Header标识JWT
     public final String TOKEN_PREFIX = "Bearer "; //JWT标准开头,注意空格
 
@@ -31,6 +31,7 @@ public class JwtUtil {
      * @return 创建好的Token
      */
     public String createToken(String username, Integer userId, String roles) {
+        assert username != null && userId != null && roles != null;
         Map<String, Object> map = new HashMap<>();
         map.put(ROLE, roles);
         map.put(USER_ID, userId);
@@ -91,7 +92,7 @@ public class JwtUtil {
     }
 
     /**
-     * 判断token是否国企
+     * 判断token是否过期
      *
      * @param token JWT
      * @return 是否过期
