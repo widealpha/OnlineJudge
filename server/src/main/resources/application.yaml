@@ -12,6 +12,16 @@ spring:
     time-zone: GMT+8
   mail:
     host: smtp.163.com
+knife4j:
+  enable: true
+  setting:
+    enableDynamicParameter: true
+    enableFooter: false
+  documents:
+    -
+      group: 1.0.0
+      name: 接口文档补充
+      locations: classpath:markdown/*
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

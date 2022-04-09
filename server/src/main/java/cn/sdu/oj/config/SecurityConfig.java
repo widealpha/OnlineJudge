@@ -57,6 +57,8 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     private String[] permissiveRequestUrls() {
         return new String[]{
+                //接口文档
+                "/doc.html","/webjars/**","/img.icons/**","/swagger-resources/**","/**","/v2/api-docs",
                 //注册
                 "/user/register", "/user/send_validate_code", "/user/email_register",
                 //登录

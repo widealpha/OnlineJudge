@@ -29,7 +29,7 @@ public class UsernameLoginSuccessHandler implements AuthenticationSuccessHandler
                 .map(Object::toString).collect(Collectors.joining(","));
         String token = jwtUtil.createToken(authentication.getName(), ((User) authentication.getPrincipal()).getId(), roles);
         response.setHeader("Authorization", "Bearer " + token);
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
         try {
             response.getWriter().print(JSON.toJSONString(ResultEntity.data(token)));
         } catch (IOException e) {

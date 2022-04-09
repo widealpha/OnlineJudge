@@ -17,6 +17,10 @@ public class ResultEntity {
         this.data = data;
     }
 
+    public static ResultEntity empty() {
+        return new ResultEntity(0, "", null);
+    }
+
     public static ResultEntity success() {
         return new ResultEntity(0, "success", true);
     }
