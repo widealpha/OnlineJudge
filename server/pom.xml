@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cn.sdu</groupId>
-    <artifactId>oj</artifactId>
+    <artifactId>online-judge</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>online-judge</name>
