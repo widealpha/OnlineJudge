@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface RoleMapper {
-    @Select("SELECT `role` FROM user_role WHERE user_id = #{userId}")
+    @Select("SELECT `role` FROM user_role WHERE user_id = #{userId} AND `status` = 0")
     List<String> selectRolesWithUserId(Integer userId);
 
     @Options(useGeneratedKeys = true, keyProperty = "id")

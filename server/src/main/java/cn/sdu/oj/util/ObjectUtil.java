@@ -3,16 +3,16 @@ package cn.sdu.oj.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-@SuppressWarnings("all")
 public class ObjectUtil {
     /**
      * 从from中copy非空覆盖to中变量
-     * @param from
-     * @param to
+     *
+     * @param from 从哪里copy
+     * @param to   copy到哪里
      */
     public static void copyOnNotNull(Object from, Object to) {
         try {
-            if (from == null || to == null){
+            if (from == null || to == null) {
                 return;
             }
             if (!from.getClass().getTypeName().equals(to.getClass().getTypeName())) {
@@ -32,8 +32,8 @@ public class ObjectUtil {
     /**
      * 首字母大写
      *
-     * @param letter
-     * @return
+     * @param letter 字符串
+     * @return 首字母大写后的字符串
      */
     private static String upperFirstLetter(String letter) {
         if (StringUtil.isEmpty(letter)) {
@@ -46,10 +46,9 @@ public class ObjectUtil {
     /**
      * 反射获得属性值（通过get方法）
      *
-     * @param obj
-     * @param fieldName
-     * @return
-     * @throws Exception
+     * @param obj       要操作的对象
+     * @param fieldName 属性名称
+     * @return 返回对象的属性
      */
     public static Object getFieldValue(Object obj, String fieldName) throws Exception {
         if (obj == null || StringUtil.isEmpty(fieldName)) {
@@ -65,28 +64,25 @@ public class ObjectUtil {
     /**
      * 反射设置属性值（通过set方法）
      *
-     * @param obj
-     * @param fieldName
-     * @return
-     * @throws Exception
+     * @param obj       要操作的对象
+     * @param fieldName 属性名称
      */
-    public static Object setFieldValue(Object obj, String fieldName, Object fieldValue) throws Exception {
+    public static void setFieldValue(Object obj, String fieldName, Object fieldValue) throws Exception {
         if (obj == null || StringUtil.isEmpty(fieldName)) {
-            return obj;
+            return;
         }
         Class<?> userCla = obj.getClass();
         String setMethodName = "set" + upperFirstLetter(fieldName);
         Method method = userCla.getMethod(setMethodName, fieldValue.getClass());
-        obj = method.invoke(obj, fieldValue);
-        return obj;
+        method.invoke(obj, fieldValue);
     }
 
     /**
-     * 反射获得值(直接反射字段取值)
+     * 反射获得值(直接反射字段取值忽略private)
      *
-     * @param obj
-     * @param fieldName
-     * @return
+     * @param obj       要操作的对象
+     * @param fieldName 属性名称
+     * @return 返回对象的属性
      */
     public static Object getFieldValue1(Object obj, String fieldName) throws Exception {
         if (obj == null || StringUtil.isEmpty(fieldName)) {
@@ -109,16 +105,15 @@ public class ObjectUtil {
     }
 
     /**
-     * 反射设置值(直接给字段赋值)
+     * 反射设置值(直接给字段赋值忽略private)
      *
-     * @param obj
-     * @param fieldName
-     * @param fieldValue
-     * @throws Exception
+     * @param obj        要操作的对象
+     * @param fieldName  属性名称
+     * @param fieldValue 属性值
      */
-    public static Object setFieldValue1(Object obj, String fieldName, Object fieldValue) throws Exception {
+    public static void setFieldValue1(Object obj, String fieldName, Object fieldValue) throws Exception {
         if (obj == null || StringUtil.isEmpty(fieldName)) {
-            return obj;
+            return;
         }
         Class<?> userCla = obj.getClass();
         do {
@@ -127,11 +122,10 @@ public class ObjectUtil {
                 f.setAccessible(true); //设置些属性是可以访问的
                 if (f.getName().equals(fieldName)) {
                     f.set(obj, fieldValue);
-                    return obj;
+                    return;
                 }
             }
             userCla = userCla.getSuperclass();
         } while (userCla != null);
-        return obj;
     }
 }

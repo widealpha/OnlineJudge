@@ -8,10 +8,10 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface UserInfoMapper {
-    @Select("SELECT * FROM user_info WHERE user_id = #{userId}")
+    @Select("SELECT * FROM user_info WHERE user_id = #{userId} AND `status` = 0")
     UserInfo selectByUserId(Integer userId);
 
-    @Select("SELECT user_id FROM user_info WHERE email = #{email}")
+    @Select("SELECT user_id FROM user_info WHERE email = #{email} AND `status` = 0")
     Integer selectUserIdByEmail(String email);
 
     @Insert("INSERT INTO user_info (user_id, `name`, nickname, email, student_id, avatar)" +

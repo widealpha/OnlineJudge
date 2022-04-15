@@ -8,13 +8,13 @@ import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper {
-    @Select("SELECT * FROM `user` WHERE id = #{id}")
+    @Select("SELECT * FROM `user` WHERE id = #{id} AND `status` = 0")
     User selectByPrimaryKey(Integer id);
 
-    @Select("SELECT * FROM `user` WHERE username = #{username}")
+    @Select("SELECT * FROM `user` WHERE username = #{username} AND `status` = 0")
     User selectByUsername(String username);
 
-    @Select("SELECT username FROM `user` WHERE id = #{userId}")
+    @Select("SELECT username FROM `user` WHERE id = #{userId} AND `status` = 0")
     String selectUsernameById(int userId);
 
     @Options(useGeneratedKeys = true, keyProperty = "id")
