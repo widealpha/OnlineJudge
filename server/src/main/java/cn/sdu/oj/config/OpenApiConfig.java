@@ -68,7 +68,8 @@ public class OpenApiConfig {
      */
     @Bean
     SecurityScheme securityScheme() {
-        return new ApiKey("jwt", "Authorization", "header");
+        return new ApiKey("Authentication", "Authentication", "header",
+                Collections.singletonList(new StringVendorExtension("Authentication", "value")));
     }
 
 }
