@@ -4,6 +4,7 @@ import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.gateway.SftpGateway;
 import cn.sdu.judge.listener.JudgeMsgListener;
 import cn.sdu.judge.mapper.Sha256Mapper;
+import io.netty.buffer.ByteBufInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,10 +13,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -43,12 +45,19 @@ public class SftpFileUtil {
         List<Checkpoint> checkpoints = new ArrayList<>();
         String remoteProblemPath = rootDir + "/" + problemId;
         String localProblemPath = localCacheDir + "/" + problemId;
-        String localCheckpointsPath = localProblemPath + "/checkpoints";
+        String localCheckpointsPath = localProblemPath + "/checkpoints/";
         File localProblemDir = new File(localProblemPath);
+        File localCheckpointsDir = new File(localCheckpointsPath);
         //如果本地题目对应的文件夹不存在，新建文件夹
         if (!localProblemDir.exists()) {
             //新建文件夹失败返回null
             if (!localProblemDir.mkdir()) {
+                return null;
+            }
+        }
+        if (!localCheckpointsDir.exists()) {
+            //新建文件夹失败返回null
+            if (!localCheckpointsDir.mkdir()) {
                 return null;
             }
         }
@@ -74,9 +83,19 @@ public class SftpFileUtil {
             }
         } else { //如果本地校验码不存在,直接拉取新的zip
             //拉取文件会自动放在缓存目录
-            sftpGateway.getFile(remoteProblemPath + "/checkpoints.sha256");
+            File remoteCheckPointSha256File = sftpGateway.getFile(remoteProblemPath + "/checkpoints.sha256");
+            String remoteSha256 = readAllFromFile(remoteCheckPointSha256File);
             //从云端重新获取测试点文件
-            File remoteCheckpointsZipFile = new File(remoteProblemPath + "/checkpoints.zip");
+            File remoteCheckpointsZipFile = sftpGateway.getFile(remoteProblemPath + "/checkpoints.zip");
+            //如果拉取的文件的sha256校验值与拉取的校验值不一致,删除拉取的文件重新拉取,之多尝试3次
+            for (int i = 0; i < 3; i++) {
+                if (Objects.equals(sha256(remoteCheckpointsZipFile), remoteSha256)) {
+                    break;
+                } else {
+                    remoteCheckpointsZipFile.delete();
+                    remoteCheckpointsZipFile = sftpGateway.getFile(remoteProblemPath + "/checkpoints.zip");
+                }
+            }
             //解压文件到文件缓存目录/checkpoints/文件夹下
             if (!unzip(remoteCheckpointsZipFile, localCheckpointsPath)) {
                 //如果解压失败返回null
@@ -103,6 +122,40 @@ public class SftpFileUtil {
     }
 
 
+    /**
+     * 计算文件的sha256
+     *
+     * @param file 需要计算hash的文件
+     * @return 文件sha256哈希值, 可能返回null
+     */
+    String sha256(File file) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(Files.readAllBytes(file.toPath()));
+            final StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                final String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("SHA-256不支持", e);
+            return null;
+        } catch (IOException e) {
+            logger.error("IO错误:", e);
+            return null;
+        }
+    }
+
+    /**
+     * 从文件中读取所有的字符串
+     *
+     * @param file 要读取的文件,可以不存在
+     * @return 文件内的内容, 文件不存在返回null
+     */
     private String readAllFromFile(File file) {
         try {
             if (!file.exists()) {

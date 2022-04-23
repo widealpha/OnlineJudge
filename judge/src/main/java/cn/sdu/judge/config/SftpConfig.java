@@ -80,13 +80,18 @@ public class SftpConfig {
     @ServiceActivator(inputChannel = "getChannel")
     public MessageHandler getHandler() {
         SftpOutboundGateway gateway = new SftpOutboundGateway(sftpSessionFactory(), "get", "payload");
-        gateway = new SftpOutboundGateway(sftpSessionFactory(),
-                (session, requestMessage) -> session.readRaw((String) requestMessage.getPayload()));
         gateway.setOptions("-P");
         //设置缓存本地目录
         gateway.setAutoCreateLocalDirectory(true);
         gateway.setFileExistsMode(FileExistsMode.REPLACE);
-        gateway.setLocalDirectory(new File(localCacheDir));
+        //利用el表达式写入缓存在本地的文件路径
+        //缓存在localCacheDir/problemId/...文件夹下
+        //problemId为payload的内容
+        //payload格式为/remoteRootDir/problemId/fileName
+        //储存在本地的格式为/localCacheDir/problemId/fileName
+        gateway.setLocalDirectoryExpressionString(
+                String.format("'%s'.concat(payload.replace('%s','').split('/')[0])",
+                        localCacheDir + '/', remoteRootDir + '/'));
         return gateway;
     }
 
