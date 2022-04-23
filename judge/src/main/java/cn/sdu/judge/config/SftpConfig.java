@@ -4,11 +4,15 @@ import com.jcraft.jsch.ChannelSftp;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.file.remote.session.CachingSessionFactory;
 import org.springframework.integration.file.remote.session.SessionFactory;
+import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.sftp.gateway.SftpOutboundGateway;
 import org.springframework.integration.sftp.session.DefaultSftpSessionFactory;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
@@ -76,11 +80,13 @@ public class SftpConfig {
     @ServiceActivator(inputChannel = "getChannel")
     public MessageHandler getHandler() {
         SftpOutboundGateway gateway = new SftpOutboundGateway(sftpSessionFactory(), "get", "payload");
+        gateway = new SftpOutboundGateway(sftpSessionFactory(),
+                (session, requestMessage) -> session.readRaw((String) requestMessage.getPayload()));
         gateway.setOptions("-P");
-        gateway.setAutoCreateDirectory(true);
+        //设置缓存本地目录
         gateway.setAutoCreateLocalDirectory(true);
-        File dir = new File(localCacheDir);
-        gateway.setLocalDirectory(dir);
+        gateway.setFileExistsMode(FileExistsMode.REPLACE);
+        gateway.setLocalDirectory(new File(localCacheDir));
         return gateway;
     }
 

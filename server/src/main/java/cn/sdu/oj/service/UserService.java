@@ -65,7 +65,7 @@ public class UserService {
         if (email.isEmpty() || password.isEmpty()) {
             return StatusCode.PARAM_EMPTY;
         }
-        String username = UUID.randomUUID().toString();
+        String username = UUID.randomUUID().toString().replace("-", "");
         if (!validateRegisterCode(email, code)) {
             return StatusCode.VALIDATE_ERROR;
         } else {

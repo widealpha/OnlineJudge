@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "spring.rabbitmq.template.default-send-queue",
+      "type": "java.lang.String",
+      "description": "Description for spring.rabbitmq.template.default-send-queue."
+    }
+  ] }
