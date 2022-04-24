@@ -65,12 +65,15 @@ public class UserService {
         if (email.isEmpty() || password.isEmpty()) {
             return StatusCode.PARAM_EMPTY;
         }
-        String username = UUID.randomUUID().toString();
         if (!validateRegisterCode(email, code)) {
             return StatusCode.VALIDATE_ERROR;
         } else {
-            redisUtil.delete("register:" + email);
-            return register(username, password, email);
+            String username = UUID.randomUUID().toString().replace("-", "");
+            StatusCode statusCode = register(username, password, email);
+            if (statusCode == StatusCode.SUCCESS) {
+                redisUtil.delete("register:" + email);
+            }
+            return statusCode;
         }
     }
 

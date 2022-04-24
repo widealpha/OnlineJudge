@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <!--    阿里云图标库-->
+  <link href="//at.alicdn.com/t/font_2807167_n4fbbo5m2tl.css" rel="stylesheet">
+  <meta content="IE=edge" http-equiv="X-UA-Compatible">
+  <meta content="width=device-width,initial-scale=1.0" name="viewport">
+  <link href="<%= BASE_URL %>favicon.png" rel="icon">
+  <title></title>
+  <style>
+    body {
+      height: 100%;
+      overflow-y: hidden;
+    }
+
+    .preLoading {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      background: #ffffff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 25px;
+      user-select: none;
+      transition-duration: 0.3s;
+      opacity: 1;
+    }
+
+    .preLoading img {
+      width: 5em;
+      height: 5em;
+    }
+
+    .preLoading .anime {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preLoading .anime i {
+      display: block;
+      float: left;
+      width: 0.5em;
+      height: 5em;
+      background: #B0A7F7;
+      margin: 0.25em;
+      transform: scaleY(0.4);
+      animation: load 1.2s infinite;
+    }
+
+    .preLoading .anime i:nth-child(1) {
+      animation-delay: 0.1s
+    }
+
+    .preLoading .anime i:nth-child(2) {
+      animation-delay: 0.2s
+    }
+
+    .preLoading .anime i:nth-child(3) {
+      animation-delay: 0.3s
+    }
+
+    .preLoading .anime i:nth-child(4) {
+      animation-delay: 0.4s
+    }
+
+    .preLoading .anime i:nth-child(5) {
+      animation-delay: 0.5s
+    }
+
+    @keyframes load {
+
+      0%,
+      40%,
+      100% {
+        transform: scaleY(0.4)
+      }
+
+      20% {
+        transform: scaleY(1)
+      }
+    }
+
+    .preLoading p {
+      color:#594BC8;
+      font-size: 1.1em;
+      margin: 1em;
+      /*font-family: Georgia, 'Times New Roman', Times, serif;*/
+    }
+  </style>
+  <script type="text/javascript">
+    window.sduojInitTime = new Date().valueOf()
+  </script>
+</head>
+
+<body style="margin: 0%;">
+  <noscript>
+    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
+        Please enable it to continue.</strong>
+  </noscript>
+  <div id="app"></div>
+  <div class="preLoading">
+    <img src="./favicon.png" alt="">
+    <div class="anime">
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+    </div>
+    <p>正在进入 SDUOJ ...</p>
+  </div>
+  <!-- built files will be auto injected -->
+</body>
+
+</html>
