@@ -37,12 +37,14 @@ public class UsergroupController {                  // TODO 权限
     }
 
     @ApiOperation("用户组信息获取") //获取用户组信息，只包含本组信息
+    @PostMapping("/getUsergroup")
     public ResultEntity getUsergroup(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ) {
         return ResultEntity.data( userGroupService.getUsergroupById(id));
     }
 
     @ApiOperation("用户组删除") //删除用户组信息，和成员信息
+    @PostMapping("/deleteUsergroup")
     public ResultEntity deleteUsergroup(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
             @ApiIgnore @AuthenticationPrincipal User user) {
@@ -51,6 +53,7 @@ public class UsergroupController {                  // TODO 权限
 
 
     @ApiOperation("用户组信息修改") //修改用户组信息（名称和简介）
+    @PostMapping("/alterUsergroupInfo")
     public ResultEntity alterUsergroupInfo(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
             @ApiParam(value = "用户组名称") @RequestParam(required = true) String name ,
@@ -60,12 +63,14 @@ public class UsergroupController {                  // TODO 权限
     }
 
     @ApiOperation("获取我创建的用户组列表")
+    @PostMapping("/getSelfCreatedUsergroup")
     public ResultEntity getSelfCreatedUsergroup(
             @ApiIgnore @AuthenticationPrincipal User user) {
         return ResultEntity.data( userGroupService.getSelfCreatedUsergroup(user.getId()));
     }
 
     @ApiOperation("向我创建的用户组加人")
+    @PostMapping("/addMemberToUsergroup")
     public ResultEntity addMemberToUsergroup(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
             @ApiParam(value = "人员ID列表") @RequestParam(required = true) List<Integer> member ,
@@ -74,6 +79,7 @@ public class UsergroupController {                  // TODO 权限
     }
 
     @ApiOperation("从我创建的用户组删人")
+    @PostMapping("/deleteUsergroupMember")
     public ResultEntity deleteUsergroupMember(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
             @ApiParam(value = "人员ID列表") @RequestParam(required = true) List<Integer> member ,
@@ -82,12 +88,14 @@ public class UsergroupController {                  // TODO 权限
     }
 
     @ApiOperation("查询我加入的用户组")
+    @PostMapping("/getSelfJoinedUsergroup")
     public ResultEntity getSelfJoinedUsergroup(
             @ApiIgnore @AuthenticationPrincipal User user) {
         return ResultEntity.data( userGroupService.getSelfJoinedUsergroup(user.getId()));
     }
 
     @ApiOperation("查询我创建的用户组人员ID列表")
+    @PostMapping("/getSelfJoinedUsergroup")
     public ResultEntity getUsergroupMembers(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
             @ApiIgnore @AuthenticationPrincipal User user) {
