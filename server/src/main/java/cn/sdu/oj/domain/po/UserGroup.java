@@ -1,10 +1,10 @@
 package cn.sdu.oj.domain.po;
 
-public class Usergroup {
+public class UserGroup {
     private Integer id;
     private String name;
     private String type;
-    private String introduce;
+    private String introduction;
     private Integer creatorId;
     private Integer fatherId;
     private String childrenId;
@@ -33,12 +33,12 @@ public class Usergroup {
         this.type = type;
     }
 
-    public String getIntroduce() {
-        return introduce;
+    public String getintroduction() {
+        return introduction;
     }
 
-    public void setIntroduce(String introduce) {
-        this.introduce = introduce;
+    public void setintroduction(String introduction) {
+        this.introduction = introduction;
     }
 
     public Integer getCreatorId() {
