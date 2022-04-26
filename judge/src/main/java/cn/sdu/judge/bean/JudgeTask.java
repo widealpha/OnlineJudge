@@ -1,21 +1,23 @@
 package cn.sdu.judge.bean;
 
 public class JudgeTask {
-    private int taskId;
+    private String taskId;
     private int problemId;
     private LanguageEnum language;
     private String code;
     private JudgeLimit limit;
+    private boolean specialJudge;
+    private LanguageEnum specialJudgeLanguage;
 
     public LanguageEnum getLanguage() {
         return language;
     }
 
-    public int getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(int taskId) {
+    public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
 
@@ -47,12 +49,32 @@ public class JudgeTask {
         this.limit = limit;
     }
 
+    public boolean isSpecialJudge() {
+        return specialJudge;
+    }
+
+    public void setSpecialJudge(boolean specialJudge) {
+        this.specialJudge = specialJudge;
+    }
+
+    public LanguageEnum getSpecialJudgeLanguage() {
+        return specialJudgeLanguage;
+    }
+
+    public void setSpecialJudgeLanguage(LanguageEnum specialJudgeLanguage) {
+        this.specialJudgeLanguage = specialJudgeLanguage;
+    }
+
     @Override
     public String toString() {
         return "JudgeTask{" +
-                "language='" + language + '\'' +
+                "taskId=" + taskId +
+                ", problemId=" + problemId +
+                ", language=" + language +
                 ", code='" + code + '\'' +
-                ", limit='" + limit + '\'' +
+                ", limit=" + limit +
+                ", specialJudge=" + specialJudge +
+                ", specialJudgeLanguage=" + specialJudgeLanguage +
                 '}';
     }
 }
