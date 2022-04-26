@@ -17,10 +17,10 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class JudgeService {
+public class JudgeTaskService {
     @Resource
     TaskRecordMapper taskRecordMapper;
-    Logger logger = LoggerFactory.getLogger(JudgeService.class);
+    Logger logger = LoggerFactory.getLogger(JudgeTaskService.class);
     @Resource
     SftpFileUtil sftpFileUtil;
 

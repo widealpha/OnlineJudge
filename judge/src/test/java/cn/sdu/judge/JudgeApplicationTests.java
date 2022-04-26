@@ -4,24 +4,17 @@ import cn.sdu.judge.bean.JudgeTask;
 import cn.sdu.judge.bean.LanguageEnum;
 import cn.sdu.judge.entity.ResultEntity;
 import cn.sdu.judge.entity.StatusCode;
-import cn.sdu.judge.gateway.SftpGateway;
-import cn.sdu.judge.service.JudgeService;
-import cn.sdu.judge.util.FileUtil;
-import cn.sdu.judge.util.SftpFileUtil;
+import cn.sdu.judge.service.JudgeTaskService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.integration.sftp.session.SftpFileInfo;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest
 class JudgeApplicationTests {
     @Resource
-    JudgeService judgeService;
+    JudgeTaskService judgeTaskService;
 
     @Test
     void contextLoads() {
@@ -33,7 +26,7 @@ class JudgeApplicationTests {
             judgeTask.setCode(code(language));
             judgeTask.setLanguage(language);
             judgeTask.setSpecialJudge(false);
-            ResultEntity resultEntity = judgeService.judgeProblem(judgeTask);
+            ResultEntity resultEntity = judgeTaskService.judgeProblem(judgeTask);
             System.out.println(resultEntity);
             assert resultEntity.getCode() == StatusCode.ALL_CHECKPOINTS_SUCCESS.getCode();
         } catch (Exception e) {
