@@ -13,11 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-/**
- * c++编译执行器
- */
-public class CPPJudgeImpl implements JudgeInterface {
-
+public class CJudgeImpl implements JudgeInterface {
     File inputFile;
     File outputFile;
     File errorFile;
@@ -25,7 +21,7 @@ public class CPPJudgeImpl implements JudgeInterface {
 
     Path tempDir;
 
-    public CPPJudgeImpl(String prefix) throws IOException {
+    public CJudgeImpl(String prefix) throws IOException {
         tempDir = Files.createTempDirectory("oj-" + prefix);
         inputFile = Files.createFile(tempDir.resolve("main.cpp")).toFile();
         outputFile = Files.createFile(tempDir.resolve("output.txt")).toFile();
@@ -33,7 +29,7 @@ public class CPPJudgeImpl implements JudgeInterface {
         compiledFile = Files.createFile(tempDir.resolve("main.exe")).toFile();
     }
 
-    public CPPJudgeImpl() throws IOException {
+    public CJudgeImpl() throws IOException {
         this(UUID.randomUUID().toString());
     }
 
@@ -46,7 +42,7 @@ public class CPPJudgeImpl implements JudgeInterface {
 
         //构建进程
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("g++", inputFile.getAbsolutePath(), "-o", compiledFile.getAbsolutePath());
+        processBuilder.command("gcc", inputFile.getAbsolutePath(), "-o", compiledFile.getAbsolutePath());
         Process process = processBuilder.start();
         //构建编译信息
         CompileInfo compileInfo = new CompileInfo();

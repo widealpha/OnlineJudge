@@ -28,7 +28,7 @@ class JudgeApplicationTests {
             JudgeTask judgeTask = new JudgeTask();
             judgeTask.setProblemId(0);
             judgeTask.setTaskId(UUID.randomUUID().toString());
-            LanguageEnum language = LanguageEnum.JAVA8;
+            LanguageEnum language = LanguageEnum.PYTHON3;
             judgeTask.setCode(code(language));
             judgeTask.setLanguage(language);
             ResultEntity resultEntity = judgeService.judgeProblem(judgeTask);
@@ -41,10 +41,18 @@ class JudgeApplicationTests {
 
     String code(LanguageEnum language) {
         switch (language) {
+            case C99:
+                return "#include <stdio.h>\n" +
+                        "int main() {\n" +
+                        "    char arr[100];" +
+                        "    scanf(\"%s\",arr);" +
+                        "    printf(\"%s\", arr);" +
+                        "    return 0;\n" +
+                        "}";
             case CPP17:
                 return "#include <iostream>\n int main(){std::string s;std::cin>>s;std::cout << s;}";
             case JAVA8:
-                return "import java.util.*;" +
+                return "import java.util.*;\n" +
                         "public class Main {\n" +
                         "    public static void main(String[] args) {\n" +
                         "        String s;\n" +
@@ -55,7 +63,7 @@ class JudgeApplicationTests {
                         "}";
             case PYTHON3:
                 return "s = input()\n" +
-                        "print(s)";
+                        "print(s, end='')";
             default:
                 return "";
         }

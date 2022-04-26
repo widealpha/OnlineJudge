@@ -5,9 +5,7 @@ import cn.sdu.judge.entity.ResultEntity;
 import cn.sdu.judge.entity.StatusCode;
 import cn.sdu.judge.exceptions.CurrentNotSupportException;
 import cn.sdu.judge.gateway.SftpGateway;
-import cn.sdu.judge.judger.CPPJudgeImpl;
-import cn.sdu.judge.judger.JavaJudgeImpl;
-import cn.sdu.judge.judger.JudgeInterface;
+import cn.sdu.judge.judger.*;
 import cn.sdu.judge.util.FileUtil;
 import cn.sdu.judge.util.SftpFileUtil;
 import org.slf4j.Logger;
@@ -28,20 +26,21 @@ public class JudgeService {
     @Resource
     SftpFileUtil sftpFileUtil;
 
-    public ResultEntity judgeProblem(JudgeTask task) throws IOException {
+    public ResultEntity judgeProblem(JudgeTask task) {
+        JudgeInterface judge = null;
         try {
             List<Checkpoint> checkpointList = sftpFileUtil.checkpoints(task.getProblemId());
             if (checkpointList == null || checkpointList.isEmpty()) {
                 logger.warn("判题机错误或远程数据不存在");
                 return ResultEntity.data(StatusCode.NO_DATA_EXIST);
             }
-            JudgeInterface judge = fetchJudgeInterface(task.getLanguage());
+            judge = fetchJudgeInterface(task.getLanguage());
             CompileInfo compileInfo = judge.compile(task.getCode());
             if (compileInfo.isSuccess()) {
                 for (Checkpoint checkpoint : checkpointList) {
                     RunInfo runInfo = judge.run(checkpoint);
                     if (!runInfo.isSuccess()) {
-                        if (runInfo.getExitCode() == -1) {
+                        if (runInfo.getExitCode() != 0) {
                             return ResultEntity.data(StatusCode.RUN_ERROR, runInfo);
                         } else {
                             runInfo.setCheckpoint(checkpoint);
@@ -56,6 +55,10 @@ public class JudgeService {
         } catch (Exception e) {
             logger.error("判题机错误或远程数据不存在: ", e);
             return ResultEntity.data(StatusCode.PROBLEM_NOT_EXIST);
+        } finally {
+            if (judge != null) {
+                judge.clean();
+            }
         }
         return ResultEntity.success();
     }
@@ -66,6 +69,10 @@ public class JudgeService {
                 return new CPPJudgeImpl();
             case JAVA8:
                 return new JavaJudgeImpl();
+            case C99:
+                return new CJudgeImpl();
+            case PYTHON3:
+                return new PythonJudgeImpl();
             default:
                 throw new CurrentNotSupportException(language);
         }
