@@ -13,7 +13,7 @@
 								</div>
 							</div>
 							<div>
-								<span>用户组信息：<span :style="item.introduce?{}:{'color': '#888'}">{{item.introduce?item.introduce:'无'}}</span></span>
+								<span>用户组信息：<span :style="item.introduction?{}:{'color': '#888'}">{{item.introduction?item.introduction:'无'}}</span></span>
 								<span style="float: right"><i class="el-icon-user-solid"></i>{{item.num}}</span>
 								<span style="float: right; margin-right: 1rem;"><b>创建时间：</b>{{item.create_time}}</span>
 							</div>
@@ -35,10 +35,10 @@ export default {
 		};
 	},
 	methods: {
-		async getOpenedUsergroupInfo() {
+		async getOpenedUserGroupInfo() {
 			let arr = [];
 			let res = await this.$ajax.post(
-				"/problemset/getUsergroupInfo",
+				"/problemset/getUserGroupInfo",
 				{
 					id: this.$route.params.problemSetId,
 				},
@@ -55,9 +55,9 @@ export default {
 			}
 			this.openedUserGroups = arr;
 		},
-		async getMyUsergroupInfo() {
+		async getMyUserGroupInfo() {
 			let res = await this.$ajax.post(
-				"/usergroup/getMyUsergroup",
+				"/UserGroup/getMyUserGroup",
 				{
 					id: this.$route.params.problemSetId,
 				},
@@ -73,10 +73,10 @@ export default {
 		},
 		async openToThis(item) {
 			let res = await this.$ajax.post(
-				"/problemset/authorizeToUsergroup",
+				"/problemset/authorizeToUserGroup",
 				{
 					id: this.$route.params.problemSetId,
-					usergroupId: item.id,
+					UserGroupId: item.id,
 				},
 				{
 					headers: {
@@ -101,10 +101,10 @@ export default {
 		},
 		async cancelOpen(item) {
 			let res = await this.$ajax.post(
-				"/problemset/revokeToUsergroup",
+				"/problemset/revokeToUserGroup",
 				{
 					id: this.$route.params.problemSetId,
-					usergroupId: item.id,
+					UserGroupId: item.id,
 				},
 				{
 					headers: {
@@ -135,8 +135,8 @@ export default {
 				`/problem-set/${this.$store.state.problemSetInfo.problemSetId}/`
 			);
 		} else {
-			this.getOpenedUsergroupInfo();
-			this.getMyUsergroupInfo();
+			this.getOpenedUserGroupInfo();
+			this.getMyUserGroupInfo();
 		}
 	},
 };
