@@ -3,17 +3,13 @@ package cn.sdu.judge.util;
 import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.gateway.SftpGateway;
 import cn.sdu.judge.listener.JudgeMsgListener;
-import cn.sdu.judge.mapper.Sha256Mapper;
-import io.netty.buffer.ByteBufInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.integration.sftp.session.SftpFileInfo;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

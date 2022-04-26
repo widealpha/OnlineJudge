@@ -3,6 +3,7 @@ package cn.sdu.judge;
 import cn.sdu.judge.bean.JudgeTask;
 import cn.sdu.judge.bean.LanguageEnum;
 import cn.sdu.judge.entity.ResultEntity;
+import cn.sdu.judge.entity.StatusCode;
 import cn.sdu.judge.gateway.SftpGateway;
 import cn.sdu.judge.service.JudgeService;
 import cn.sdu.judge.util.FileUtil;
@@ -28,12 +29,13 @@ class JudgeApplicationTests {
             JudgeTask judgeTask = new JudgeTask();
             judgeTask.setProblemId(0);
             judgeTask.setTaskId(UUID.randomUUID().toString());
-            LanguageEnum language = LanguageEnum.PYTHON3;
+            LanguageEnum language = LanguageEnum.JAVA8;
             judgeTask.setCode(code(language));
             judgeTask.setLanguage(language);
+            judgeTask.setSpecialJudge(false);
             ResultEntity resultEntity = judgeService.judgeProblem(judgeTask);
             System.out.println(resultEntity);
-            assert resultEntity.getCode() == 0;
+            assert resultEntity.getCode() == StatusCode.ALL_CHECKPOINTS_SUCCESS.getCode();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,7 +60,7 @@ class JudgeApplicationTests {
                         "        String s;\n" +
                         "        Scanner sc = new Scanner(System.in);\n" +
                         "        s = sc.next();\n" +
-                        "        System.out.print(s);\n" +
+                        "        System.out.println(s);\n" +
                         "    }\n" +
                         "}";
             case PYTHON3:
