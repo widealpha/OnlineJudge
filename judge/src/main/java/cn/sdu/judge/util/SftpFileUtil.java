@@ -44,13 +44,15 @@ public class SftpFileUtil {
         //如果本地题目对应的文件夹不存在，新建文件夹
         if (!localProblemDir.exists()) {
             //新建文件夹失败返回null
-            if (!localProblemDir.mkdir()) {
+            if (!localProblemDir.mkdirs()) {
+                logger.warn("新建题目文件夹{}错误", localProblemDir.getAbsolutePath());
                 return null;
             }
         }
         if (!localCheckpointsDir.exists()) {
+            logger.warn("新建测试点文件夹{}错误", localCheckpointsDir.getAbsolutePath());
             //新建文件夹失败返回null
-            if (!localCheckpointsDir.mkdir()) {
+            if (!localCheckpointsDir.mkdirs()) {
                 return null;
             }
         }
@@ -62,11 +64,13 @@ public class SftpFileUtil {
             String remoteSha256 = FileUtil.readAllFromFile(remoteCheckPointSha256File);
             //如果云端校验码不存在,代表题目不存在,返回null
             if (remoteSha256 == null) {
+                logger.warn("云端校验码不存在: {}", problemId);
                 return null;
             }
             //如果云端的校验码与本地校验码不相等,本地文件不是最新的,需要从云端重新拉取文件
             if (!remoteSha256.equals(localSha256)) {
                 if (!downloadValidateRemoteCheckpointFile(remoteProblemPath, localCheckpointsPath, remoteSha256)) {
+                    logger.warn("拉取云端题目错误: {}", problemId);
                     return null;
                 }
             }
@@ -75,6 +79,7 @@ public class SftpFileUtil {
             File remoteCheckPointSha256File = sftpGateway.getFile(remoteProblemPath + "/checkpoints.sha256");
             String remoteSha256 = FileUtil.readAllFromFile(remoteCheckPointSha256File);
             if (!downloadValidateRemoteCheckpointFile(remoteProblemPath, localCheckpointsPath, remoteSha256)) {
+                logger.warn("拉取云端题目错误: {}", problemId);
                 return null;
             }
         }
@@ -83,6 +88,7 @@ public class SftpFileUtil {
         String[] localCheckpointsName = localCheckPointDir.list();
         //如果没有文件代表缓存失败返回null
         if (localCheckpointsName == null) {
+            logger.warn("缓存失败: {}", problemId);
             return null;
         }
         //按照递增顺序从1开始分别是in和out文件,封装后返回上一层
