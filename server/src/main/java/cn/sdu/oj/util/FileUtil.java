@@ -1,16 +1,7 @@
 package cn.sdu.oj.util;
 
-import org.springframework.lang.Nullable;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
     public static String getSHA256(byte[] data) throws Exception {
@@ -28,8 +19,8 @@ public class FileUtil {
         return sb.toString();
     }
 
-    private static final String ROOT_PATH = "C:\\Users\\lenovo\\Desktop\\SDUOJ\\TEST_POINT";
-    public static final String SEPARATOR = "\\";
+    private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";
+    public static final String SEPARATOR = "/";
 
     public static boolean isExist(String path) {
         /**
