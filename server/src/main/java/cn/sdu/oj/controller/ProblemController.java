@@ -1,10 +1,12 @@
 package cn.sdu.oj.controller;
 
 import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
+import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.service.ProblemService;
 import cn.sdu.oj.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,12 +19,28 @@ public class ProblemController {
     private ProblemService problemService;
 
     @PostMapping("/addProblem")
-    public ResultEntity addProblem(AddProblemParam param) {
+    public ResultEntity addProblem(AddProblemParam param, @AuthenticationPrincipal User user) {
         // 处理参数
+        param.setAuthor(user.getId());
         problemService.addProblem(param);
-        System.out.println("ok");
         return ResultEntity.data(param.getId());
     }
+
+    @PostMapping("/deleteProblem")
+    public ResultEntity deleteProblem(int id, @AuthenticationPrincipal User user) {
+        problemService.deleteProblem(user.getId(), id);
+        return ResultEntity.success();
+    }
+
+    @PostMapping("/updateProblem")
+    public ResultEntity updateProblem(AddProblemParam param, @AuthenticationPrincipal User user) {
+        // 处理参数
+        param.setAuthor(user.getId());
+        problemService.updateProblem(param);
+        return ResultEntity.success();
+
+    }
+
 
     @PostMapping("/addTestPoints")
     public ResultEntity addTestPoints(int problemId, String sha256, MultipartFile file) throws Exception {
@@ -37,4 +55,6 @@ public class ProblemController {
         problemService.addTestPoints(problemId, file, sha256);
         return ResultEntity.success();
     }
+
+
 }

@@ -20,4 +20,5 @@ public class AddProblemParam {
     private String tags;
     private Integer difficulty;
     private String tip;
+    private Integer author;
 }

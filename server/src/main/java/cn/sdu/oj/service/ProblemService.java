@@ -2,8 +2,10 @@ package cn.sdu.oj.service;
 
 import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
 import cn.sdu.oj.dao.ProblemMapper;
+import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +32,14 @@ public class ProblemService {
         }
         return param.getId();
 
+    }
+
+    public void deleteProblem(int u_id, int p_id) {
+        problemMapper.deleteProblem(u_id, p_id);
+    }
+
+    public void updateProblem(AddProblemParam param) {
+        problemMapper.updateProblem(param);
     }
 
     public void addTestPoints(int p_id, MultipartFile file, String sha256) throws Exception {
