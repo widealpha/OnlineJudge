@@ -19,8 +19,8 @@ public class FileUtil {
         return sb.toString();
     }
 
-    private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";
-    public static final String SEPARATOR = "/";
+    private static final String ROOT_PATH = "C:\\Users\\lenovo\\Desktop\\SDUOJ\\TEST_POINT";
+    public static final String SEPARATOR = "\\";
 
     public static boolean isExist(String path) {
         /**
