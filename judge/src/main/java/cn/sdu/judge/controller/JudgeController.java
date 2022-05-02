@@ -45,7 +45,15 @@ public class JudgeController {
             case CPP17:
                 return "#include <iostream>\n int main(){std::string s;std::cin>>s;std::cout << s;}";
             case JAVA8:
-                return "import java.util.*;\n" + "public class Main {\n" + "    public static void main(String[] args) {\n" + "        String s;\n" + "        Scanner sc = new Scanner(System.in);\n" + "        s = sc.next();\n" + "        System.out.println(s);\n" + "    }\n" + "}";
+                return "import java.util.*;\n" +
+                        "public class Main {\n" +
+                        "    public static void main(String[] args) {\n" +
+                        "        String s;\n" +
+                        "        Scanner sc = new Scanner(System.in);\n" +
+                        "        s = sc.next();\n" +
+                        "        System.out.print(s);\n" +
+                        "    }\n" +
+                        "}";
             case PYTHON3:
                 return "s = input()\n" + "print(s, end='')";
             default:

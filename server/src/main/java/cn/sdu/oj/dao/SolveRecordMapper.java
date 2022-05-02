@@ -3,12 +3,19 @@ package cn.sdu.oj.dao;
 import cn.sdu.oj.domain.po.SolveRecord;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 @Mapper
 public interface SolveRecordMapper {
     @Select("SELECT * " +
             "FROM solve_record " +
             "WHERE user_id = #{userId} AND problem_id = #{problemId} AND `status` > 0")
-    SolveRecord selectSolveRecord(Integer problemId, Integer userId);
+    List<SolveRecord> selectSolveRecord(Integer problemId, Integer userId);
+
+    @Select("SELECT * " +
+            "FROM solve_record " +
+            "WHERE id = #{id}")
+    SolveRecord selectSolveRecordByPrimaryKey(int id);
 
     /**
      * 正在判别的未完成的题目数量
@@ -37,7 +44,7 @@ public interface SolveRecordMapper {
      * @param record 题解记录
      */
     @Update("UPDATE solve_record " +
-            "SET `memory` = #{memory}, cpu_time = #{cpuTime} `status` = #{status} " +
+            "SET `memory` = #{memory}, cpu_time = #{cpuTime}, `status` = #{status} " +
             "WHERE id = #{id}")
     boolean updateSolveRecordByPrimaryKey(SolveRecord record);
 

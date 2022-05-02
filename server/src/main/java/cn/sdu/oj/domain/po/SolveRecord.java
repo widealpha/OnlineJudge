@@ -16,6 +16,10 @@ public class SolveRecord {
      */
     private int cpuTime = -1;
 
+    private int realTime = -1;
+
+    private int status;
+
     public int getId() {
         return id;
     }
@@ -56,6 +60,14 @@ public class SolveRecord {
         this.cpuTime = cpuTime;
     }
 
+    public int getRealTime() {
+        return realTime;
+    }
+
+    public void setRealTime(int realTime) {
+        this.realTime = realTime;
+    }
+
     public String getLanguage() {
         return language;
     }
@@ -70,5 +82,13 @@ public class SolveRecord {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }

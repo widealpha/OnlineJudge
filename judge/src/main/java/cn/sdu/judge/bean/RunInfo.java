@@ -4,6 +4,10 @@ public class RunInfo {
     private int exitCode;
     private boolean success;
 
+    private int cpuTime;
+    private int memory;
+    private int realTime;
+
     private String error;
     private String output;
 
@@ -47,6 +51,30 @@ public class RunInfo {
 
     public void setCheckpoint(Checkpoint checkpoint) {
         this.checkpoint = checkpoint;
+    }
+
+    public int getCpuTime() {
+        return cpuTime;
+    }
+
+    public void setCpuTime(int cpuTime) {
+        this.cpuTime = cpuTime;
+    }
+
+    public int getMemory() {
+        return memory;
+    }
+
+    public void setMemory(int memory) {
+        this.memory = memory;
+    }
+
+    public int getRealTime() {
+        return realTime;
+    }
+
+    public void setRealTime(int realTime) {
+        this.realTime = realTime;
     }
 
     @Override

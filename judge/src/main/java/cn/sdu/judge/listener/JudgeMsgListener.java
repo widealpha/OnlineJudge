@@ -3,6 +3,7 @@ package cn.sdu.judge.listener;
 import cn.sdu.judge.bean.JudgeTask;
 import cn.sdu.judge.entity.ResultEntity;
 import cn.sdu.judge.service.JudgeTaskService;
+import com.alibaba.fastjson.JSON;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +37,13 @@ public class JudgeMsgListener {
 
 
     @RabbitHandler
-    public void process(JudgeTask task, Channel channel, Message message) throws IOException {
+    public void process(String task, Channel channel, Message message) throws IOException {
         logger.info("receive: " + task);
-        ResultEntity result = judgeTaskService.judgeProblem(task);
+        ResultEntity result = judgeTaskService.judgeProblem(JSON.parseObject(task, JudgeTask.class));
         //进行业务逻辑处理
         //手工ack
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), true);
-        rabbitTemplate.convertAndSend(routingKey, result);
+        rabbitTemplate.convertAndSend(routingKey, JSON.toJSONString(result));
     }
 }
 

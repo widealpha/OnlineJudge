@@ -10,7 +10,7 @@ public class JudgeLimit {
     /**
      * 时间限制,单位为ms
      */
-    private int time;
+    private int realTime;
     /**
      * 内存限制,单位为KB
      */
@@ -24,13 +24,13 @@ public class JudgeLimit {
             case C99:
             case CPP17:
                 cpuTime = 1000;
-                time = 1000;
+                realTime = 1000;
                 memory = 1024 * 5;
                 break;
             case JAVA8:
             case PYTHON3:
                 cpuTime = 2000;
-                time = 2000;
+                realTime = 2000;
                 memory = 1024 * 10;
                 break;
             default:
@@ -46,12 +46,12 @@ public class JudgeLimit {
         this.cpuTime = cpuTime;
     }
 
-    public int getTime() {
-        return time;
+    public int getRealTime() {
+        return realTime;
     }
 
-    public void setTime(int time) {
-        this.time = time;
+    public void setRealTime(int realTime) {
+        this.realTime = realTime;
     }
 
     public int getMemory() {

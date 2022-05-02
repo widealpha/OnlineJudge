@@ -11,6 +11,9 @@ public class ResultEntity {
     @JSONField(ordinal = 3)
     private Object data;
 
+    public ResultEntity() {
+    }
+
     public ResultEntity(int code, String message, Object data) {
         this.code = code;
         this.message = message;

@@ -25,8 +25,13 @@ public class JudgeTaskService {
     SftpFileUtil sftpFileUtil;
 
     public ResultEntity judgeProblem(JudgeTask task) {
+        JudgeResult judgeResult = new JudgeResult();
+        judgeResult.setTaskId(task.getTaskId());
+        judgeResult.setProblemId(task.getProblemId());
+        judgeResult.setCheckPointSize(0);
+
         if (taskRecordMapper.existTaskRecord(task.getTaskId())) {
-            return ResultEntity.data(StatusCode.SAME_TASK_EXIST);
+            return ResultEntity.data(StatusCode.SAME_TASK_EXIST, judgeResult);
         }
         //新建task并插入数据库
         TaskRecord taskRecord = new TaskRecord();
@@ -47,47 +52,62 @@ public class JudgeTaskService {
                 logger.warn("判题机错误或远程数据不存在");
                 StatusCode status = StatusCode.NO_DATA_EXIST;
                 taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-                return ResultEntity.data(status);
+                return ResultEntity.data(status, judgeResult);
             }
+            //获取判题点的数量并填充到判题结果中
+            judgeResult.setCheckPointSize(checkpointList.size());
             judge = fetchJudgeInterface(task.getLanguage());
             CompileInfo compileInfo = judge.compile(task.getCode());
             taskRecord.setCompileInfo(JSON.toJSONString(compileInfo));
             if (compileInfo.isSuccess()) {
-                for (Checkpoint checkpoint : checkpointList) {
+                for (int i = 0; i < checkpointList.size(); i++) {
+                    Checkpoint checkpoint = checkpointList.get(i);
                     RunInfo runInfo = judge.run(checkpoint);
                     if (!runInfo.isSuccess()) {
                         StatusCode statusCode;
                         //返回码不为0,并且错误信息不为空,则认为该测试点运行时出错
                         if (runInfo.getExitCode() != 0 && runInfo.getError() != null && !runInfo.getError().isEmpty()) {
                             statusCode = StatusCode.RUN_ERROR;
+                            judgeResult.getErrors().put(i, "运行时出错");
                         } else {
                             statusCode = StatusCode.CHECKPOINT_ERROR;
+                            judgeResult.getErrors().put(i, "测试点未通过");
                         }
                         runInfo.setCheckpoint(checkpoint);
                         taskRecord.setRunInfo(JSON.toJSONString(runInfo));
                         taskRecordMapper.updateTaskRecord(taskRecord);
                         taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), statusCode.getCode());
-                        return ResultEntity.data(statusCode, runInfo);
+                        return ResultEntity.data(statusCode, judgeResult);
                     }
+                    //填充判题结果
+                    JudgeLimit detail = new JudgeLimit();
+                    detail.setMemory(runInfo.getMemory());
+                    detail.setCpuTime(runInfo.getCpuTime());
+                    detail.setRealTime(runInfo.getRealTime());
+                    judgeResult.getDetails().put(i, detail);
                 }
             } else {
                 StatusCode status = StatusCode.COMPILE_ERROR;
                 taskRecordMapper.updateTaskRecord(taskRecord);
                 taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-                return ResultEntity.data(status, compileInfo);
+                judgeResult.getErrors().put(-1, compileInfo.getError());
+                return ResultEntity.data(status, judgeResult);
             }
         } catch (Exception e) {
             logger.error("判题机错误或远程数据不存在: ", e);
             StatusCode status = StatusCode.PROBLEM_NOT_EXIST;
             taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-            return ResultEntity.data(status);
+            judgeResult.getErrors().put(-1, e.getMessage());
+            return ResultEntity.data(status, judgeResult);
         } finally {
             if (judge != null) {
                 judge.clean();
             }
         }
         taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), StatusCode.ALL_CHECKPOINTS_SUCCESS.getCode());
-        return ResultEntity.data(StatusCode.ALL_CHECKPOINTS_SUCCESS, task.getTaskId());
+        taskRecord.setRunInfo(JSON.toJSONString(judgeResult.getDetails()));
+        taskRecordMapper.updateTaskRecord(taskRecord);
+        return ResultEntity.data(StatusCode.ALL_CHECKPOINTS_SUCCESS, judgeResult);
     }
 
     JudgeInterface fetchJudgeInterface(LanguageEnum language) throws CurrentNotSupportException, IOException {

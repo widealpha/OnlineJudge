@@ -2,21 +2,18 @@ package cn.sdu.judge.entity;
 
 public enum StatusCode {
     /* 成功 */
-    SUCCESS(0, "成功"),
-
-    /* 默认失败 */
-    COMMON_FAIL(-1, "失败"),
-
-    LANGUAGE_NOT_SUPPORT(-2, "编程语言不支持"),
-
-    PROBLEM_NOT_EXIST(-3, "请求的判题不存在"),
-    COMPILE_ERROR(-4, "编译错误"),
-    RUN_ERROR(-5, "运行时出错"),
-    CHECKPOINT_ERROR(-6, "测试点未通过"),
-
-    SAME_TASK_EXIST(-7, "相同任务已被提交"),
-
     ALL_CHECKPOINTS_SUCCESS(1, "测试点全部通过"),
+
+    LANGUAGE_NOT_SUPPORT(2, "编程语言不支持"),
+
+    PROBLEM_NOT_EXIST(3, "请求的判题不存在"),
+    COMPILE_ERROR(4, "编译错误"),
+    RUN_ERROR(5, "运行时出错"),
+    CHECKPOINT_ERROR(6, "测试点未通过"),
+
+    SAME_TASK_EXIST(7, "相同任务已被提交"),
+    /* 默认失败 */
+    COMMON_FAIL(500, "失败"),
 
 
     /* 参数错误：1000～1999 */

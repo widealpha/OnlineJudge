@@ -52,7 +52,7 @@ class JudgeApplicationTests {
                         "        String s;\n" +
                         "        Scanner sc = new Scanner(System.in);\n" +
                         "        s = sc.next();\n" +
-                        "        System.out.println(s);\n" +
+                        "        System.out.print(s);\n" +
                         "    }\n" +
                         "}";
             case PYTHON3:
