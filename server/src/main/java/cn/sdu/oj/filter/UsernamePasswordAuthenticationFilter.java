@@ -6,11 +6,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebFilter
 public class UsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     public UsernamePasswordAuthenticationFilter() {
         super(new AntPathRequestMatcher("/user/login", "POST"));

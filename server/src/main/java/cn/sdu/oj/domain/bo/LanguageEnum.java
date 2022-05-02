@@ -1,9 +1,10 @@
-package cn.sdu.oj.entity;
+package cn.sdu.oj.domain.bo;
+
 
 /**
  * 代码语言
  */
-public enum CodeLanguage {
+public enum LanguageEnum {
     PYTHON2("PYTHON2"),
     PYTHON3("PYTHON3"),
     CPP98("CPP98"),
@@ -17,7 +18,7 @@ public enum CodeLanguage {
     JAVA8("JAVA8"),
     JAVA11("JAVA11");
 
-    CodeLanguage(String language) {
+    LanguageEnum(String language) {
         this.language = language;
     }
 

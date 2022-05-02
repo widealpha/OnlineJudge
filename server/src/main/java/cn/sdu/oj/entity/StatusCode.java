@@ -37,7 +37,12 @@ public enum StatusCode {
     NO_DATA_EXIST(3002, "数据不存在"),
     NO_PERMISSION_OR_EMPTY(3003, "请求数据不存在或无权获取数据"),
     DATA_ALREADY_EXIST(3004, "数据已存在"),
-    VALIDATE_ERROR(3005, "验证失败");
+    VALIDATE_ERROR(3005, "验证失败"),
+    /* 判题状态码 */
+    OVER_SOLVE_LIMIT(3101, "超出并行判题数量限制"),
+
+
+    LAST_ERROR_CODE(9999, "如果用到了这个错误码,那确实是非常不幸,建议提桶跑路");
 
     private Integer code;
     private String message;

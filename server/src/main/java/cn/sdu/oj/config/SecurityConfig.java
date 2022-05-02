@@ -43,6 +43,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 //添加token的filter
                 .apply(new JwtLoginConfig<>())
+                .permissiveRequestUrls(permissiveRequestUrls()) //设置jwt拦截白名单
                 .tokenValidSuccessHandler(jwtRefreshSuccessHandler())
                 .and()
                 //使用默认的logoutFilter
