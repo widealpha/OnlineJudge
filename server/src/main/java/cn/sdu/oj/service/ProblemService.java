@@ -79,14 +79,7 @@ public class ProblemService {
      * @return
      */
     public boolean isProblemExist(int problemId) {
-        Integer exist = problemMapper.isProblemExist(problemId);
-        if (exist != null && exist.equals(1)) {
-            return true;
-        } else {
-            return false;
-        }
-
+        return problemMapper.isProblemExist(problemId);
     }
-
 
 }

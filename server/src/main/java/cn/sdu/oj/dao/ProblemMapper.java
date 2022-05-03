@@ -29,6 +29,6 @@ public interface ProblemMapper {
     @Update("UPDATE problem SET NAME=#{name} ,DESCRIPTION=#{description} ,EXAMPLE=#{example} ,TYPE=#{type} ,DIFFICULTY=#{difficulty} ,STATUS=#{status} ,TIP=#{tip} ,LAST_MODIFY_TIME=NOW() WHERE ID=#{id} AND AUTHOR=#{author} ")
     int updateProblem(AddProblemParam problem);
 
-    @Select("SELECT 1 FROM problem WHERE ID=#{problemId} AND IS_DELETE=0")
-    Integer isProblemExist(int problemId);
+    @Select("SELECT COUNT(*) FROM problem WHERE ID=#{problemId} AND IS_DELETE=0")
+    boolean isProblemExist(int problemId);
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
 
@@ -28,7 +29,7 @@ public class SolveController {
     @ApiOperation("提交判题代码")
     @PostMapping("trySolveProblem")
     @PreAuthorize("hasRole('COMMON')")
-    ResultEntity trySolveProblem(@AuthenticationPrincipal User user,
+    ResultEntity trySolveProblem(@ApiIgnore @AuthenticationPrincipal User user,
                                  @ApiParam("题目Id") @RequestParam int problemId,
                                  @ApiParam("判题题目代码") @RequestParam String code,
                                  @ApiParam("判题语言") @RequestParam String language) {

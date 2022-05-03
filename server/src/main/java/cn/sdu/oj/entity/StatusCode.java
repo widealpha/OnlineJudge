@@ -40,6 +40,7 @@ public enum StatusCode {
     VALIDATE_ERROR(3005, "验证失败"),
     /* 判题状态码 */
     OVER_SOLVE_LIMIT(3101, "超出并行判题数量限制"),
+    PROBLEM_NOT_EXIST(3102, "请求的题目不存在"),
 
 
     LAST_ERROR_CODE(9999, "如果用到了这个错误码,那确实是非常不幸,建议提桶跑路");

@@ -1,10 +1,12 @@
 package cn.sdu.oj.service;
 
+import cn.sdu.oj.dao.ProblemMapper;
 import cn.sdu.oj.dao.SolveRecordMapper;
 import cn.sdu.oj.domain.bo.JudgeLimit;
 import cn.sdu.oj.domain.bo.JudgeResult;
 import cn.sdu.oj.domain.bo.JudgeStatus;
 import cn.sdu.oj.domain.bo.JudgeTask;
+import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.po.SolveRecord;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
@@ -23,10 +25,24 @@ public class SolveService {
     @Resource
     SolveRecordMapper solveRecordMapper;
 
+    @Resource
+    ProblemMapper problemMapper;
+
     @Value("${spring.rabbitmq.template.routing-key}")
     private String routingKey;
 
     public ResultEntity trySolveProblem(JudgeTask task, int userId) {
+        if (!problemMapper.isProblemExist(task.getProblemId())) {
+            return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
+        }
+        //生成判题限制
+        JudgeLimit judgeLimit = new JudgeLimit();
+        ProblemLimit problemLimit = problemMapper.getProblemLimitByProblemId(task.getProblemId());
+        //todo 引入代码长度校验
+        judgeLimit.setCpuTime(problemLimit.getTime());
+        //设置真实时间为cpu时间的两倍，防止调度问题
+        judgeLimit.setRealTime(problemLimit.getTime() * 2);
+        judgeLimit.setMemory(problemLimit.getMemory());
         try {
             //如果还没有判完的题目超出判题限制，拒绝判题
             if (solveRecordMapper.unfinishedSolveCount(userId) >= 3) {
@@ -42,6 +58,8 @@ public class SolveService {
             int recordId = solveRecord.getId();
             //插入成功后，将插入的数据的id作为taskId发送到mq
             task.setTaskId("" + recordId);
+
+            task.setLimit(judgeLimit);
             rabbitTemplate.convertAndSend(routingKey, JSONObject.toJSONString(task));
             return ResultEntity.data(task.getTaskId());
         } catch (Exception e) {
@@ -64,7 +82,7 @@ public class SolveService {
             int allRealTime = 0;
             for (int i = 0; i < judgeResult.getCheckPointSize(); i++) {
                 JudgeLimit detail = judgeResult.getDetails().get(i);
-                if (detail != null){
+                if (detail != null) {
                     allCpuTime += detail.getCpuTime();
                     allMemory += detail.getMemory();
                     allRealTime += detail.getRealTime();

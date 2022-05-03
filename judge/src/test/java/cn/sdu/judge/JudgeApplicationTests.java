@@ -20,7 +20,7 @@ class JudgeApplicationTests {
     void contextLoads() {
         try {
             JudgeTask judgeTask = new JudgeTask();
-            judgeTask.setProblemId(0);
+            judgeTask.setProblemId(38);
             judgeTask.setTaskId(UUID.randomUUID().toString());
             LanguageEnum language = LanguageEnum.JAVA8;
             judgeTask.setCode(code(language));

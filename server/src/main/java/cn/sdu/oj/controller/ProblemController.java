@@ -12,10 +12,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -57,9 +54,9 @@ public class ProblemController {
     @ApiOperation("添加测试点")
     @PostMapping("/addTestPoints")
     public ResultEntity addTestPoints(
-            @ApiParam("问题id") @RequestParam int problemId,
-            @ApiParam("sha256校验码") @RequestParam String sha256,
-            @ApiParam("sha256校验码") @RequestParam MultipartFile file) throws Exception {
+            @ApiParam("问题id") @RequestPart int problemId,
+            @ApiParam("sha256校验码") @RequestPart String sha256,
+            @ApiParam("测试点zip压缩文件") @RequestPart MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) {
             return ResultEntity.error("file is null");
         }
