@@ -8,6 +8,7 @@ import cn.sdu.oj.util.RedisUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNullApi;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RequestHeaderRequestMatcher requiresAuthenticationRequestMatcher;
@@ -70,6 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = tokenHeader.replace(jwtUtil.TOKEN_PREFIX, "");
             if (!jwtUtil.isExpiration(token)) {
+                System.out.println("hello");
                 Date date = jwtUtil.getIssuedAt(token);
                 String logoutTime = redisUtil.get("logout:" + jwtUtil.getUserId(token));
                 // 判断用户退出的时间，退出之后所有签发在退出之前的token失效
@@ -86,10 +89,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.USER_TOKEN_OVERDUE));
         } catch (JwtException e) {
             response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.USER_TOKEN_ERROR));
         } catch (Exception e) {

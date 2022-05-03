@@ -62,13 +62,7 @@ public class JwtUtil {
      * @return token携带的claim
      */
     private Claims getTokenBody(String token) {
-        Claims claims = null;
-        try {
-            claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
-        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        return claims;
+        return Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
     }
 
     /**
@@ -96,14 +90,10 @@ public class JwtUtil {
      *
      * @param token JWT
      * @return 是否过期
+     * @throws ExpiredJwtException 过期抛出异常
      */
-    public Boolean isExpiration(String token) {
-        try {
-            return getTokenBody(token).getExpiration().before(new Date());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return true;
+    public Boolean isExpiration(String token) throws ExpiredJwtException {
+        return getTokenBody(token).getExpiration().before(new Date());
     }
 
     /**

@@ -1,6 +1,5 @@
-package cn.sdu.judge.bean;
+package cn.sdu.oj.domain.bo;
 
-import cn.sdu.judge.exceptions.CurrentNotSupportException;
 
 public class JudgeLimit {
     /**
@@ -19,7 +18,7 @@ public class JudgeLimit {
     public JudgeLimit() {
     }
 
-    public JudgeLimit(LanguageEnum language) throws CurrentNotSupportException {
+    public JudgeLimit(LanguageEnum language) {
         switch (language) {
             case C99:
             case CPP17:
@@ -29,12 +28,11 @@ public class JudgeLimit {
                 break;
             case JAVA8:
             case PYTHON3:
+            default:
                 cpuTime = 2000;
                 realTime = 2000;
                 memory = 1024 * 10;
                 break;
-            default:
-                throw new CurrentNotSupportException(language);
         }
     }
 

@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 
-@Configuration
+//@Configuration
 public class JwtLoginConfig<T extends JwtLoginConfig<T, B>, B extends HttpSecurityBuilder<B>> extends AbstractHttpConfigurer<T, B> {
 
     private final JwtAuthenticationFilter authFilter;
@@ -23,8 +23,8 @@ public class JwtLoginConfig<T extends JwtLoginConfig<T, B>, B extends HttpSecuri
         authFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
         authFilter.setAuthenticationFailureHandler(new HttpStatusLoginFailureHandler());
         //将filter放到logoutFilter之前
-        JwtAuthenticationFilter filter = postProcess(authFilter);
-        http.addFilterBefore(filter, LogoutFilter.class);
+//        JwtAuthenticationFilter filter = postProcess(authFilter);
+//        http.addFilterBefore(filter, LogoutFilter.class);
     }
 
     //设置匿名用户可访问url

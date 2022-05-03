@@ -11,6 +11,9 @@ public class ResultEntity {
     @JSONField(ordinal = 3)
     private Object data;
 
+    public ResultEntity() {
+    }
+
     public ResultEntity(int code, String message, Object data) {
         this.code = code;
         this.message = message;
@@ -18,11 +21,11 @@ public class ResultEntity {
     }
 
     public static ResultEntity empty() {
-        return new ResultEntity(0, "", null);
+        return new ResultEntity(0, "TODO", null);
     }
 
     public static ResultEntity success() {
-        return new ResultEntity(0, "success", true);
+        return new ResultEntity(0, "SUCCESS", true);
     }
 
     public static ResultEntity success(String message) {

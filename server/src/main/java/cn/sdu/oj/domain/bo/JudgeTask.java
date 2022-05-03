@@ -1,4 +1,4 @@
-package cn.sdu.judge.bean;
+package cn.sdu.oj.domain.bo;
 
 public class JudgeTask {
     private String taskId;
