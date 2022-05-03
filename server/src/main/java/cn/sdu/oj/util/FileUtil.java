@@ -1,19 +1,13 @@
 package cn.sdu.oj.util;
 
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-@Slf4j
 public class FileUtil {
     public static String getSHA256(byte[] data) throws Exception {
 
-//        MessageDigest md5 = MessageDigest.getInstance("SHA-256");
-//        md5.update(data, 0, data.length);
-//        return toHexString(md5.digest());
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -21,7 +15,9 @@ public class FileUtil {
             final StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 final String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
                 hexString.append(hex);
             }
             return hexString.toString();
@@ -29,14 +25,6 @@ public class FileUtil {
 
             return null;
         }
-    }
-
-    private static String toHexString(byte b[]) {
-        StringBuilder sb = new StringBuilder();
-        for (byte aB : b) {
-            sb.append(Integer.toHexString(aB & 0xFF));
-        }
-        return sb.toString();
     }
 
     private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";

@@ -4,12 +4,14 @@ import cn.sdu.oj.util.Default;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import springfox.documentation.annotations.ApiIgnore;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Default
 public class AddProblemParam {
+
     private Integer id;
     private String name;
     private String description;

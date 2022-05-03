@@ -1,25 +1,35 @@
 package cn.sdu.oj.controller;
 
 import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
+import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.service.ProblemService;
 import cn.sdu.oj.util.FileUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
+@Slf4j
 @RestController
 @RequestMapping("/problem")
+@Api(value = "问题接口", tags = "问题接口")
 public class ProblemController {
     @Autowired
     private ProblemService problemService;
 
+    @ApiOperation("添加题目")
     @PostMapping("/addProblem")
-    public ResultEntity addProblem(AddProblemParam param, @AuthenticationPrincipal User user) {
+    public ResultEntity addProblem(AddProblemParam param, @ApiIgnore @AuthenticationPrincipal User user) {
         // 处理参数
         param.setAuthor(user.getId());
         problemService.addProblem(param);
@@ -27,13 +37,16 @@ public class ProblemController {
     }
 
     @PostMapping("/deleteProblem")
-    public ResultEntity deleteProblem(int id, @AuthenticationPrincipal User user) {
+    @ApiOperation("删除问题")
+    public ResultEntity deleteProblem(@ApiParam("问题id") @RequestParam int id,
+                                      @ApiIgnore @AuthenticationPrincipal User user) {
         problemService.deleteProblem(user.getId(), id);
         return ResultEntity.success();
     }
 
+    @ApiOperation("更新题目")
     @PostMapping("/updateProblem")
-    public ResultEntity updateProblem(AddProblemParam param, @AuthenticationPrincipal User user) {
+    public ResultEntity updateProblem(AddProblemParam param, @ApiIgnore @AuthenticationPrincipal User user) {
         // 处理参数
         param.setAuthor(user.getId());
         problemService.updateProblem(param);
@@ -41,9 +54,12 @@ public class ProblemController {
 
     }
 
-
+    @ApiOperation("添加测试点")
     @PostMapping("/addTestPoints")
-    public ResultEntity addTestPoints(int problemId, String sha256, MultipartFile file) throws Exception {
+    public ResultEntity addTestPoints(
+            @ApiParam("问题id") @RequestParam int problemId,
+            @ApiParam("sha256校验码") @RequestParam String sha256,
+            @ApiParam("sha256校验码") @RequestParam MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) {
             return ResultEntity.error("file is null");
         }
@@ -56,5 +72,16 @@ public class ProblemController {
         return ResultEntity.success();
     }
 
+    @ApiOperation("添加题目限制")
+    @PostMapping("/addProblemLimit")
+    public ResultEntity addProblemLimit(@ApiParam("问题id") @RequestParam Integer problemId, int time, int memory, int text) {
+        if (problemId == null) {
+            return ResultEntity.error("problemId is null");
+        }
+        ProblemLimit limit = new ProblemLimit(problemId, time, memory, text);
+        problemService.addProblemLimit(limit);
+        return ResultEntity.success();
+
+    }
 
 }

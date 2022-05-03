@@ -2,6 +2,7 @@ package cn.sdu.oj.service;
 
 import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
 import cn.sdu.oj.dao.ProblemMapper;
+import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,27 @@ public class ProblemService {
 
     }
 
+    /**
+     * 添加一个题目限制
+     *
+     * @param limit
+     * @return
+     */
+    public int addProblemLimit(ProblemLimit limit) {
+        problemMapper.addProblemLimit(limit);
+        return limit.getProblemId();
+    }
+
+    /**
+     * 通过题目id查找对应题目限制
+     *
+     * @param problemId
+     * @return
+     */
+    ProblemLimit getProblemLimitByProblemId(int problemId) {
+        return problemMapper.getProblemLimitByProblemId(problemId);
+    }
+
     public void deleteProblem(int u_id, int p_id) {
         problemMapper.deleteProblem(u_id, p_id);
     }
@@ -47,6 +69,22 @@ public class ProblemService {
         String fileName = "checkpoints";
         FileUtil.createFile(FileUtil.SEPARATOR + p_id, fileName, "zip", file.getBytes());
         FileUtil.createFile(FileUtil.SEPARATOR + p_id, fileName, "sha256", sha256.getBytes(StandardCharsets.UTF_8));
+
+    }
+
+    /**
+     * 检查一个问题是否存在
+     * * @param problemId
+     *
+     * @return
+     */
+    public boolean isProblemExist(int problemId) {
+        Integer exist = problemMapper.isProblemExist(problemId);
+        if (exist != null && exist.equals(1)) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
