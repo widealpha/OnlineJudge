@@ -1,14 +1,34 @@
 package cn.sdu.oj.util;
 
-import java.io.*;
-import java.security.MessageDigest;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+@Slf4j
 public class FileUtil {
     public static String getSHA256(byte[] data) throws Exception {
 
-        MessageDigest md5 = MessageDigest.getInstance("SHA-256");
-        md5.update(data, 0, data.length);
-        return toHexString(md5.digest());
+//        MessageDigest md5 = MessageDigest.getInstance("SHA-256");
+//        md5.update(data, 0, data.length);
+//        return toHexString(md5.digest());
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(data);
+            final StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                final String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+
+            return null;
+        }
     }
 
     private static String toHexString(byte b[]) {
