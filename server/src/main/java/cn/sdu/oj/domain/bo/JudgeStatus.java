@@ -1,18 +1,18 @@
 package cn.sdu.oj.domain.bo;
-
 public enum JudgeStatus {
+    WAIT_JUDGE(0, "等待评测"),
     /* 成功 */
-    ALL_CHECKPOINTS_SUCCESS(1, "测试点全部通过"),
-
-
+    JUDGE_SUCCESS(1, "测试点通过"),
     LANGUAGE_NOT_SUPPORT(2, "编程语言不支持"),
+    JUDGE_TIME_OUT(3, "评测超时"),
+    JUDGE_MEMORY_OUT(4, "评测内存超限"),
+    JUDGE_OUTPUT_OUT(5, "评测输出超限"),
+    JUDGE_COMPILE_ERROR(6, "编译错误"),
+    JUDGE_RUNTIME_ERROR(7, "运行时出错错误"),
+    JUDGE_SYSTEM_ERROR(8, "系统错误"),
 
-    PROBLEM_NOT_EXIST(3, "请求的判题不存在"),
-    COMPILE_ERROR(4, "编译错误"),
-    RUN_ERROR(5, "运行时出错"),
-    CHECKPOINT_ERROR(6, "测试点未通过"),
-
-    SAME_TASK_EXIST(7, "相同任务已被提交"),
+    SAME_TASK_EXIST(300, "相同任务已被提交"),
+    PROBLEM_NOT_EXIST(501, "请求的判题不存在"),
     /* 默认失败 */
     COMMON_FAIL(500, "失败");
 
@@ -53,5 +53,14 @@ public enum JudgeStatus {
             }
         }
         return null;
+    }
+
+    public static JudgeStatus getJudgeStatusByCode(Integer code) {
+        for (JudgeStatus ele : values()) {
+            if (ele.getCode().equals(code)) {
+                return ele;
+            }
+        }
+        return JudgeStatus.WAIT_JUDGE;
     }
 }

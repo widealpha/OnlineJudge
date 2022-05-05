@@ -42,6 +42,20 @@ public enum StatusCode {
     OVER_SOLVE_LIMIT(3101, "超出并行判题数量限制"),
     PROBLEM_NOT_EXIST(3102, "请求的题目不存在"),
 
+    SAME_TASK_EXIST(3107, "相同任务已被提交"),
+    OVER_LIMIT(3108, "超出资源限制"),
+
+    WAIT_JUDGE(3110, "等待评测"),
+    /* 成功 */
+    JUDGE_SUCCESS(3111, "测试点通过"),
+    LANGUAGE_NOT_SUPPORT(3112, "编程语言不支持"),
+    JUDGE_TIME_OUT(3113, "评测超时"),
+    JUDGE_MEMORY_OUT(3114, "评测内存超限"),
+    JUDGE_OUTPUT_OUT(3115, "评测输出超限"),
+    JUDGE_COMPILE_ERROR(3116, "编译错误"),
+    JUDGE_RUNTIME_ERROR(3117, "运行时出错错误"),
+    JUDGE_SYSTEM_ERROR(3118, "系统错误"),
+
 
     LAST_ERROR_CODE(9999, "如果用到了这个错误码,那确实是非常不幸,建议提桶跑路");
 

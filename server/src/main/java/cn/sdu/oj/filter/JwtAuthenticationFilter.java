@@ -8,7 +8,6 @@ import cn.sdu.oj.util.RedisUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNullApi;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -72,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = tokenHeader.replace(jwtUtil.TOKEN_PREFIX, "");
             if (!jwtUtil.isExpiration(token)) {
-                System.out.println("hello");
                 Date date = jwtUtil.getIssuedAt(token);
                 String logoutTime = redisUtil.get("logout:" + jwtUtil.getUserId(token));
                 // 判断用户退出的时间，退出之后所有签发在退出之前的token失效
@@ -99,6 +97,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.getWriter().print(ResultEntity.error(StatusCode.USER_TOKEN_ERROR));
         } catch (Exception e) {
             response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.COMMON_FAIL));
         }

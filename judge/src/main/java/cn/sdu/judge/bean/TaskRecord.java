@@ -22,7 +22,7 @@ public class TaskRecord {
      * {@link StatusCode#COMMON_FAIL} 其他错误 -1
      * {@link StatusCode#LANGUAGE_NOT_SUPPORT} 编程语言不支持 -2
      * {@link StatusCode#PROBLEM_NOT_EXIST} 编程语言不支持 -3
-     * {@link StatusCode#COMPILE_ERROR} 编译错误 -4
+     * {@link StatusCode#JUDGE_COMPILE_ERROR} 编译错误 -4
      * {@link StatusCode#RUN_ERROR} 运行时错误 -5
      * {@link StatusCode#CHECKPOINT_ERROR} 测试点测试错误 -6
      */

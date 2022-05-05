@@ -29,8 +29,9 @@ public interface SolveRecordMapper {
 
     /**
      * 用户关于某题目最后提交的代码
+     *
      * @param problemId 题目编号
-     * @param userId 用户Id
+     * @param userId    用户Id
      */
     @Select("SELECT code " +
             "FROM solve_record " +
@@ -44,7 +45,7 @@ public interface SolveRecordMapper {
      * @param record 题解记录
      */
     @Update("UPDATE solve_record " +
-            "SET `memory` = #{memory}, cpu_time = #{cpuTime}, `status` = #{status} " +
+            "SET `memory` = #{memory}, cpu_time = #{cpuTime}, error = #{error}, `status` = #{status} " +
             "WHERE id = #{id}")
     boolean updateSolveRecordByPrimaryKey(SolveRecord record);
 

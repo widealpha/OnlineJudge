@@ -39,4 +39,12 @@ public class SolveController {
         judgeTask.setLanguage(LanguageEnum.valueOf(language));
         return solveService.trySolveProblem(judgeTask, user.getId());
     }
+
+    @ApiOperation("判题结果查询")
+    @PostMapping("solveTaskResult")
+    @PreAuthorize("hasRole('COMMON')")
+    ResultEntity solveResult(@ApiIgnore @AuthenticationPrincipal User user,
+                             @ApiParam("任务编号") @RequestParam int taskId) {
+        return solveService.solveResult(taskId, user.getId());
+    }
 }

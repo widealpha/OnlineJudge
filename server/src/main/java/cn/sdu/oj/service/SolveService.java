@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @Service
 public class SolveService {
@@ -70,13 +71,37 @@ public class SolveService {
 
     }
 
+    public ResultEntity solveResult(int taskId, int userId) {
+        SolveRecord record = solveRecordMapper.selectSolveRecordByPrimaryKey(taskId);
+        if (record == null || record.getUserId() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+        if (record.getStatus() == JudgeStatus.WAIT_JUDGE.getCode()) {
+            return ResultEntity.data(StatusCode.WAIT_JUDGE);
+        } else if (record.getStatus() == JudgeStatus.JUDGE_SUCCESS.getCode()) {
+            return ResultEntity.data(StatusCode.SUCCESS, record);
+        } else if (record.getStatus() == JudgeStatus.JUDGE_COMPILE_ERROR.getCode()) {
+            return ResultEntity.data(StatusCode.JUDGE_COMPILE_ERROR, record.getError());
+        } else if (record.getStatus() == JudgeStatus.JUDGE_TIME_OUT.getCode()) {
+            return ResultEntity.data(StatusCode.JUDGE_TIME_OUT);
+        } else if (record.getStatus() == JudgeStatus.JUDGE_MEMORY_OUT.getCode()) {
+            return ResultEntity.data(StatusCode.JUDGE_MEMORY_OUT);
+        } else if (record.getStatus() == JudgeStatus.JUDGE_RUNTIME_ERROR.getCode()) {
+            return ResultEntity.data(StatusCode.JUDGE_RUNTIME_ERROR, record.getError());
+        } else if (record.getStatus() == JudgeStatus.JUDGE_OUTPUT_OUT.getCode()) {
+            return ResultEntity.data(StatusCode.JUDGE_OUTPUT_OUT);
+        } else {
+            return ResultEntity.data(StatusCode.JUDGE_SYSTEM_ERROR);
+        }
+    }
+
     public boolean solveResultReceive(ResultEntity resultEntity) {
         JudgeResult judgeResult = JSONObject.parseObject(resultEntity.getData().toString(), JudgeResult.class);
         SolveRecord record = solveRecordMapper.selectSolveRecordByPrimaryKey(Integer.parseInt(judgeResult.getTaskId()));
         record.setStatus(resultEntity.getCode());
-        //判题成功
-        if (resultEntity.getCode() == JudgeStatus.ALL_CHECKPOINTS_SUCCESS.getCode()) {
-            record.setStatus(JudgeStatus.ALL_CHECKPOINTS_SUCCESS.getCode());
+        //判题成功,插入判题的数据
+        if (resultEntity.getCode() == JudgeStatus.JUDGE_SUCCESS.getCode()) {
+            record.setStatus(JudgeStatus.JUDGE_SUCCESS.getCode());
             int allCpuTime = 0;
             int allMemory = 0;
             int allRealTime = 0;
@@ -87,10 +112,28 @@ public class SolveService {
                     allMemory += detail.getMemory();
                     allRealTime += detail.getRealTime();
                 }
+
             }
             record.setCpuTime(allCpuTime / judgeResult.getCheckPointSize());
             record.setMemory(allMemory / judgeResult.getCheckPointSize());
             record.setRealTime(allRealTime / judgeResult.getCheckPointSize());
+        } else if (resultEntity.getCode() == JudgeStatus.JUDGE_RUNTIME_ERROR.getCode() ||
+                resultEntity.getCode() == JudgeStatus.JUDGE_TIME_OUT.getCode() ||
+                resultEntity.getCode() == JudgeStatus.JUDGE_OUTPUT_OUT.getCode() ||
+                resultEntity.getCode() == JudgeStatus.JUDGE_MEMORY_OUT.getCode()
+        ) { // 运行时错误,超时,输出错误,内存错误将错误点的错误信息放入error字段
+            record.setError(JSONObject.toJSONString(judgeResult.getErrors()));
+//            for (int i = 0; i < judgeResult.getCheckPointSize(); i++) {
+//                if (judgeResult.getErrors().containsKey(i)) {
+//                    record.setError(judgeResult.getErrors().get(i));
+//                    break;
+//                }
+//            }
+        } else if (resultEntity.getCode() == JudgeStatus.JUDGE_COMPILE_ERROR.getCode()) { // 编译错误将错误信息放入error字段
+            //-1为规定的编译错误的信息
+            record.setError(judgeResult.getErrors().get(-1));
+        } else { // 其他错误对客户隐藏具体错误
+            record.setError("评测异常");
         }
         solveRecordMapper.updateSolveRecordByPrimaryKey(record);
         return true;

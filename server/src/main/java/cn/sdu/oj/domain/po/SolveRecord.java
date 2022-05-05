@@ -7,6 +7,10 @@ public class SolveRecord {
     private String language;
     private String code;
     /**
+     * 运行的错误信息
+     */
+    private String error;
+    /**
      * 运行消耗的内存,单位KB,默认-1
      */
     private int memory = -1;
@@ -42,6 +46,14 @@ public class SolveRecord {
 
     public void setProblemId(int problemId) {
         this.problemId = problemId;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 
     public int getMemory() {
