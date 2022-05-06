@@ -54,7 +54,8 @@ public enum StatusCode {
     JUDGE_OUTPUT_OUT(3115, "评测输出超限"),
     JUDGE_COMPILE_ERROR(3116, "编译错误"),
     JUDGE_RUNTIME_ERROR(3117, "运行时出错错误"),
-    JUDGE_SYSTEM_ERROR(3118, "系统错误"),
+    JUDGE_WRONG_ANSWER(3118, "测试点未完全通过"),
+    JUDGE_SYSTEM_ERROR(3119, "系统错误"),
 
 
     LAST_ERROR_CODE(9999, "如果用到了这个错误码,那确实是非常不幸,建议提桶跑路");

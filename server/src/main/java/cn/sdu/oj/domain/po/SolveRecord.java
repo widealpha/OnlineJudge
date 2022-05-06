@@ -21,7 +21,11 @@ public class SolveRecord {
     private int cpuTime = -1;
 
     private int realTime = -1;
+    
+    private int checkpointSize = 0;
 
+    private int totalCorrect = 0;
+    
     private int status;
 
     public int getId() {
@@ -94,6 +98,22 @@ public class SolveRecord {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public int getCheckpointSize() {
+        return checkpointSize;
+    }
+
+    public void setCheckpointSize(int checkpointSize) {
+        this.checkpointSize = checkpointSize;
+    }
+
+    public int getTotalCorrect() {
+        return totalCorrect;
+    }
+
+    public void setTotalCorrect(int totalCorrect) {
+        this.totalCorrect = totalCorrect;
     }
 
     public int getStatus() {

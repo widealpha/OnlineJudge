@@ -6,6 +6,7 @@ import cn.sdu.oj.domain.bo.JudgeLimit;
 import cn.sdu.oj.domain.bo.JudgeResult;
 import cn.sdu.oj.domain.bo.JudgeStatus;
 import cn.sdu.oj.domain.bo.JudgeTask;
+import cn.sdu.oj.domain.dto.SolveResultDto;
 import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.po.SolveRecord;
 import cn.sdu.oj.entity.ResultEntity;
@@ -71,6 +72,10 @@ public class SolveService {
 
     }
 
+    public ResultEntity runTestCode(JudgeTask task, int userId) {
+        return trySolveProblem(task, userId);
+    }
+
     public ResultEntity solveResult(int taskId, int userId) {
         SolveRecord record = solveRecordMapper.selectSolveRecordByPrimaryKey(taskId);
         if (record == null || record.getUserId() != userId) {
@@ -79,15 +84,18 @@ public class SolveService {
         if (record.getStatus() == JudgeStatus.WAIT_JUDGE.getCode()) {
             return ResultEntity.data(StatusCode.WAIT_JUDGE);
         } else if (record.getStatus() == JudgeStatus.JUDGE_SUCCESS.getCode()) {
-            return ResultEntity.data(StatusCode.SUCCESS, record);
+            //判题结果成功或者仅有测试用例不通过,直接返回测试结果
+            return ResultEntity.data(StatusCode.SUCCESS, SolveResultDto.fromSolveRecord(record));
+        } else if (record.getStatus() == JudgeStatus.JUDGE_WRONG_ANSWER.getCode()) {
+            return ResultEntity.data(StatusCode.JUDGE_WRONG_ANSWER, SolveResultDto.fromSolveRecord(record));
         } else if (record.getStatus() == JudgeStatus.JUDGE_COMPILE_ERROR.getCode()) {
-            return ResultEntity.data(StatusCode.JUDGE_COMPILE_ERROR, record.getError());
+            return ResultEntity.data(StatusCode.JUDGE_COMPILE_ERROR, SolveResultDto.fromSolveRecord(record));
         } else if (record.getStatus() == JudgeStatus.JUDGE_TIME_OUT.getCode()) {
             return ResultEntity.data(StatusCode.JUDGE_TIME_OUT);
         } else if (record.getStatus() == JudgeStatus.JUDGE_MEMORY_OUT.getCode()) {
             return ResultEntity.data(StatusCode.JUDGE_MEMORY_OUT);
         } else if (record.getStatus() == JudgeStatus.JUDGE_RUNTIME_ERROR.getCode()) {
-            return ResultEntity.data(StatusCode.JUDGE_RUNTIME_ERROR, record.getError());
+            return ResultEntity.data(StatusCode.JUDGE_RUNTIME_ERROR, SolveResultDto.fromSolveRecord(record));
         } else if (record.getStatus() == JudgeStatus.JUDGE_OUTPUT_OUT.getCode()) {
             return ResultEntity.data(StatusCode.JUDGE_OUTPUT_OUT);
         } else {
@@ -120,7 +128,8 @@ public class SolveService {
         } else if (resultEntity.getCode() == JudgeStatus.JUDGE_RUNTIME_ERROR.getCode() ||
                 resultEntity.getCode() == JudgeStatus.JUDGE_TIME_OUT.getCode() ||
                 resultEntity.getCode() == JudgeStatus.JUDGE_OUTPUT_OUT.getCode() ||
-                resultEntity.getCode() == JudgeStatus.JUDGE_MEMORY_OUT.getCode()
+                resultEntity.getCode() == JudgeStatus.JUDGE_MEMORY_OUT.getCode() ||
+                resultEntity.getCode() == JudgeStatus.JUDGE_WRONG_ANSWER.getCode()
         ) { // 运行时错误,超时,输出错误,内存错误将错误点的错误信息放入error字段
             record.setError(JSONObject.toJSONString(judgeResult.getErrors()));
 //            for (int i = 0; i < judgeResult.getCheckPointSize(); i++) {

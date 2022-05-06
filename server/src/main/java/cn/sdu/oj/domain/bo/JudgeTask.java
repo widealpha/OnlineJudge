@@ -9,6 +9,12 @@ public class JudgeTask {
     private boolean specialJudge;
     private LanguageEnum specialJudgeLanguage;
 
+    /**
+     * 是否是测试判题模式
+     */
+    private boolean testMode = false;
+    private String testInput;
+
     public LanguageEnum getLanguage() {
         return language;
     }
@@ -63,6 +69,22 @@ public class JudgeTask {
 
     public void setSpecialJudgeLanguage(LanguageEnum specialJudgeLanguage) {
         this.specialJudgeLanguage = specialJudgeLanguage;
+    }
+
+    public boolean isTestMode() {
+        return testMode;
+    }
+
+    public void setTestMode(boolean testMode) {
+        this.testMode = testMode;
+    }
+
+    public String getTestInput() {
+        return testInput;
+    }
+
+    public void setTestInput(String testInput) {
+        this.testInput = testInput;
     }
 
     @Override

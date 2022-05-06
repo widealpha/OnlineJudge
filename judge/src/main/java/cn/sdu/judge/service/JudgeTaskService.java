@@ -28,7 +28,7 @@ public class JudgeTaskService {
         JudgeResult judgeResult = new JudgeResult();
         judgeResult.setTaskId(task.getTaskId());
         judgeResult.setProblemId(task.getProblemId());
-        judgeResult.setCheckPointSize(0);
+        judgeResult.setCheckpointSize(0);
 
         if (taskRecordMapper.existTaskRecord(task.getTaskId())) {
             return ResultEntity.data(StatusCode.SAME_TASK_EXIST, judgeResult);
@@ -55,7 +55,7 @@ public class JudgeTaskService {
                 return ResultEntity.data(status, judgeResult);
             }
             //获取判题点的数量并填充到判题结果中
-            judgeResult.setCheckPointSize(checkpointList.size());
+            judgeResult.setCheckpointSize(checkpointList.size());
             judge = fetchJudgeInterface(task.getLanguage());
             CompileInfo compileInfo = judge.compile(task.getCode());
             taskRecord.setCompileInfo(JSON.toJSONString(compileInfo));
@@ -68,9 +68,9 @@ public class JudgeTaskService {
                         //返回码不为0,并且错误信息不为空,则认为该测试点运行时出错
                         if (runInfo.getExitCode() != 0 && runInfo.getError() != null && !runInfo.getError().isEmpty()) {
                             statusCode = StatusCode.JUDGE_RUNTIME_ERROR;
-                            judgeResult.getErrors().put(i, "运行时出错");
+                            judgeResult.getErrors().put(i, runInfo.getError());
                         } else {
-                            statusCode = StatusCode.COMMON_FAIL;
+                            statusCode = StatusCode.JUDGE_WRONG_ANSWER;
                             judgeResult.getErrors().put(i, "测试点未通过");
                         }
                         runInfo.setCheckpoint(checkpoint);

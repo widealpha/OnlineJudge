@@ -45,7 +45,8 @@ public interface SolveRecordMapper {
      * @param record 题解记录
      */
     @Update("UPDATE solve_record " +
-            "SET `memory` = #{memory}, cpu_time = #{cpuTime}, error = #{error}, `status` = #{status} " +
+            "SET `memory` = #{memory}, cpu_time = #{cpuTime}, " +
+            "checkpoint_size = #{checkpointSize}, total_correct = #{totalCorrect}, error = #{error}, `status` = #{status} " +
             "WHERE id = #{id}")
     boolean updateSolveRecordByPrimaryKey(SolveRecord record);
 

@@ -41,21 +41,11 @@ public class ResultEntity {
     }
 
     public static ResultEntity data(StatusCode statusCode) {
-        if (statusCode == StatusCode.SUCCESS) {
-            return new ResultEntity(statusCode.getCode(), statusCode.getMessage(), true);
-        } else {
-            return new ResultEntity(statusCode.getCode(), statusCode.getMessage(), false);
-        }
+        return new ResultEntity(statusCode.getCode(), statusCode.getMessage(),null);
     }
 
     public static ResultEntity data(StatusCode statusCode, Object data) {
-        if (data != null) {
-            return new ResultEntity(statusCode.getCode(), statusCode.getMessage(), data);
-        } else if (statusCode == StatusCode.SUCCESS) {
-            return new ResultEntity(statusCode.getCode(), statusCode.getMessage(), true);
-        } else {
-            return new ResultEntity(statusCode.getCode(), statusCode.getMessage(), false);
-        }
+        return new ResultEntity(statusCode.getCode(), statusCode.getMessage(), data);
     }
 
     public static ResultEntity data() {

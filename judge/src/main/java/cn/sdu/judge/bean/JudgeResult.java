@@ -6,8 +6,7 @@ import java.util.Map;
 public class JudgeResult {
     private String taskId;
     private int problemId;
-
-    private int checkPointSize;
+    private int checkpointSize;
     private Map<Integer, JudgeLimit> details;
     private Map<Integer, String> errors;
 
@@ -32,12 +31,12 @@ public class JudgeResult {
         this.problemId = problemId;
     }
 
-    public int getCheckPointSize() {
-        return checkPointSize;
+    public int getCheckpointSize() {
+        return checkpointSize;
     }
 
-    public void setCheckPointSize(int checkPointSize) {
-        this.checkPointSize = checkPointSize;
+    public void setCheckpointSize(int checkpointSize) {
+        this.checkpointSize = checkpointSize;
     }
 
     public Map<Integer, JudgeLimit> getDetails() {

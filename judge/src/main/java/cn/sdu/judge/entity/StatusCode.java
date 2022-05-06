@@ -10,12 +10,12 @@ public enum StatusCode {
     JUDGE_OUTPUT_OUT(5, "评测输出超限"),
     JUDGE_COMPILE_ERROR(6, "编译错误"),
     JUDGE_RUNTIME_ERROR(7, "运行时出错错误"),
-    JUDGE_SYSTEM_ERROR(8, "系统错误"),
+    JUDGE_WRONG_ANSWER(8, "测试点未通过"),
 
     SAME_TASK_EXIST(300, "相同任务已被提交"),
     PROBLEM_NOT_EXIST(501, "请求的判题不存在"),
     /* 默认失败 */
-    COMMON_FAIL(500, "失败");
+    JUDGE_SYSTEM_ERROR(500, "系统错误");
 
 
     private Integer code;
