@@ -59,7 +59,7 @@ public class ProblemController {
     public ResultEntity addTestPoints(
             @ApiParam("问题id") @RequestParam int problemId,
             @ApiParam("sha256校验码") @RequestParam String sha256,
-            @ApiParam("sha256校验码") @RequestParam MultipartFile file) throws Exception {
+             MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) {
             return ResultEntity.error("file is null");
         }

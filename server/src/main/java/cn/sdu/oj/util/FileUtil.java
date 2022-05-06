@@ -1,11 +1,27 @@
 package cn.sdu.oj.util;
 
 
+import com.jcraft.jsch.JSchException;
+
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class FileUtil {
+
+    public static byte[] getAllBytes(File file) throws Exception {
+        ByteArrayOutputStream byteArrayOs = new ByteArrayOutputStream();
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buf)) > 0) {
+            byteArrayOs.write(buf, 0, len);
+        }
+        return byteArrayOs.toByteArray();
+    }
+
     public static String getSHA256(byte[] data) throws Exception {
 
         MessageDigest digest;
@@ -57,20 +73,32 @@ public class FileUtil {
     }
 
     public static void createFile(String dirPath, String prefix, String suffix, byte[] data) throws IOException {
-        File file = new File(ROOT_PATH + SEPARATOR + dirPath + SEPARATOR + prefix + "." + suffix);
+        // File file = new File(ROOT_PATH + SEPARATOR + dirPath + SEPARATOR + prefix + "." + suffix);
         // 设置文件权限
-        file.setExecutable(true, false);
-        file.setReadable(true, false);
-        file.setWritable(true, false);
+        // file.setExecutable(true, false);
+        // file.setReadable(true, false);
+        // file.setWritable(true, false);
         // 如果文件已经存在 删除源文件
-        if (file.exists()) {
-            file.delete();
-        }
-        file.createNewFile();
-        FileOutputStream os = new FileOutputStream(file);
+        // if (file.exists()) {
+        //     file.delete();
+        // }
+        Path path = Files.createTempFile(prefix, "." + suffix);
+
+        File tempFile = path.toFile();
+        String name = tempFile.getName();
+        tempFile.renameTo(new File(tempFile.getAbsolutePath().replace(name, prefix + "." + suffix)));
+        System.out.println(tempFile.getAbsolutePath());
+
+        // file.createNewFile();
+        FileOutputStream os = new FileOutputStream(tempFile);
         os.write(data);
         os.flush();
         os.close();
+        try {
+            SFTPUtil.upload(tempFile.getAbsolutePath(), "/sduoj_sftp/" + dirPath);
+        } catch (JSchException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void deleteFile(String absolutePath) {
