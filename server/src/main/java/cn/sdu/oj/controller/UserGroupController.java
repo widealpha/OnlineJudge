@@ -19,7 +19,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/UserGroup")
+@RequestMapping("/userGroup")
 @Api(value = "用户组接口", tags = "用户组接口")
 public class UserGroupController {                  // TODO 权限
     @Autowired
@@ -73,7 +73,7 @@ public class UserGroupController {                  // TODO 权限
     @PostMapping("/addMemberToUserGroup")
     public ResultEntity addMemberToUserGroup(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
-            @ApiParam(value = "人员ID列表") @RequestParam(required = true) List<Integer> member ,
+            @ApiParam(value = "人员ID列表",type = "List<Integer>") @RequestParam(required = true) List<Integer> member ,
             @ApiIgnore @AuthenticationPrincipal User user) {
         return ResultEntity.data( UserGroupService.addMemberToUserGroup(user.getId(),id,member));
     }
@@ -95,7 +95,7 @@ public class UserGroupController {                  // TODO 权限
     }
 
     @ApiOperation("查询我创建的用户组人员ID列表")
-    @PostMapping("/getUserGroupMembers")
+    @PostMapping("/getUserGroupM@")
     public ResultEntity getUserGroupMembers(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id ,
             @ApiIgnore @AuthenticationPrincipal User user) {

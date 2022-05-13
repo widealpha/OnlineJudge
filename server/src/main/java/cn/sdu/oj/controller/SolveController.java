@@ -25,7 +25,7 @@ public class SolveController {
     private SolveService solveService;
 
     @ApiOperation("提交判题代码")
-    @PostMapping("trySolveProblem")
+    @PostMapping("trySolveProblem1")
     @PreAuthorize("hasRole('COMMON')")
     ResultEntity trySolveProblem(@ApiIgnore @AuthenticationPrincipal User user,
                                  @ApiParam("题目Id") @RequestParam int problemId,
@@ -43,7 +43,7 @@ public class SolveController {
     }
 
     @ApiOperation("提交判题代码")
-    @PostMapping("trySolveProblem")
+    @PostMapping("trySolveProblem2")
     @PreAuthorize("hasRole('COMMON')")
     ResultEntity runCodeTest(@ApiIgnore @AuthenticationPrincipal User user,
                              @ApiParam("题目Id") @RequestParam int problemId,
