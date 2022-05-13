@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SFTPUtil {
-
     Session session = null;
     Channel channel = null;
     final String sftpHost = "121.196.101.7";

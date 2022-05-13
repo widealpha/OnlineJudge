@@ -11,6 +11,9 @@ import java.security.NoSuchAlgorithmException;
 
 public class FileUtil {
 
+    private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";
+    public static final String SEPARATOR = "/";
+
     public static byte[] getAllBytes(File file) throws Exception {
         ByteArrayOutputStream byteArrayOs = new ByteArrayOutputStream();
         FileInputStream inputStream = new FileInputStream(file);
@@ -43,9 +46,6 @@ public class FileUtil {
         }
     }
 
-    private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";
-    public static final String SEPARATOR = "/";
-
     public static boolean isExist(String path) {
         /**
          * 文件是否存在 这个路径是相对路径 第一个文件不带/
@@ -73,15 +73,7 @@ public class FileUtil {
     }
 
     public static void createFile(String dirPath, String prefix, String suffix, byte[] data) throws IOException {
-        // File file = new File(ROOT_PATH + SEPARATOR + dirPath + SEPARATOR + prefix + "." + suffix);
-        // 设置文件权限
-        // file.setExecutable(true, false);
-        // file.setReadable(true, false);
-        // file.setWritable(true, false);
-        // 如果文件已经存在 删除源文件
-        // if (file.exists()) {
-        //     file.delete();
-        // }
+
         Path path = Files.createTempFile(prefix, "." + suffix);
 
         File tempFile = path.toFile();
