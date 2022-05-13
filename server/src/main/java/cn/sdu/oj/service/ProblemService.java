@@ -2,7 +2,10 @@ package cn.sdu.oj.service;
 
 import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
 import cn.sdu.oj.dao.ProblemMapper;
+import cn.sdu.oj.domain.bo.ProblemWithInfo;
+import cn.sdu.oj.domain.po.NonProgramProblem;
 import cn.sdu.oj.domain.po.ProblemLimit;
+import cn.sdu.oj.domain.po.ProgramProblem;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
@@ -18,21 +21,45 @@ public class ProblemService {
     @Autowired
     private ProblemMapper problemMapper;
 
-    public int addProblem(AddProblemParam param) {
-        problemMapper.addProblem(param);
-        if (param.getTags() != null) {
+    public int addProblem(ProblemWithInfo problemWithInfo) {
+        // 0编程 1选择 答案 2填空 答案
+        if (problemWithInfo.getType().equals(0)) {
+            //编程题
+            ProgramProblem programProblem = new ProgramProblem(null,
+                    problemWithInfo.getName(),
+                    problemWithInfo.getDescription(),
+                    problemWithInfo.getExample(),
+                    problemWithInfo.getDifficulty(),
+                    problemWithInfo.getIsOpen(),
+                    problemWithInfo.getTip(),
+                    problemWithInfo.getAuthor());
+            problemMapper.addProgramProblem(programProblem);
+            problemWithInfo.setId(programProblem.getId());
+        } else {
+            //非编程题
+            NonProgramProblem nonProgramProblem = new NonProgramProblem(null,
+                    problemWithInfo.getName(),
+                    problemWithInfo.getDescription(),
+                    problemWithInfo.getExample(),
+                    problemWithInfo.getDifficulty(),
+                    problemWithInfo.getIsOpen(),
+                    problemWithInfo.getTip(),
+                    problemWithInfo.getAuthor(),
+                    problemWithInfo.getAnswer());
+            problemMapper.addNonProgramProblem(nonProgramProblem);
+            problemWithInfo.setId(nonProgramProblem.getId());
+        }
+        if (problemWithInfo.getTags() != null) {
             // 插入标签
-            String tags = param.getTags();
+            String tags = problemWithInfo.getTags();
             String[] tagArr = tags.split("_");
             for (int i = 0; i < tagArr.length; i++) {
-                problemMapper.addTag(param.getId(), Integer.parseInt(tagArr[i]));
+                problemMapper.addTag(problemWithInfo.getId(), Integer.parseInt(tagArr[i]), problemWithInfo.getType());
             }
         }
-        // 0编程 1选择 答案 2填空 答案
-        if (param.getType() > 0) {
-            problemMapper.addAnswer(param.getId(), param.getAnswer());
-        }
-        return param.getId();
+
+
+        return problemWithInfo.getId();
 
     }
 
@@ -57,12 +84,52 @@ public class ProblemService {
         return problemMapper.getProblemLimitByProblemId(problemId);
     }
 
-    public void deleteProblem(int u_id, int p_id) {
-        problemMapper.deleteProblem(u_id, p_id);
+    public void deleteProblem(int u_id, int p_id, int type) {
+        if (type == 0) {
+            //删除题目限制
+            problemMapper.deleteProgramProblem(u_id, p_id);
+        } else {
+            problemMapper.deleteNonProgramProblem(u_id, p_id);
+        }
+        // 删除标签
+        problemMapper.deleteTag(p_id, type);
     }
 
-    public void updateProblem(AddProblemParam param) {
-        problemMapper.updateProblem(param);
+    public void updateProblem(ProblemWithInfo problemWithInfo) {
+        if (problemWithInfo.getType().equals(0)) {
+            //编程题
+            ProgramProblem programProblem = new ProgramProblem(null,
+                    problemWithInfo.getName(),
+                    problemWithInfo.getDescription(),
+                    problemWithInfo.getExample(),
+                    problemWithInfo.getDifficulty(),
+                    problemWithInfo.getIsOpen(),
+                    problemWithInfo.getTip(),
+                    problemWithInfo.getAuthor());
+            problemMapper.updateProgramProblem(programProblem);
+        } else {
+            //非编程题
+            NonProgramProblem nonProgramProblem = new NonProgramProblem(null,
+                    problemWithInfo.getName(),
+                    problemWithInfo.getDescription(),
+                    problemWithInfo.getExample(),
+                    problemWithInfo.getDifficulty(),
+                    problemWithInfo.getIsOpen(),
+                    problemWithInfo.getTip(),
+                    problemWithInfo.getAuthor(),
+                    problemWithInfo.getAnswer());
+            problemMapper.updateNonProgramProblem(nonProgramProblem);
+        }
+        // 先删除之前的标签
+        problemMapper.deleteTag(problemWithInfo.getId(), problemWithInfo.getType());
+        if (problemWithInfo.getTags() != null) {
+            // 插入标签
+            String tags = problemWithInfo.getTags();
+            String[] tagArr = tags.split("_");
+            for (int i = 0; i < tagArr.length; i++) {
+                problemMapper.addTag(problemWithInfo.getId(), Integer.parseInt(tagArr[i]), problemWithInfo.getType());
+            }
+        }
     }
 
     public void addTestPoints(int p_id, MultipartFile file, String sha256) throws Exception {
