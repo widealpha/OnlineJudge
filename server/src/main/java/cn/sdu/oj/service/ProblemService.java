@@ -5,6 +5,7 @@ import cn.sdu.oj.dao.ProblemMapper;
 import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.util.FileUtil;
+import cn.sdu.oj.util.SFTPUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
@@ -65,10 +66,17 @@ public class ProblemService {
     }
 
     public void addTestPoints(int p_id, MultipartFile file, String sha256) throws Exception {
-        FileUtil.createDir(FileUtil.SEPARATOR + p_id);
-        String fileName = "checkpoints";
-        FileUtil.createFile(FileUtil.SEPARATOR + p_id, fileName, "zip", file.getBytes());
-        FileUtil.createFile(FileUtil.SEPARATOR + p_id, fileName, "sha256", sha256.getBytes(StandardCharsets.UTF_8));
+        // 校验内部文件的正确性
+        FileUtil.verifyZipFormat(file.getBytes());
+        // 初始化目标目标文件夹
+        StringBuffer destinationDir = new StringBuffer(SFTPUtil.ROOT_PATH);
+        destinationDir.append(SFTPUtil.SEPARATOR + p_id);
+        // 初始化工具类
+        SFTPUtil sftpUtil = new SFTPUtil();
+        // 1、写入压缩包
+        sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
+        // 2、写入SHA256
+        sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
 
     }
 

@@ -1,13 +1,19 @@
 package cn.sdu.oj.util;
 
 
+import cn.sdu.oj.exception.FileVerifyBadException;
 import com.jcraft.jsch.JSchException;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class FileUtil {
 
@@ -97,5 +103,41 @@ public class FileUtil {
         new File(ROOT_PATH + absolutePath).delete();
     }
 
+    public static void verifyZipFormat(byte[] data) throws Exception {
+        // 写完才发现不需要写临时文件 焯
+        // Path tmpPath = Files.createTempFile("tmp", ".zip");
+        // File tmpFile = tmpPath.toFile();
+        // FileOutputStream outputStream = new FileOutputStream(tmpFile);
+        // outputStream.write(data);
+        // outputStream.flush();
+        // outputStream.close();
+        // String absolutePath = tmpFile.getAbsolutePath();
+        // System.out.println(absolutePath);
+
+        //构建解压输入流
+        // Charset.forName("GBK") 不加这一句会因为编码问题报错
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+        ZipInputStream zin = new ZipInputStream(inputStream, Charset.forName("GBK"));
+        ZipEntry entry = null;
+        List<String> input = new ArrayList<>();
+        List<String> output = new ArrayList<>();
+        while ((entry = zin.getNextEntry()) != null) {
+            String name = entry.getName();
+            if (name.contains(".in")) {
+                input.add(name);
+            } else {
+                output.add(name);
+            }
+        }
+        zin.close();
+        inputStream.close();
+        //校验规则，每个in都要有对应的out
+        for (String in : input) {
+            String name = in.split("\\.")[0];
+            if (!output.contains(name)) {
+                throw new FileVerifyBadException("文件校验未通过");
+            }
+        }
+    }
 
 }

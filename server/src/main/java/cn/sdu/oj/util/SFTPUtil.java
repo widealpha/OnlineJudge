@@ -1,6 +1,8 @@
 package cn.sdu.oj.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SFTPUtil {
+    public static final String ROOT_PATH = "/sduoj_sftp";
+    public static final String SEPARATOR = "/";
     Session session = null;
     Channel channel = null;
     final String sftpHost = "121.196.101.7";
@@ -189,6 +193,26 @@ public class SFTPUtil {
         } catch (SftpException e) {
             log.info("判断文件: " + targetFilePath + " 类型出错. " + e.getMessage());
         }
+
+    }
+
+    public void uploadSingleFile(byte[] data, String destinationDir, String fileName) throws Exception {
+        SFTPUtil sftpUtil = new SFTPUtil();
+        ChannelSftp channel = sftpUtil.getChannelSftp();
+        // 获取输入流
+        InputStream input = new ByteArrayInputStream(data);
+        long start = System.currentTimeMillis();
+        try {
+            //如果文件夹不存在，则创建文件夹
+            //切换到指定文件夹
+            channel.cd(destinationDir);
+        } catch (SftpException e) {
+            //创建不存在的文件夹，并切换到文件夹
+            channel.mkdir(destinationDir);
+            channel.cd(destinationDir);
+        }
+        channel.put(input, fileName);
+        log.info("文件上传成功！！ 耗时：{}ms", (System.currentTimeMillis() - start));
 
     }
 }
