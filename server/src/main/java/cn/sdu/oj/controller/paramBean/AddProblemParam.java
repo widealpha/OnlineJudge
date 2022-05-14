@@ -1,4 +1,4 @@
-package cn.sdu.oj.controller.paramBean.problem;
+package cn.sdu.oj.controller.paramBean;
 
 import cn.sdu.oj.util.Default;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @NoArgsConstructor
 @Data
 @Default
+@Deprecated
 public class AddProblemParam {
 
     private Integer id;
