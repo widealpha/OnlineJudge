@@ -22,6 +22,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.Nonnull;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RequestHeaderRequestMatcher requiresAuthenticationRequestMatcher;
@@ -56,7 +56,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(@Nonnull HttpServletRequest request,
+                                    @Nonnull HttpServletResponse response,
+                                    @Nonnull FilterChain chain) throws IOException, ServletException {
         //不需要鉴权的请求直接放行
         if (!requiresAuthentication(request)) {
             chain.doFilter(request, response);
@@ -74,11 +76,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Date date = jwtUtil.getIssuedAt(token);
                 String logoutTime = redisUtil.get("logout:" + jwtUtil.getUserId(token));
                 // 判断用户退出的时间，退出之后所有签发在退出之前的token失效
-                if (logoutTime != null && date.before(new Date(Long.parseLong(logoutTime)))){
+                if (logoutTime != null && date.before(new Date(Long.parseLong(logoutTime)))) {
                     throw new JwtException("token失效");
                 }
                 UsernamePasswordAuthenticationToken authentication = getAuthentication(tokenHeader);
-                if (authentication == null){
+                if (authentication == null) {
                     throw new JwtException("token不完整");
                 }
                 SecurityContextHolder.getContext().setAuthentication(authentication);

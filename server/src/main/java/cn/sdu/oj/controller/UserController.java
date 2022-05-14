@@ -13,33 +13,35 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.annotation.Resource;
+
 @RestController
 @RequestMapping("/user")
 @Api(value = "用户接口", tags = "用户接口")
 public class UserController {
-    @Autowired
+    @Resource
     private UserService userService;
 
     @ApiOperation("用户注册")
     @PostMapping("/register")
-    public ResultEntity register(
+    public ResultEntity<Boolean> register(
             @ApiParam(value = "用户名") @RequestParam String username,
             @ApiParam(value = "密码") @RequestParam String password) {
-        return ResultEntity.data(userService.register(username, password, null), null);
+        return userService.register(username, password, null);
     }
 
     @ApiOperation("邮箱注册")
     @PostMapping("/email_register")
-    public ResultEntity mailRegister(
+    public ResultEntity<Boolean> mailRegister(
             @ApiParam(value = "邮箱") @RequestParam String email,
             @ApiParam(value = "验证码") @RequestParam String code,
             @ApiParam(value = "密码") @RequestParam String password) {
-        return ResultEntity.data(userService.emailRegister(email, code, password), null);
+        return userService.emailRegister(email, code, password);
     }
 
     @ApiOperation("发送邮箱验证码")
     @PostMapping("/send_validate_code")
-    public ResultEntity sendValidateCode(@ApiParam(value = "邮箱") @RequestParam String email) {
+    public ResultEntity<Void> sendValidateCode(@ApiParam(value = "邮箱") @RequestParam String email) {
         userService.sendRegisterValidateCode(email);
         return ResultEntity.data(StatusCode.SUCCESS, null);
     }
@@ -47,8 +49,8 @@ public class UserController {
     @ApiOperation(value = "注销登录", authorizations = {@Authorization("common")})
     @PostMapping("/logout")
     @PreAuthorize("hasRole('COMMON')")
-    public ResultEntity logout(@ApiIgnore @AuthenticationPrincipal User user) {
-        return ResultEntity.data(userService.logout(user), null);
+    public ResultEntity<Boolean> logout(@ApiIgnore @AuthenticationPrincipal User user) {
+        return userService.logout(user);
     }
 
     /**

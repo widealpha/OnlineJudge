@@ -4,6 +4,7 @@ import cn.sdu.oj.dao.UserInfoMapper;
 import cn.sdu.oj.dao.UserMapper;
 import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.domain.vo.User;
+import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.util.JwtUtil;
 import cn.sdu.oj.util.RedisUtil;
@@ -41,11 +42,11 @@ public class UserService {
     String emailFrom;
 
     @Transactional
-    public StatusCode register(String username, String password, String email) {
+    public ResultEntity<Boolean> register(String username, String password, String email) {
         if (username.isEmpty() || password.isEmpty()) {
-            return StatusCode.PARAM_EMPTY;
+            return ResultEntity.data(StatusCode.PARAM_EMPTY, false);
         } else if (!StringUtil.allLetter(username)) {
-            return StatusCode.PARAM_NOT_VALID;
+            return ResultEntity.data(StatusCode.PARAM_NOT_VALID, false);
         }
         User user = new User(username, passwordEncoder.encode(password));
         try {
@@ -55,33 +56,33 @@ public class UserService {
             userInfo.setName(username);
             userInfo.setEmail(email);
             userInfoMapper.insertUserInfo(userInfo);
-            return StatusCode.SUCCESS;
+            return ResultEntity.data(StatusCode.SUCCESS, true);
         } catch (DuplicateKeyException e) {
-            return StatusCode.USER_ACCOUNT_ALREADY_EXIST;
+            return ResultEntity.data(StatusCode.USER_ACCOUNT_ALREADY_EXIST, false);
         }
     }
 
     @Transactional
-    public StatusCode emailRegister(String email, String code, String password) {
+    public ResultEntity<Boolean> emailRegister(String email, String code, String password) {
         if (email.isEmpty() || password.isEmpty()) {
-            return StatusCode.PARAM_EMPTY;
+            return ResultEntity.data(StatusCode.PARAM_EMPTY, false);
         }
         if (!validateRegisterCode(email, code)) {
-            return StatusCode.VALIDATE_ERROR;
+            return ResultEntity.data(StatusCode.VALIDATE_ERROR, false);
         } else {
             String username = UUID.randomUUID().toString().replace("-", "");
-            StatusCode statusCode = register(username, password, email);
-            if (statusCode == StatusCode.SUCCESS) {
+            ResultEntity<Boolean> result = register(username, password, email);
+            if (result.getData()) {
                 redisUtil.delete("register:" + email);
             }
-            return statusCode;
+            return ResultEntity.data(StatusCode.SUCCESS, true);
         }
     }
 
-    public StatusCode logout(User user) {
+    public ResultEntity<Boolean> logout(User user) {
         String redisKey = "logout:" + user.getId();
         redisUtil.setEx(redisKey, String.valueOf(System.currentTimeMillis()), jwtUtil.EXPIRATION, TimeUnit.SECONDS);
-        return StatusCode.SUCCESS;
+        return ResultEntity.data(StatusCode.SUCCESS, true);
     }
 
     @Async
