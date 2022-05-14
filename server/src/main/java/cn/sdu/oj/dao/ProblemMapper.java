@@ -85,6 +85,6 @@ public interface ProblemMapper {
     @Select("SELECT * FROM tag WHERE PARENT=#{parentId} ")
     List<Tag> getChildrenTagByParentId(int parentId);
 
-    @Select("SELECT COUNT(*) FROM problem WHERE ID=#{problemId} AND IS_DELETE=0")
+    @Select("SELECT COUNT(*) FROM program_problem WHERE ID=#{problemId} AND STATUS=0")
     boolean isProblemExist(int problemId);
 }
