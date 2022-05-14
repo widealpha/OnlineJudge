@@ -1,6 +1,5 @@
 package cn.sdu.oj.controller;
 
-import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
 import cn.sdu.oj.domain.bo.ProblemWithInfo;
 import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.vo.User;
@@ -107,7 +106,12 @@ public class ProblemController {
     @ApiOperation("添加题目限制")
     @PostMapping("/addProblemLimit")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity addProblemLimit(@ApiParam("问题id") @RequestParam Integer problemId, int time, int memory, int text) {
+    public ResultEntity addProblemLimit(
+            @ApiParam("问题id") @RequestParam Integer problemId,
+            @ApiParam("运行时间") int time,
+            @ApiParam("运行内存") int memory,
+            @ApiParam("代码长度") int text) {
+
         if (problemId == null) {
             return ResultEntity.error("problemId is null");
         }
@@ -116,5 +120,7 @@ public class ProblemController {
         return ResultEntity.success();
 
     }
+    // TODO: 2022/5/13 获取完整题目信息
+
 
 }
