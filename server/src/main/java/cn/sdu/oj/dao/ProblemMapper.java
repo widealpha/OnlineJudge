@@ -1,10 +1,9 @@
 package cn.sdu.oj.dao;
 
-import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
-import cn.sdu.oj.domain.po.NonProgramProblem;
-import cn.sdu.oj.domain.po.ProblemLimit;
-import cn.sdu.oj.domain.po.ProgramProblem;
+import cn.sdu.oj.domain.po.*;
 import org.apache.ibatis.annotations.*;
+
+import java.util.List;
 
 @Mapper
 public interface ProblemMapper {
@@ -26,9 +25,6 @@ public interface ProblemMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int addProblemLimit(ProblemLimit limit);
 
-    @Select("SELECT PROBLEM_ID,TIME,MEMORY,TEXT FROM problem_limit WHERE PROBLEM_ID=#{problemId} AND STATUS=0")
-    ProblemLimit getProblemLimitByProblemId(int problemId);
-
 
     @Update("UPDATE program_problem SET IS_DELETE=1 WHERE AUTHOR=#{u_id} AND ID=#{p_id}")
     int deleteProgramProblem(int u_id, int p_id);
@@ -44,4 +40,23 @@ public interface ProblemMapper {
 
     @Select("SELECT 1 FROM program_problem WHERE ID=#{problemId} AND STATUS=0")
     Integer isProblemExist(int problemId);
+
+    @Select("SELECT * FROM program_problem WHERE ID=#{id} ")
+    ProgramProblem getProgramProblemById(int id);
+
+    @Select("SELECT * FROM non_program_problem WHERE ID=#{id} ")
+    NonProgramProblem getNonProgramProblemById(int id);
+
+    @Select("SELECT * FROM tag WHERE ID IN " +
+            "(SELECT  T_ID FROM problem_tag WHERE P_ID =#{problemId} AND TYPE=#{type} AND STATUS=0)")
+    List<Tag> getTagListByProblemIdAndType(int problemId, int type);
+
+    @Select("SELECT * FROM problem_limit WHERE PROBLEM_ID=#{problemId} AND STATUS=0")
+    ProblemLimit getProblemLimitByProblemId(int problemId);
+
+    @Select("SELECT U.* FROM user_info U JOIN program_problem P ON (P.AUTHOR=U.USER_ID) WHERE P.ID=#{problemId}  ")
+    UserInfo getAuthorNameByProgramProblemId(int problemId);
+
+    @Select("SELECT U.* FROM user_info U JOIN non_program_problem P ON (P.AUTHOR=U.USER_ID) WHERE P.ID=#{problemId}  ")
+    UserInfo getAuthorNameByNonProgramProblemId(int problemId);
 }

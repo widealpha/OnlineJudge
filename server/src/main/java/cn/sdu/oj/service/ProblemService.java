@@ -1,11 +1,9 @@
 package cn.sdu.oj.service;
 
-import cn.sdu.oj.controller.paramBean.problem.AddProblemParam;
 import cn.sdu.oj.dao.ProblemMapper;
+import cn.sdu.oj.domain.bo.Problem;
 import cn.sdu.oj.domain.bo.ProblemWithInfo;
-import cn.sdu.oj.domain.po.NonProgramProblem;
-import cn.sdu.oj.domain.po.ProblemLimit;
-import cn.sdu.oj.domain.po.ProgramProblem;
+import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 public class ProblemService {
@@ -80,7 +79,7 @@ public class ProblemService {
      * @param problemId
      * @return
      */
-    ProblemLimit getProblemLimitByProblemId(int problemId) {
+    public ProblemLimit getProblemLimitByProblemId(int problemId) {
         return problemMapper.getProblemLimitByProblemId(problemId);
     }
 
@@ -163,5 +162,28 @@ public class ProblemService {
 
     }
 
+    public Problem getProblemByProblemIdAndType(int problemId, int type) {
+        if (type == 0) {
+            ProgramProblem problem = problemMapper.getProgramProblemById(problemId);
+            return problem;
+        } else {
+            NonProgramProblem problem = problemMapper.getNonProgramProblemById(problemId);
+            return problem;
+        }
+
+    }
+
+    public List<Tag> getTagListByProblemIdAndType(int problemId, int type) {
+        List<Tag> tagListByProblemIdAndType = problemMapper.getTagListByProblemIdAndType(problemId, type);
+        return tagListByProblemIdAndType;
+    }
+
+    public UserInfo getAuthorInfoByProblemIdAndType(int problemId, int type) {
+        if (type == 0) {
+            return problemMapper.getAuthorNameByProgramProblemId(problemId);
+        } else {
+            return problemMapper.getAuthorNameByNonProgramProblemId(problemId);
+        }
+    }
 
 }

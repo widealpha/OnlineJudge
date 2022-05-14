@@ -1,12 +1,17 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.bo.Problem;
 import cn.sdu.oj.domain.bo.ProblemWithInfo;
 import cn.sdu.oj.domain.po.ProblemLimit;
+import cn.sdu.oj.domain.po.Tag;
+import cn.sdu.oj.domain.po.UserInfo;
+import cn.sdu.oj.domain.vo.ProbelmInfoVo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.service.ProblemService;
 import cn.sdu.oj.util.FileUtil;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -120,7 +127,19 @@ public class ProblemController {
         return ResultEntity.success();
 
     }
-    // TODO: 2022/5/13 获取完整题目信息
 
+    @PostMapping("/getProblemAllInfoByProblemIdAndType")
+    @ApiOperation("获取题目详细信息")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getProblemAllInfoByProblemIdAndType(
+            @ApiParam("问题id") @RequestParam int problemId,
+            @ApiParam("问题类型") @RequestParam int type) {
+        Problem problem = problemService.getProblemByProblemIdAndType(problemId, type);
+        List<Tag> tagList = problemService.getTagListByProblemIdAndType(problemId, type);
+        UserInfo userInfo = problemService.getAuthorInfoByProblemIdAndType(problemId, type);
+        ProblemLimit limit = problemService.getProblemLimitByProblemId(problemId);
+        ProbelmInfoVo probelmInfoVo = new ProbelmInfoVo(problem, limit, userInfo, tagList);
+        return ResultEntity.data(probelmInfoVo);
+    }
 
 }
