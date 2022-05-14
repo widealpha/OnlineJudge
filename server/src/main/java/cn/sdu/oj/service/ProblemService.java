@@ -73,6 +73,10 @@ public class ProblemService {
         return limit.getProblemId();
     }
 
+    public void updateProblemLimit(ProblemLimit limit) {
+        problemMapper.updateProblemLimit(limit);
+    }
+
     /**
      * 通过题目id查找对应题目限制
      *
@@ -81,6 +85,15 @@ public class ProblemService {
      */
     public ProblemLimit getProblemLimitByProblemId(int problemId) {
         return problemMapper.getProblemLimitByProblemId(problemId);
+    }
+
+    public List<Tag> getTopLevelTag() {
+        List<Tag> topLevelTag = problemMapper.getTopLevelTag();
+        return topLevelTag;
+    }
+
+    public List<Tag> getChildrenTagByParentId(int parentId) {
+        return problemMapper.getChildrenTagByParentId(parentId);
     }
 
     public void deleteProblem(int u_id, int p_id, int type) {
@@ -92,6 +105,7 @@ public class ProblemService {
         }
         // 删除标签
         problemMapper.deleteTag(p_id, type);
+        // TODO: 2022/5/14 删除题目限制
     }
 
     public void updateProblem(ProblemWithInfo problemWithInfo) {
@@ -175,6 +189,11 @@ public class ProblemService {
 
     public List<Tag> getTagListByProblemIdAndType(int problemId, int type) {
         List<Tag> tagListByProblemIdAndType = problemMapper.getTagListByProblemIdAndType(problemId, type);
+        return tagListByProblemIdAndType;
+    }
+
+    public List<Tag> getTagListWithPrefixByProblemIdAndType(int problemId, int type) {
+        List<Tag> tagListByProblemIdAndType = problemMapper.getTagListWithPrefixByProblemIdAndType(problemId, type);
         return tagListByProblemIdAndType;
     }
 

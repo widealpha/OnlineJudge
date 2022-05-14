@@ -135,11 +135,39 @@ public class ProblemController {
             @ApiParam("问题id") @RequestParam int problemId,
             @ApiParam("问题类型") @RequestParam int type) {
         Problem problem = problemService.getProblemByProblemIdAndType(problemId, type);
-        List<Tag> tagList = problemService.getTagListByProblemIdAndType(problemId, type);
+        List<Tag> tagList = problemService.getTagListWithPrefixByProblemIdAndType(problemId, type);
         UserInfo userInfo = problemService.getAuthorInfoByProblemIdAndType(problemId, type);
         ProblemLimit limit = problemService.getProblemLimitByProblemId(problemId);
         ProbelmInfoVo probelmInfoVo = new ProbelmInfoVo(problem, limit, userInfo, tagList);
         return ResultEntity.data(probelmInfoVo);
     }
 
+    @PostMapping("/updateProblemLimit")
+    @ApiOperation("修改问题运行限制")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity updateProblemLimit(
+            @ApiParam("问题id") @RequestParam Integer problemId,
+            @ApiParam("运行时间,单位ms") @RequestParam(required = false) int time,
+            @ApiParam("运行内存,单位KB") @RequestParam(required = false) int memory,
+            @ApiParam("代码长度") @RequestParam(required = false) int text) {
+        ProblemLimit limit = new ProblemLimit(problemId, time, memory, text);
+        problemService.updateProblemLimit(limit);
+        return ResultEntity.success();
+    }
+
+    @PostMapping("/getTopLevelTag")
+    @ApiOperation("获取顶级标签")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getTopLevelTag() {
+        List<Tag> topLevelTag = problemService.getTopLevelTag();
+        return ResultEntity.data(topLevelTag);
+    }
+
+    @PostMapping("/getChildrenTagByParentTagId")
+    @ApiOperation("根据父标签id获取子标签")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getChildrenTagByParentTagId(@ApiParam("父标签的id") @RequestParam int parentTagId) {
+        List<Tag> childrenList = problemService.getChildrenTagByParentId(parentTagId);
+        return ResultEntity.data(childrenList);
+    }
 }
