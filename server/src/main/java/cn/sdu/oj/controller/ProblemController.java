@@ -41,13 +41,13 @@ public class ProblemController {
     public ResultEntity addProblem(
             @ApiParam("题目名字") @RequestParam String name,
             @ApiParam("题目表述,题干") @RequestParam String description,
-            @ApiParam("例子") String example,
-            @ApiParam("难度") Integer difficulty,
-            @ApiParam("是否开放，0私有，1开放，默认私有") Integer isOpen,
-            @ApiParam("提示") String tip,
-            @ApiParam("标签，用下划线分割的一组id") String tags,
+            @ApiParam("例子") @RequestParam(required = false) String example,
+            @ApiParam("难度") @RequestParam(required = false) Integer difficulty,
+            @ApiParam("是否开放，0私有，1开放，默认私有") @RequestParam(required = false) Integer isOpen,
+            @ApiParam("提示") @RequestParam(required = false) String tip,
+            @ApiParam("标签，用下划线分割的一组id") @RequestParam(required = false) String tags,
             @ApiParam("类型，0为编程题，否则为非编程题") @RequestParam Integer type,
-            @ApiParam("答案，对于非编程题") String answer,
+            @ApiParam("答案，对于非编程题") @RequestParam(required = false) String answer,
             @ApiIgnore @AuthenticationPrincipal User user) {
         // 处理参数
         ProblemWithInfo info = new ProblemWithInfo(null, name, description, example, difficulty, isOpen, tip
@@ -70,16 +70,16 @@ public class ProblemController {
     @PostMapping("/updateProblem")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity updateProblem(
-            @ApiParam("题目的id") @RequestParam int id,
+            @ApiParam(value = "题目的id") @RequestParam int id,
             @ApiParam("题目名字") @RequestParam String name,
             @ApiParam("题目表述,题干") @RequestParam String description,
-            @ApiParam("例子") String example,
-            @ApiParam("难度") Integer difficulty,
-            @ApiParam("是否开放，0私有，1开放，默认私有") Integer isOpen,
-            @ApiParam("提示") String tip,
-            @ApiParam("标签，用下划线分割的一组id") String tags,
+            @ApiParam("例子") @RequestParam(required = false) String example,
+            @ApiParam("难度") @RequestParam(required = false) Integer difficulty,
+            @ApiParam("是否开放，0私有，1开放，默认私有") @RequestParam(required = false) Integer isOpen,
+            @ApiParam("提示") @RequestParam(required = false) String tip,
+            @ApiParam("标签，用下划线分割的一组id") @RequestParam(required = false) String tags,
             @ApiParam("类型，0为编程题，否则为非编程题") @RequestParam Integer type,
-            @ApiParam("答案，对于非编程题") String answer,
+            @ApiParam("答案，对于非编程题") @RequestParam(required = false) String answer,
             @ApiIgnore @AuthenticationPrincipal User user
     ) {
         // 处理参数
@@ -115,9 +115,9 @@ public class ProblemController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity addProblemLimit(
             @ApiParam("问题id") @RequestParam Integer problemId,
-            @ApiParam("运行时间") int time,
-            @ApiParam("运行内存") int memory,
-            @ApiParam("代码长度") int text) {
+            @ApiParam("运行时间,单位ms") @RequestParam(required = false) int time,
+            @ApiParam("运行内存,单位KB") @RequestParam(required = false) int memory,
+            @ApiParam("代码长度") @RequestParam(required = false) int text) {
 
         if (problemId == null) {
             return ResultEntity.error("problemId is null");
