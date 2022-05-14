@@ -41,8 +41,8 @@ public interface ProblemMapper {
     @Update("UPDATE non_program_problem SET NAME=#{name} ,DESCRIPTION=#{description} ,EXAMPLE=#{example} ,IS_OPEN=#{isOpen} ,DIFFICULTY=#{difficulty} ,TIP=#{tip},ANSWER=#{answer}   WHERE ID=#{id} AND AUTHOR=#{author} ")
     int updateNonProgramProblem(NonProgramProblem problem);
 
-    @Select("SELECT 1 FROM program_problem WHERE ID=#{problemId} AND STATUS=0")
-    Integer isProblemExist(int problemId);
+    // @Select("SELECT 1 FROM program_problem WHERE ID=#{problemId} AND STATUS=0")
+    // Integer isProblemExist(int problemId);
 
     @Select("SELECT * FROM program_problem WHERE ID=#{id} ")
     ProgramProblem getProgramProblemById(int id);
