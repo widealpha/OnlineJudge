@@ -68,7 +68,7 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
-    @ApiOperation("查看我做过的题目集") //查看我做过的题目集   //所有人可以使用
+    @ApiOperation("查看我做过的题目集") //查看我做过的题目集   //所有人可以使用  TODO
     @PostMapping("/getSelfDoneProblemSet")
     public ResultEntity getSelfDoneProblemSet(@ApiIgnore @AuthenticationPrincipal User user) {
         try {
@@ -80,5 +80,34 @@ public class ProblemSetController {                  // TODO 权限
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
     }
+
+
+    @ApiOperation("查看一个题目集的信息和题号") //查看一个题目集的信息   管理员，题目集创建者和题目集参与者可用  TODO
+    @PostMapping("/getProblemSetInfo")
+    public ResultEntity getProblemSetInfo(@ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            JSONArray jsonArray = problemSetService.getProblemSetInfo(user.getId());
+
+            return ResultEntity.success("查看一个题目集的信息和题号", jsonArray);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    @ApiOperation("查看我创建的题目集") //查看我创建的题目集   管理员，题目集创建者可用  TODO
+    @PostMapping("/getSelfCreatedProblemSet")
+    public ResultEntity getSelfCreatedProblemSet(@ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            JSONArray jsonArray = problemSetService.getSelfCreatedProblemSet(user.getId());
+
+            return ResultEntity.success("查看我创建的题目集", jsonArray);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+
 
 }

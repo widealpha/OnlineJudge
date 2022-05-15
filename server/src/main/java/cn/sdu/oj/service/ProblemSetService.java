@@ -40,4 +40,12 @@ import java.util.List;
     public JSONArray getSelfDoneProblemSet(Integer id) {
             return null;
     }
+
+    public JSONArray getProblemSetInfo(Integer id) {
+            return null;
+    }
+
+    public JSONArray getSelfCreatedProblemSet(Integer id) {
+            return null;
+    }
 }
