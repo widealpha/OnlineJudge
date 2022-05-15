@@ -9,11 +9,12 @@ import java.util.List;
 @Mapper
 public interface UserGroupMapper {
 
+    @Options(useGeneratedKeys = true,keyProperty = "id",keyColumn = "id")
     @Insert("INSERT INTO `user_group` (name,type,introduction,father_id,creator_id) VALUES(#{name},#{type},#{introduction},#{fatherId},#{creatorId})")
-    boolean createUserGroup(String name,String type,String introduction,Integer fatherId,Integer creatorId);
+    boolean createUserGroup(UserGroup userGroup);
 
     @Select("SELECT * FROM user_group WHERE id=#{id}")  //查询用户组
-    UserGroup getUserGroupById(Integer id);
+    UserGroup getUserGroupInfoById(Integer id);
 
     @Delete("UPDATE user_group SET status=-1 WHERE id=#{id}")  //删除用户组，不包含成员
     void deleteUserGroup(Integer id);
@@ -39,6 +40,9 @@ public interface UserGroupMapper {
     List<Integer> getSelfJoinedUserGroup(Integer user_id);
 
     //查询用户组人员
-    @Select("SELECT DISTINCT `user_id` FROM user_group_user WHERE user_group_id=#{UserGroup_id} AND status = 0")
+    @Select("SELECT DISTINCT `user_id` FROM user_group_user WHERE user_group_id=#{user_group_id} AND status = 0")
     List<Integer> getUserGroupMembers(Integer user_group_id);
+
+    @Update("UPDATE user_group SET children_id=#{children} WHERE id=#{user_group_id} AND status = 0")
+    void updateChildrenUserGroup(Integer user_group_id, String children);
 }
