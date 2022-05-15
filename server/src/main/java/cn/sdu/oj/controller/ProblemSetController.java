@@ -109,5 +109,18 @@ public class ProblemSetController {                  // TODO 权限
     }
 
 
+    @ApiOperation("修改题目集") //修改题目集   管理员，题目集创建者可用  TODO
+    @PostMapping("/alterProblemSetInfo")
+    public ResultEntity alterProblemSetInfo(@ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            JSONArray jsonArray = problemSetService.alterProblemSetInfo(user.getId());
+
+            return ResultEntity.success("修改题目集", jsonArray);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
 
 }

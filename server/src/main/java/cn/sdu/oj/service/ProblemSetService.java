@@ -48,4 +48,8 @@ import java.util.List;
     public JSONArray getSelfCreatedProblemSet(Integer id) {
             return null;
     }
+
+    public JSONArray alterProblemSetInfo(Integer id) {
+            return null;
+    }
 }
