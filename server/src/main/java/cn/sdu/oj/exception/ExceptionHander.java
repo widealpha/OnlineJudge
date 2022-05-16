@@ -10,19 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ExceptionHander {
     private static final Logger log = LoggerFactory.getLogger(ExceptionHander.class);
-
-    @ExceptionHandler(Exception.class)
-    public void getException(Exception e) {
-        log.error("服务器发生异常", e);
-    }
-
-    @ExceptionHandler(NullPointerException.class)
-    @ResponseBody
-    public ResultEntity getNullPointerException(NullPointerException e) {
-        log.error("发生空指针异常", e);
-        return ResultEntity.error("服务器使用了不存在的对象");
-    }
-
     @ExceptionHandler(FileVerifyBadException.class)
     @ResponseBody
     public ResultEntity getFileVerifyBadException(FileVerifyBadException e) {
