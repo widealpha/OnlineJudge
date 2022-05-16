@@ -33,7 +33,7 @@ public class ProblemLimit {
     private Integer text;
 
     private Date createTime;
-    private Date modifiedTime;
+    private Date lastModifyTime;
     private Integer status;
 
     public ProblemLimit(Integer problemId, Integer time, Integer memory, Integer text) {

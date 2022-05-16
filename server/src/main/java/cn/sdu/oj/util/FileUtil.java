@@ -1,11 +1,36 @@
 package cn.sdu.oj.util;
 
 
+import cn.sdu.oj.exception.FileVerifyBadException;
+import com.jcraft.jsch.JSchException;
+
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class FileUtil {
+
+    private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";
+    public static final String SEPARATOR = "/";
+
+    public static byte[] getAllBytes(File file) throws Exception {
+        ByteArrayOutputStream byteArrayOs = new ByteArrayOutputStream();
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buf)) > 0) {
+            byteArrayOs.write(buf, 0, len);
+        }
+        return byteArrayOs.toByteArray();
+    }
+
     public static String getSHA256(byte[] data) throws Exception {
 
         MessageDigest digest;
@@ -26,9 +51,6 @@ public class FileUtil {
             return null;
         }
     }
-
-    private static final String ROOT_PATH = "/home/sftp_root/sduoj_sftp";
-    public static final String SEPARATOR = "/";
 
     public static boolean isExist(String path) {
         /**
@@ -57,25 +79,65 @@ public class FileUtil {
     }
 
     public static void createFile(String dirPath, String prefix, String suffix, byte[] data) throws IOException {
-        File file = new File(ROOT_PATH + SEPARATOR + dirPath + SEPARATOR + prefix + "." + suffix);
-        // 设置文件权限
-        file.setExecutable(true, false);
-        file.setReadable(true, false);
-        file.setWritable(true, false);
-        // 如果文件已经存在 删除源文件
-        if (file.exists()) {
-            file.delete();
-        }
-        file.createNewFile();
-        FileOutputStream os = new FileOutputStream(file);
+
+        Path path = Files.createTempFile(prefix, "." + suffix);
+
+        File tempFile = path.toFile();
+        String name = tempFile.getName();
+        tempFile.renameTo(new File(tempFile.getAbsolutePath().replace(name, prefix + "." + suffix)));
+        System.out.println(tempFile.getAbsolutePath());
+
+        // file.createNewFile();
+        FileOutputStream os = new FileOutputStream(tempFile);
         os.write(data);
         os.flush();
         os.close();
+        try {
+            SFTPUtil.upload(tempFile.getAbsolutePath(), "/sduoj_sftp/" + dirPath);
+        } catch (JSchException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void deleteFile(String absolutePath) {
         new File(ROOT_PATH + absolutePath).delete();
     }
 
+    public static void verifyZipFormat(byte[] data) throws Exception {
+        // 写完才发现不需要写临时文件 焯
+        // Path tmpPath = Files.createTempFile("tmp", ".zip");
+        // File tmpFile = tmpPath.toFile();
+        // FileOutputStream outputStream = new FileOutputStream(tmpFile);
+        // outputStream.write(data);
+        // outputStream.flush();
+        // outputStream.close();
+        // String absolutePath = tmpFile.getAbsolutePath();
+        // System.out.println(absolutePath);
+
+        //构建解压输入流
+        // Charset.forName("GBK") 不加这一句会因为编码问题报错
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+        ZipInputStream zin = new ZipInputStream(inputStream, Charset.forName("GBK"));
+        ZipEntry entry = null;
+        List<String> input = new ArrayList<>();
+        List<String> output = new ArrayList<>();
+        while ((entry = zin.getNextEntry()) != null) {
+            String name = entry.getName();
+            if (name.contains(".in")) {
+                input.add(name);
+            } else {
+                output.add(name);
+            }
+        }
+        zin.close();
+        inputStream.close();
+        //校验规则，每个in都要有对应的out
+        for (String in : input) {
+            String name = in.split("\\.")[0];
+            if (!output.contains(name)) {
+                throw new FileVerifyBadException("文件校验未通过");
+            }
+        }
+    }
 
 }
