@@ -8,7 +8,7 @@ import java.util.List;
 @Mapper
 public interface RoleMapper {
     @Select("SELECT `role` FROM user_role WHERE user_id = #{userId} AND `status` = 0")
-    List<String> selectRolesWithUserId(Integer userId);
+    List<String> selectRolesByUserId(Integer userId);
 
     @Options(useGeneratedKeys = true, keyProperty = "id")
     @Insert("REPLACE INTO user_role (user_id, `role`, `status`) VALUES (#{userId}, #{roleId}, 0)")

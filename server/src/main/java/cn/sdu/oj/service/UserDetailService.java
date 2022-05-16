@@ -40,7 +40,7 @@ public class UserDetailService implements org.springframework.security.core.user
             user = userMapper.selectByUsername(username);
         }
         if (user != null) {
-            List<String> roles = roleMapper.selectRolesWithUserId(user.getId());
+            List<String> roles = roleMapper.selectRolesByUserId(user.getId());
             List<GrantedAuthority> authorities = new ArrayList<>();
             for (String role : roles) {
                 authorities.add(new SimpleGrantedAuthority(role));

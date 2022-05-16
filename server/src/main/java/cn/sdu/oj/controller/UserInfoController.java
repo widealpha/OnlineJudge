@@ -1,5 +1,6 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.dto.UserInfoDto;
 import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
@@ -27,7 +28,7 @@ public class UserInfoController {
     @ApiOperation("用户信息")
     @PostMapping("info")
     @PreAuthorize("hasRole('COMMON')")
-    ResultEntity<UserInfo> userInfo(@ApiIgnore @AuthenticationPrincipal User user) {
+    ResultEntity<UserInfoDto> userInfo(@ApiIgnore @AuthenticationPrincipal User user) {
         return userInfoService.userInfo(user.getId());
     }
 }
