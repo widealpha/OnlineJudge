@@ -185,7 +185,7 @@ const routes = [
         },
       },
       {
-        path: ':problemSetId/UserGroups',
+        path: ':problemSetId/userGroups',
         component: resolve => require(['./views/ProblemSet/UserGroups'], resolve),
         meta: {
           title: '开放信息'

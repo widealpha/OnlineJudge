@@ -9,7 +9,7 @@
 				<el-table v-loading="loading" :data="userList" border stripe style="width: 100%">
 					<el-table-column fixed label="名称" prop="name" show-overflow-tooltip width="150">
 					</el-table-column>
-					<el-table-column fixed label="描述" prop="introduction" show-overflow-tooltip>
+					<el-table-column fixed label="描述" prop="introduce" show-overflow-tooltip>
 					</el-table-column>
 					<el-table-column fixed label="人数" prop="num" show-overflow-tooltip width="100">
 					</el-table-column>
@@ -94,7 +94,7 @@ export default {
 	methods: {
 		async bindToUserList(id) {
 			let res = await this.$ajax.post(
-				"/UserGroup/bindStudent",
+				"/usergroup/bindStudent",
 				{
 					id: id,
 				},
@@ -114,11 +114,11 @@ export default {
 				this.createUserListDesc.trim()
 			) {
 				let res = await this.$ajax.post(
-					"/UserGroup/createUserGroup",
+					"/usergroup/createUsergroup",
 					{
 						name: this.createUserListName,
 						type: this.createUserListType,
-						introduction: this.createUserListDesc,
+						introduce: this.createUserListDesc,
 					},
 					{
 						headers: {
@@ -158,7 +158,7 @@ export default {
 				this.$message.error("分组名称不一致");
 			} else {
 				let res = await this.$ajax.post(
-					"/UserGroup/deleteUserGroup",
+					"/usergroup/deleteUsergroup",
 					{
 						id: this.userList[this.index].id,
 					},
@@ -186,7 +186,7 @@ export default {
 		async getUserList() {
 			this.loading = true;
 			let res = await this.$ajax.post(
-				"/UserGroup/getMyUserGroup",
+				"/usergroup/getMyUsergroup",
 				{},
 				{
 					headers: {
