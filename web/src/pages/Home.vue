@@ -1,7 +1,7 @@
 <template>
 	<div class="home">
 		<ojheader />
-		<el-container>
+		<el-container style="background:#EEF2F4">
 			<ojaside :pageIndex="$route.path" />
 			<el-main>
 				<layout />

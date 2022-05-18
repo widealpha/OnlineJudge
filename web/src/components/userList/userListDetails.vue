@@ -70,7 +70,7 @@
 									描述:
 								</div>
 								<div class="input">
-									<el-input v-model="info.introduction" style="width: 100% " @blur="changeInfo">
+									<el-input v-model="info.introduce" style="width: 100% " @blur="changeInfo">
 
 									</el-input>
 								</div>
@@ -164,7 +164,7 @@ export default {
 				name: "",
 				num: null,
 				creator: "",
-				introduction: "",
+				introduce: "",
 				create_time: "",
 				type: "",
 			},
@@ -182,7 +182,7 @@ export default {
 	methods: {
 		async getInfo() {
 			let res = await this.$ajax.post(
-				"/UserGroup/getUserGroup",
+				"/usergroup/getUsergroup",
 				{
 					id: this.id,
 				},
@@ -202,7 +202,7 @@ export default {
 		},
 		async upload(data) {
 			data.append("id", this.id);
-			let res = await this.$ajax.post("/UserGroup/addStudent", data, {
+			let res = await this.$ajax.post("/usergroup/addStudent", data, {
 				headers: {
 					Authorization: `Bearer ${this.$store.state.token}`,
 					"Content-Type": "multipart/form-data",
@@ -215,11 +215,11 @@ export default {
 		},
 		async changeInfo() {
 			let res = await this.$ajax.post(
-				"/UserGroup/alterUserGroupInfo",
+				"/usergroup/alterUsergroupInfo",
 				{
 					id: this.id,
 					name: this.info.name,
-					introduction: this.info.introduction,
+					introduce: this.info.introduce,
 				},
 				{
 					headers: {
@@ -236,7 +236,7 @@ export default {
 		},
 		async deleteStu(index, rows) {
 			let res = await this.$ajax.post(
-				"/UserGroup/deleteStudent",
+				"/usergroup/deleteStudent",
 				{
 					id: this.id,
 					userId: this.stuList[index].id,

@@ -147,7 +147,7 @@ export default {
 		},
 		goToUserGroups() {
 			this.$router.push({
-				path: `/problem-set/${this.problemSetInfo.problemSetId}/UserGroups`,
+				path: `/problem-set/${this.problemSetInfo.problemSetId}/userGroups`,
 			});
 		},
 		goToRank() {
@@ -177,7 +177,7 @@ export default {
 				this.menuIndex = "-1";
 			} else if (path.indexOf("allProblems") !== -1) {
 				this.menuIndex = "-2";
-			} else if (path.indexOf("UserGroups") !== -1) {
+			} else if (path.indexOf("userGroups") !== -1) {
 				this.menuIndex = "-3";
 			} else if (path.indexOf("problemSetRank") !== -1) {
 				this.menuIndex = "-4";
