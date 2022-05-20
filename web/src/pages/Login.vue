@@ -61,19 +61,21 @@ export default {
 				}
 			);
 			if (res.status == 200) {
+				console.log(res);
 				let jwt = require("jsonwebtoken");
 				const _token = jwt.decode(res.data.data);
+			
 				let info = await this.$ajax.get(
 					"/user/myUserInfo",
 					{},
 					{
 						headers: {
-							Authorization: `Bearer ${res.data.data}`,
+							Authorization: `Bearer ${_token}`,
 						},
 					}
 				);
 				this.$store.dispatch("setMyInfo", info.data.data);
-				localStorage.setItem("token", res.data.data);
+				localStorage.setItem("token", _token);
 				this.$message({
 					title: "登录成功",
 					message: "登录成功！正在为您跳转页面...",
@@ -81,7 +83,7 @@ export default {
 					duration: 1000,
 					showClose: false,
 					onClose: () => {
-						this.$store.dispatch("setToken", res.data.data);
+						this.$store.dispatch("setToken", _token);
 						this.$store.dispatch("setNoToken", false);
 						if (_token.ROLE.indexOf("ROLE_ADMIN") != -1) {
 							this.$store.dispatch("setIsAdmin", true);
