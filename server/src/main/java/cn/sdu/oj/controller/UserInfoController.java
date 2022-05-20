@@ -7,10 +7,12 @@ import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.service.UserInfoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -28,5 +30,21 @@ public class UserInfoController {
     @PreAuthorize("hasRole('COMMON')")
     ResultEntity<UserInfoDto> userInfo(@ApiIgnore @AuthenticationPrincipal User user) {
         return userInfoService.userInfo(user.getId());
+    }
+
+    @ApiOperation("更新用户信息")
+    @PostMapping("updateInfo")
+    @PreAuthorize("hasRole('COMMON')")
+    ResultEntity<Boolean> updateUserInfo(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("昵称") @RequestParam("nickname") String nickname,
+            @ApiParam("姓名") @RequestParam("name") String name,
+            @ApiParam("头像链接") @RequestParam("avatar") String avatar) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserId(user.getId());
+        userInfo.setNickname(nickname);
+        userInfo.setAvatar(avatar);
+        userInfo.setName(name);
+        return userInfoService.updateUserInfo(userInfo);
     }
 }

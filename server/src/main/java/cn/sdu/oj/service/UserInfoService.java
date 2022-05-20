@@ -31,6 +31,18 @@ public class UserInfoService {
             userInfoDto.setRoles(roles);
             return ResultEntity.data(userInfoDto);
         }
+    }
 
+    public ResultEntity<Boolean> updateUserInfo(UserInfo userInfo) {
+        UserInfo info = userInfoMapper.selectByUserId(userInfo.getUserId());
+        if (info == null) {
+            return ResultEntity.error(StatusCode.USER_ACCOUNT_NOT_EXIST);
+        } else {
+            info.setName(userInfo.getName());
+            info.setAvatar(userInfo.getAvatar());
+            info.setNickname(userInfo.getNickname());
+            return ResultEntity.data(userInfoMapper.updateUserInfo(info));
+
+        }
     }
 }
