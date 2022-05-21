@@ -21,6 +21,9 @@ public class UserInfoDto {
 
     private Integer userId;
 
+    //用户名
+    private String username;
+
     //姓名
     private String name;
 
@@ -52,6 +55,14 @@ public class UserInfoDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getAvatar() {
