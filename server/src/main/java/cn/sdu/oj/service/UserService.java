@@ -53,7 +53,6 @@ public class UserService {
             userMapper.insert(user);
             UserInfo userInfo = new UserInfo();
             userInfo.setUserId(user.getId());
-            userInfo.setName(username);
             userInfo.setEmail(email);
             userInfoMapper.insertUserInfo(userInfo);
             return ResultEntity.data(StatusCode.SUCCESS, true);

@@ -28,18 +28,18 @@ public class ProblemLimit {
      */
     private Integer memory = 65536;
     /**
-     * 代码文本长度
+     * 代码文本长度,默认100K
      */
-    private Integer text;
+    private Integer codeLength = 102400;
 
     private Date createTime;
     private Date lastModifyTime;
     private Integer status;
 
-    public ProblemLimit(Integer problemId, Integer time, Integer memory, Integer text) {
+    public ProblemLimit(Integer problemId, Integer time, Integer memory, Integer codeLength) {
         this.problemId = problemId;
         this.time = time;
         this.memory = memory;
-        this.text = text;
+        this.codeLength = codeLength;
     }
 }

@@ -56,6 +56,7 @@ public enum StatusCode {
     JUDGE_RUNTIME_ERROR(3117, "运行时出错错误"),
     JUDGE_WRONG_ANSWER(3118, "测试点未完全通过"),
     JUDGE_SYSTEM_ERROR(3119, "系统错误"),
+    CODE_TOO_LONG(3120, "代码长度过长"),
 
 
     LAST_ERROR_CODE(9999, "如果用到了这个错误码,那确实是非常不幸,建议提桶跑路");

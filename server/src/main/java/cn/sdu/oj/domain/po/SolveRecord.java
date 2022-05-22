@@ -4,6 +4,8 @@ public class SolveRecord {
     private int id;
     private int userId;
     private int problemId;
+
+    private int problemSetId;
     private String language;
     private String code;
     /**
@@ -21,11 +23,11 @@ public class SolveRecord {
     private int cpuTime = -1;
 
     private int realTime = -1;
-    
+
     private int checkpointSize = 0;
 
     private int totalCorrect = 0;
-    
+
     private int status;
 
     public int getId() {
@@ -50,6 +52,14 @@ public class SolveRecord {
 
     public void setProblemId(int problemId) {
         this.problemId = problemId;
+    }
+
+    public int getProblemSetId() {
+        return problemSetId;
+    }
+
+    public void setProblemSetId(int problemSetId) {
+        this.problemSetId = problemSetId;
     }
 
     public String getError() {
