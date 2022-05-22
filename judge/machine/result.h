@@ -22,14 +22,14 @@ struct Result {
         this->memory = usage.ru_maxrss;
         this->cpu_time = (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) * 1000
                          + (usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000;
-        this->output = usage.ru_oublock > 0;
+        this->output = usage.ru_oublock;
     }
 
     long cpu_time; //ms
     long real_time; //ms
     long memory; //KB
-    bool output; //has output
-    bool error; //has error
+    bool output; //output size
+    bool error; //error size
     int signal; //Signal enum
     int exit_code;
 

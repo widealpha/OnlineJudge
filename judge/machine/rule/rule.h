@@ -8,11 +8,11 @@
 #include <seccomp.h>
 
 enum Language {
-    CPP,
-    C,
-    PYTHON,
-    GO,
-    JAVA
+    CPP = 0,
+    C = 1,
+    PYTHON = 2,
+    GO = 3,
+    JAVA = 4
 };
 
 class Rule {

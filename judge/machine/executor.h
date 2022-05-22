@@ -11,10 +11,16 @@
 #include <wait.h>
 #include <ctime>
 #include <iostream>
+#include <ctime>
 
 
 #include "config.h"
 #include "result.h"
+
+enum ExecutorError {
+    SETRLIMIT_FAILED = -1,
+
+};
 
 
 class Executor {
@@ -31,6 +37,11 @@ private:
 
     static void *timeout_killer(void *killer_args);
 
+    void applyConfig() const;
+
+    void applySeccompRule();
+
+    void generateSignal();
 
 public:
     Executor(Config &config, Result &result);

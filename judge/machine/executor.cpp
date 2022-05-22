@@ -17,27 +17,20 @@ void Executor::run() {
         int status;
         rusage resource_usage{};
         start_timeout_guard(config.limit.max_real_time / 1000 + 1);
+        clock_t start = clock();
         if (wait4(child_pid, &status, WSTOPPED, &resource_usage) == -1) {
             kill(child_pid, SIGKILL);
         }
         this->result.update(resource_usage);
-        this->result.real_time = 0;
+        this->result.real_time = std::max(clock() - start, result.cpu_time);
         this->result.exit_code = status;
-        this->result.signal = Signal::SUCCESS;
+        generateSignal();
         std::cout << result << std::endl;
         return;
     } else {
-        //redirect input/output/error file
-        if (!config.input_file.empty()) {
-            freopen(config.input_file.c_str(), "r", stdin);
-        }
-        if (!config.output_file.empty()) {
-            freopen(config.output_file.c_str(), "w", stdout);
-        }
-        if (!config.error_file.empty()) {
-            freopen(config.error_file.c_str(), "w", stderr);
-        }
-        execve(config.bin_file.c_str(), config.argv, config.env);
+        applyConfig();
+        applySeccompRule();
+        execve(config.bin_file.c_str(), nullptr, nullptr);
     }
 }
 
@@ -55,3 +48,82 @@ void Executor::start_timeout_guard(int seconds) {
         kill(child_pid, SIGKILL);
     }
 }
+
+void Executor::applyConfig() const {
+    Limit limit = config.limit;
+    if (limit.max_stack_size != UNLIMITED) {
+        struct rlimit max_stack{static_cast<rlim_t>(limit.max_stack_size), static_cast<rlim_t>(limit.max_stack_size)};
+        if (setrlimit(RLIMIT_STACK, &max_stack) != 0) {
+            exit(SETRLIMIT_FAILED);
+        }
+    }
+
+    if (limit.max_memory != UNLIMITED) {
+        struct rlimit max_memory{
+                static_cast<rlim_t>(limit.max_memory) * 2,
+                static_cast<rlim_t>(limit.max_memory) * 2};
+        if (setrlimit(RLIMIT_AS, &max_memory) != 0) {
+            exit(SETRLIMIT_FAILED);
+        }
+    }
+
+    // set cpu time limit (in seconds)
+    if (limit.max_cpu_time != UNLIMITED) {
+        rlim_t time = limit.max_cpu_time / 1000 + 1;
+        struct rlimit max_cpu_time{time, time};
+        if (setrlimit(RLIMIT_CPU, &max_cpu_time) != 0) {
+            exit(SETRLIMIT_FAILED);
+        }
+    }
+
+    // set max process number limit
+    if (limit.num_thread != UNLIMITED) {
+        struct rlimit max_process_number{static_cast<rlim_t>(limit.num_thread), static_cast<rlim_t>(limit.num_thread)};
+        if (setrlimit(RLIMIT_NPROC, &max_process_number) != 0) {
+            exit(SETRLIMIT_FAILED);
+        }
+    }
+
+    // set max output size limit
+    if (limit.max_output_size != UNLIMITED) {
+        struct rlimit max_output_size{static_cast<rlim_t>(limit.max_output_size),
+                                      static_cast<rlim_t>(limit.max_output_size)};
+        if (setrlimit(RLIMIT_FSIZE, &max_output_size) != 0) {
+            exit(SETRLIMIT_FAILED);
+        }
+    }
+    //redirect input/output/error file
+    if (!config.input_file.empty()) {
+        freopen(config.input_file.c_str(), "r", stdin);
+    }
+    if (!config.output_file.empty()) {
+        freopen(config.output_file.c_str(), "w", stdout);
+    }
+    if (!config.error_file.empty()) {
+        freopen(config.error_file.c_str(), "w", stderr);
+    }
+}
+
+void Executor::applySeccompRule() {
+
+}
+
+void Executor::generateSignal() {
+    if (config.limit.max_memory != UNLIMITED && result.memory > config.limit.max_memory) {
+        result.signal = Signal::MEMORY_LIMIT_EXCEEDED;
+    } else if (config.limit.max_cpu_time != UNLIMITED && result.cpu_time > config.limit.max_cpu_time) {
+        result.signal = Signal::CPU_TIME_LIMIT_EXCEEDED;
+    } else if (config.limit.max_output_size != UNLIMITED && result.output > config.limit.max_output_size) {
+        result.signal = Signal::OUTPUT_LIMIT_EXCEEDED;
+    } else if (result.exit_code == SIGKILL) {
+        result.signal = Signal::REAL_TIME_LIMIT_EXCEEDED;
+    } else if (result.exit_code == 0) {
+        result.signal = Signal::SUCCESS;
+    } else if (result.exit_code < 0) {
+        result.signal = Signal::RUNTIME_ERROR;
+    } else {
+        result.signal = Signal::SYSTEM_ERROR;
+    }
+}
+
+

@@ -13,8 +13,9 @@ struct Config {
     std::string input_file;
     std::string output_file;
     std::string error_file;
-    char **argv;
-    char **env;
+    int rule;
+    std::string argv;
+    std::string env;
 };
 
 #endif //MACHINE_CONFIG_H
