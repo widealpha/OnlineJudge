@@ -1,8 +1,12 @@
-package cn.sdu.oj.domain.po;
+package cn.sdu.oj.domain.vo;
+
+import cn.sdu.oj.domain.po.ProblemSet;
+import cn.sdu.oj.domain.po.ProblemSetProblem;
 
 import java.util.Date;
+import java.util.List;
 
-public class ProblemSet {
+public class ProblemSetVo {
     private Integer id;
     private String name;
     private String type;
@@ -11,6 +15,19 @@ public class ProblemSet {
     private Date beginTime;
     private Date endTime;
     private Integer creatorId;
+    private List<ProblemSetProblem> problems;
+
+    public ProblemSetVo(ProblemSet problemSet, List<ProblemSetProblem> problems) {
+        this.problems =problems;
+        this.id = problemSet.getId();
+        this.name = problemSet.getName();
+        this.type = problemSet.getType();
+        this.introduction = problemSet.getIntroduction();
+        this.isPublic = problemSet.getIsPublic();
+        this.beginTime = problemSet.getBeginTime();
+        this.endTime = problemSet.getEndTime();
+        this.creatorId = problemSet.getCreatorId();
+    }
 
     public Integer getId() {
         return id;
@@ -44,13 +61,6 @@ public class ProblemSet {
         this.introduction = introduction;
     }
 
-    public Integer getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Integer isPublic) {
-        this.isPublic = isPublic;
-    }
 
     public Date getBeginTime() {
         return beginTime;
@@ -75,4 +85,22 @@ public class ProblemSet {
     public void setCreatorId(Integer creatorId) {
         this.creatorId = creatorId;
     }
+
+    public Integer getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Integer isPublic) {
+        this.isPublic = isPublic;
+    }
+
+
+    public List<ProblemSetProblem> getProblems() {
+        return problems;
+    }
+
+    public void setProblems(List<ProblemSetProblem> problems) {
+        this.problems = problems;
+    }
 }
+

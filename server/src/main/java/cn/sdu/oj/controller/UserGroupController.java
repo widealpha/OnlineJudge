@@ -126,4 +126,8 @@ public class UserGroupController {                  // TODO 权限
             return ResultEntity.data(UserGroupService.getUserGroupMembers(id));
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
+
+    //获取一个用户组有的题目集  TODO
+
+    //为一个用户组添加题目集
 }

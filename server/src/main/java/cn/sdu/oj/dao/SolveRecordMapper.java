@@ -1,5 +1,6 @@
 package cn.sdu.oj.dao;
 
+import cn.sdu.oj.domain.po.ProblemSetProblem;
 import cn.sdu.oj.domain.po.SolveRecord;
 import org.apache.ibatis.annotations.*;
 
@@ -54,4 +55,14 @@ public interface SolveRecordMapper {
             "VALUES(#{userId}, #{problemId}, #{language}, #{code})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     boolean insertRecord(SolveRecord record);
+
+    @Select("SELECT DISTINCT problem_set_id " +
+            "FROM solve_record " +
+            "WHERE user_id = #{userId}  AND `status` >= 0")
+    List<Integer> selectSelfDoneProblemSetByUserId(Integer userId);
+
+    @Select("SELECT status " +
+            "FROM solve_record " +
+            "WHERE problem_id = #{problem_id} AND problem_set_id = #{problem_set_id} AND user_id = #{user_id}")
+    Integer getSelfCompletion(Integer problem_id, Integer problem_set_id,  Integer user_id);
 }
