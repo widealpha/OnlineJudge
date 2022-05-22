@@ -21,18 +21,18 @@ public interface ProblemMapper {
     @Update("UPDATE problem_tag SET STATUS = 1 WHERE P_ID=#{p_id}  AND TYPE=#{type}")
     int deleteTag(int p_id, int type);
 
-    @Insert("INSERT INTO problem_limit (PROBLEM_ID,TIME,MEMORY,TEXT) VALUES (#{problemId} ,#{time} ,#{memory} ,#{text} )")
+    @Insert("INSERT INTO problem_limit (PROBLEM_ID,TIME,MEMORY,code_length) VALUES (#{problemId} ,#{time} ,#{memory} ,#{codeLength} )")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int addProblemLimit(ProblemLimit limit);
 
-    @Update("UPDATE problem_limit SET TIME=#{time} ,MEMORY=#{memory} ,TEXT=#{text} WHERE PROBLEM_ID=#{problemId} )")
+    @Update("UPDATE problem_limit SET TIME=#{time} ,MEMORY=#{memory} ,code_length=#{codeLength} WHERE PROBLEM_ID=#{problemId}")
     void updateProblemLimit(ProblemLimit limit);
 
 
-    @Update("UPDATE program_problem SET IS_DELETE=1 WHERE AUTHOR=#{u_id} AND ID=#{p_id}")
+    @Update("UPDATE program_problem SET status=-status WHERE AUTHOR=#{u_id} AND ID=#{p_id}")
     int deleteProgramProblem(int u_id, int p_id);
 
-    @Update("UPDATE non_program_problem SET IS_DELETE=1 WHERE AUTHOR=#{u_id} AND ID=#{p_id}")
+    @Update("UPDATE non_program_problem SET status=-status WHERE AUTHOR=#{u_id} AND ID=#{p_id}")
     int deleteNonProgramProblem(int u_id, int p_id);
 
     @Update("UPDATE program_problem SET NAME=#{name} ,DESCRIPTION=#{description} ,EXAMPLE=#{example} ,IS_OPEN=#{isOpen} ,DIFFICULTY=#{difficulty} ,TIP=#{tip}  WHERE ID=#{id} AND AUTHOR=#{author} ")
