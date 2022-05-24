@@ -97,11 +97,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setHeader("Content-Type", "text/html;charset=UTF-8");
             response.getWriter().print(ResultEntity.error(StatusCode.USER_TOKEN_ERROR));
-        } catch (Exception e) {
-            response.setCharacterEncoding("UTF-8");
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setHeader("Content-Type", "text/html;charset=UTF-8");
-            response.getWriter().print(ResultEntity.error(StatusCode.COMMON_FAIL));
         }
     }
 

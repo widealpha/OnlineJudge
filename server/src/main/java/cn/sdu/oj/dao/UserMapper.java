@@ -20,4 +20,7 @@ public interface UserMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id")
     @Insert("INSERT INTO `user` (username, `password`) VALUES (#{username}, #{password})")
     boolean insert(User user);
+
+    @Select("SELECT 1 FROM `user` WHERE id = #{id} AND `status` = 0")
+    boolean exist(int userId);
 }
