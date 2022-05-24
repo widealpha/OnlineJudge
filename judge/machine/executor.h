@@ -16,17 +16,14 @@
 
 #include "config.h"
 #include "result.h"
-
-enum ExecutorError {
-    SETRLIMIT_FAILED = -1,
-
-};
-
+#include "rule/rule.h"
+#include "rule/cpp_rule.h"
+#include "executor_error.h"
 
 class Executor {
 private:
-    Config config{};
-    Result result{};
+    Config *config;
+    Result *result;
     int child_pid = 0;
 
     /**
@@ -44,7 +41,7 @@ private:
     void generateSignal();
 
 public:
-    Executor(Config &config, Result &result);
+    Executor(Config *config, Result *result);
 
     void run();
 

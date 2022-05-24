@@ -34,9 +34,14 @@ struct Result {
     int exit_code;
 
     friend std::ostream &operator<<(std::ostream &os, const Result &result) {
-        os << "cpu_time: " << result.cpu_time << " real_time: " << result.real_time << " memory: " << result.memory
-           << " output: " << result.output << " error: " << result.error << " signal: " << result.signal
-           << " exit_code: " << result.exit_code;
+        os << '{' <<
+           "\"cpu_time\":" << result.cpu_time << ',' <<
+           "\"real_time\":" << result.real_time << ',' <<
+           "\"memory\":" << result.memory << ',' <<
+           "\"output\":" << result.output << ',' <<
+           "\"error\":" << result.error << ',' <<
+           "\"signal\":" << result.signal << ',' <<
+           "\"exit_code\":" << result.exit_code << '}';
         return os;
     }
 };
