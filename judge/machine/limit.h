@@ -4,6 +4,7 @@
 
 #ifndef MACHINE_LIMIT_H
 #define MACHINE_LIMIT_H
+#define UNLIMITED -1
 
 struct Limit {
     int max_real_time; //ms

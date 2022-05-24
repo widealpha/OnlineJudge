@@ -11,16 +11,19 @@
 #include <wait.h>
 #include <ctime>
 #include <iostream>
+#include <ctime>
 
 
 #include "config.h"
 #include "result.h"
-
+#include "rule/rule.h"
+#include "rule/cpp_rule.h"
+#include "executor_error.h"
 
 class Executor {
 private:
-    Config config{};
-    Result result{};
+    Config *config;
+    Result *result;
     int child_pid = 0;
 
     /**
@@ -31,9 +34,14 @@ private:
 
     static void *timeout_killer(void *killer_args);
 
+    void applyConfig() const;
+
+    void applySeccompRule();
+
+    void generateSignal();
 
 public:
-    Executor(Config &config, Result &result);
+    Executor(Config *config, Result *result);
 
     void run();
 
