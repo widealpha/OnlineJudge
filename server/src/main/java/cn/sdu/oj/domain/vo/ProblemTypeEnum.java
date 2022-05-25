@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ProblemTypeEnum {
     PROGRAMING(0, "编程题"),
-    CHOICE(1, "选择题"), //选择题
+    SELECTION(1, "选择题"), //选择题
     COMPLETION(2, "填空题"), //填空题
     JUDGEMENT(3, "判断题"), //判断题
     SHORT(4, "简答题"); //简答题

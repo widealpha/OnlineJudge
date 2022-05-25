@@ -58,7 +58,11 @@ public class ProblemService {
                 problemDto.setTimeLimit(asyncProblem.getTimeLimit());
                 problemDto.setCodeLengthLimit(asyncProblem.getCodeLengthLimit());
             } else {
-//                SyncProgram syncProgram =
+                SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+                problemDto.setName(syncProblem.getName());
+                problemDto.setDescription(syncProblem.getDescription());
+                problemDto.setAnswer(syncProblem.getAnswer());
+                problemDto.setOptions(syncProblem.getOptions());
             }
 
             return ResultEntity.data(problemDto);
@@ -69,8 +73,10 @@ public class ProblemService {
     public ResultEntity<Integer> addProgramingProblem(AsyncProblem problem, List<Integer> tags) throws TagNotExistException {
         if (asyncProblemMapper.insertProblem(problem)) {
             GeneralProblem generalProblem = new GeneralProblem();
+            generalProblem.setType(0);
             generalProblem.setTypeProblemId(problem.getId());
             generalProblem.setCreator(problem.getCreator());
+            generalProblem.setDifficulty(problem.getDifficulty());
             if (generalProblemMapper.insertGeneralProblem(generalProblem)) {
                 int problemId = generalProblem.getId();
                 for (Integer tagId : tags) {
@@ -85,6 +91,30 @@ public class ProblemService {
         }
         return ResultEntity.error(StatusCode.DATA_ALREADY_EXIST);
     }
+
+    @Transactional
+    public ResultEntity<Integer> addOtherProblem(SyncProblem problem, List<Integer> tags) throws TagNotExistException {
+        if (syncProblemMapper.insertProblem(problem)) {
+            GeneralProblem generalProblem = new GeneralProblem();
+            generalProblem.setType(problem.getType());
+            generalProblem.setTypeProblemId(problem.getId());
+            generalProblem.setCreator(problem.getCreator());
+            generalProblem.setDifficulty(problem.getDifficulty());
+            if (generalProblemMapper.insertGeneralProblem(generalProblem)) {
+                int problemId = generalProblem.getId();
+                for (Integer tagId : tags) {
+                    if (tagId == null) {
+                        throw new TagNotExistException();
+                    } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
+                        throw new TagNotExistException();
+                    }
+                }
+                return ResultEntity.data(generalProblem.getId());
+            }
+        }
+        return ResultEntity.error(StatusCode.DATA_ALREADY_EXIST);
+    }
+
 
     public ResultEntity<Boolean> updateProblemLimit(ProblemLimit problemLimit) {
         Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(problemLimit.getProblemId());

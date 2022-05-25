@@ -1,13 +1,12 @@
 package cn.sdu.oj.service;
 
-import cn.sdu.oj.dao.ProblemMapper;
-import cn.sdu.oj.dao.ProblemSetMapper;
-import cn.sdu.oj.dao.SolveRecordMapper;
+import cn.sdu.oj.dao.*;
 import cn.sdu.oj.domain.bo.JudgeLimit;
 import cn.sdu.oj.domain.bo.JudgeResult;
 import cn.sdu.oj.domain.bo.JudgeStatus;
 import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.dto.SolveResultDto;
+import cn.sdu.oj.domain.po.AsyncProblem;
 import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.po.SolveRecord;
 import cn.sdu.oj.entity.ResultEntity;
@@ -29,7 +28,10 @@ public class SolveService {
     SolveRecordMapper solveRecordMapper;
 
     @Resource
-    ProblemMapper problemMapper;
+    GeneralProblemMapper generalProblemMapper;
+
+    @Resource
+    AsyncProblemMapper asyncProblemMapper;
 
     @Resource
     ProblemSetMapper problemSetMapper;
@@ -37,13 +39,19 @@ public class SolveService {
     private String routingKey;
 
     public ResultEntity<String> trySolveProblem(JudgeTask task, int userId, int problemSetId) {
+        Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(task.getProblemId());
+        if (typeProblemId == null) {
+            return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
+
+        }
+        AsyncProblem problem = asyncProblemMapper.selectProblem(typeProblemId);
         //todo 检验题目集中是否有题目
-        if (!problemMapper.isProblemExist(task.getProblemId())) {
+        if (problem == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }
         //生成判题限制
         JudgeLimit judgeLimit = new JudgeLimit();
-        ProblemLimit problemLimit = problemMapper.getProblemLimitByProblemId(task.getProblemId());
+        ProblemLimit problemLimit = new ProblemLimit(problem);
         if (problemLimit.getCodeLength() != null && task.getCode().length() > problemLimit.getCodeLength()) {
             return ResultEntity.error(StatusCode.CODE_TOO_LONG);
         }

@@ -1,5 +1,6 @@
 package cn.sdu.oj.domain.po;
 
+import cn.sdu.oj.dao.AsyncProblemMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,5 +42,12 @@ public class ProblemLimit {
         this.time = time;
         this.memory = memory;
         this.codeLength = codeLength;
+    }
+
+    public ProblemLimit(AsyncProblem problem){
+        this.problemId = problem.getId();
+        this.time = problem.getTimeLimit();
+        this.memory = problem.getMemoryLimit();
+        this.codeLength = problem.getCodeLengthLimit();
     }
 }

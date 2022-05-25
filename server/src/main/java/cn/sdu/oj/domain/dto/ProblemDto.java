@@ -19,6 +19,8 @@ public class ProblemDto {
     private String example;
     private String typeName;
     private String answer;
+
+    private String options;
     private Integer creator;
     private Integer difficulty;
     private String difficultyName;
@@ -148,5 +150,13 @@ public class ProblemDto {
 
     public void setCodeLengthLimit(int codeLengthLimit) {
         this.codeLengthLimit = codeLengthLimit;
+    }
+
+    public String getOptions() {
+        return options;
+    }
+
+    public void setOptions(String options) {
+        this.options = options;
     }
 }

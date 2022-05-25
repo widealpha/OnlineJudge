@@ -37,12 +37,13 @@ public class ProblemController {
 
     @ApiOperation("支持的难度")
     @GetMapping("allDifficulties")
-    public ResultEntity<DifficultyEnum[]> allDifficulties(){
+    public ResultEntity<DifficultyEnum[]> allDifficulties() {
         return ResultEntity.data(DifficultyEnum.values());
     }
+
     @ApiOperation("支持的题目种类")
     @GetMapping("allTypes")
-    public ResultEntity<ProblemTypeEnum[]> allTypes(){
+    public ResultEntity<ProblemTypeEnum[]> allTypes() {
         return ResultEntity.data(ProblemTypeEnum.values());
     }
 
@@ -109,22 +110,40 @@ public class ProblemController {
     }
 
     @ApiOperation("添加选择/判断/填空/简答|TEACHER+")
-    @PostMapping("/addOtherProblem")
+    @PostMapping("/addTypeProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Integer> addOtherProblem(
+    public ResultEntity<Integer> addTypeProblem(
             @AuthenticationPrincipal User user,
-            @ApiParam("题目名字") @RequestParam String name,
-            @ApiParam("题目表述,题干") @RequestParam String description,
-            @ApiParam("例子") @RequestParam(required = false) String example,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam("题目答案(选择判断填空必须有答案)") @RequestParam(required = false) String answer,
+            @ApiParam("选项(选择题必须有,填空可选)") @RequestParam(required = false) String options,
             @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam("种类(选择/判断/填空/简答)") @RequestParam int type,
             @ApiParam("标签Id数组(JSON数组)") @RequestParam String tags) {
-        AsyncProblem asyncProblem = new AsyncProblem();
-        asyncProblem.setName(name);
-        asyncProblem.setDescription(description);
-        asyncProblem.setExample(example);
-        asyncProblem.setDifficulty(difficulty);
-        asyncProblem.setCreator(user.getId());
-        return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        if (type == ProblemTypeEnum.PROGRAMING.id) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "编程题请通过专有添加");
+        } else if (type == ProblemTypeEnum.SELECTION.id) {
+            if (options == null || answer == null) {
+                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
+            }
+        } else if (type == ProblemTypeEnum.JUDGEMENT.id) {
+            if (answer == null) {
+                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "判断题答案不准为空(1为对/0为错)");
+            }
+        }
+        SyncProblem syncProblem = new SyncProblem();
+        syncProblem.setName(name);
+        syncProblem.setDescription(description);
+        syncProblem.setDifficulty(difficulty);
+        syncProblem.setCreator(user.getId());
+        syncProblem.setAnswer(answer);
+        syncProblem.setOptions(options);
+        try {
+            return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (Exception e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        }
     }
 
 
