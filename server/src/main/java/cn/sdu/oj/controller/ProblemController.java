@@ -2,16 +2,17 @@ package cn.sdu.oj.controller;
 
 import cn.sdu.oj.domain.bo.Problem;
 import cn.sdu.oj.domain.bo.ProblemWithInfo;
-import cn.sdu.oj.domain.po.ProblemLimit;
-import cn.sdu.oj.domain.po.Tag;
-import cn.sdu.oj.domain.po.UserInfo;
+import cn.sdu.oj.domain.dto.ProblemDto;
+import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.ProbelmInfoVo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
+import cn.sdu.oj.entity.StatusCode;
+import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.service.ProblemService;
 import cn.sdu.oj.util.FileUtil;
+import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,87 @@ import java.util.List;
 public class ProblemController {
     @Autowired
     private ProblemService problemService;
+
+
+    @PostMapping("info")
+    public ResultEntity<ProblemDto> problemInfo(@RequestParam int problemId) {
+        return problemService.findProblemInfo(problemId);
+    }
+
+
+    @ApiOperation("添加编程题目|TEACHER+")
+    @PostMapping("/addProgramingProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Integer> addProgramingProblem(
+            @AuthenticationPrincipal User user,
+            @ApiParam("题目名字") @RequestParam String name,
+            @ApiParam("题目表述,题干") @RequestParam String description,
+            @ApiParam("例子") @RequestParam(required = false) String example,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam("标签Id数组(JSON数组)") @RequestParam String tags) {
+        AsyncProblem asyncProblem = new AsyncProblem();
+        asyncProblem.setName(name);
+        asyncProblem.setDescription(description);
+        asyncProblem.setExample(example);
+        asyncProblem.setDifficulty(difficulty);
+        asyncProblem.setCreator(user.getId());
+        try {
+            return problemService.addProgramingProblem(asyncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        }
+    }
+
+    @ApiOperation("更新编程题目限制信息|TEACHER+")
+    @PostMapping("/updateLimit")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> updateProblemLimit(
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiParam("限制时间ms") @RequestParam Integer timeLimit,
+            @ApiParam("限制内存kb") @RequestParam Integer memoryLimit,
+            @ApiParam("代码长度byte") @RequestParam Integer codeLengthLimit) {
+        ProblemLimit problemLimit = new ProblemLimit();
+        problemLimit.setProblemId(problemId);
+        problemLimit.setTime(timeLimit);
+        problemLimit.setMemory(memoryLimit);
+        problemLimit.setCodeLength(codeLengthLimit);
+        return problemService.updateProblemLimit(problemLimit);
+    }
+
+    @ApiOperation("更新编程题目测试点|TEACHER+")
+    @PostMapping("/uploadCheckpoints")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> uploadCheckpoints(
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiParam("测试点sha256校验码") @RequestParam String sha256,
+            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestParam MultipartFile file) {
+        try {
+            problemService.addTestPoints(problemId, file, sha256);
+            return ResultEntity.data(true);
+        } catch (Exception e) {
+            return ResultEntity.data(StatusCode.COMMON_FAIL, false);
+        }
+    }
+
+    @ApiOperation("添加选择/判断/填空/简答|TEACHER+")
+    @PostMapping("/addOtherProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Integer> addOtherProblem(
+            @AuthenticationPrincipal User user,
+            @ApiParam("题目名字") @RequestParam String name,
+            @ApiParam("题目表述,题干") @RequestParam String description,
+            @ApiParam("例子") @RequestParam(required = false) String example,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam("标签Id数组(JSON数组)") @RequestParam String tags) {
+        AsyncProblem asyncProblem = new AsyncProblem();
+        asyncProblem.setName(name);
+        asyncProblem.setDescription(description);
+        asyncProblem.setExample(example);
+        asyncProblem.setDifficulty(difficulty);
+        asyncProblem.setCreator(user.getId());
+        return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+    }
+
 
     @ApiOperation("添加题目")
     @PostMapping("/addProblem")
@@ -142,18 +224,18 @@ public class ProblemController {
         return ResultEntity.data(probelmInfoVo);
     }
 
-    @PostMapping("/updateProblemLimit")
-    @ApiOperation("修改问题运行限制")
-    @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity updateProblemLimit(
-            @ApiParam("问题id") @RequestParam Integer problemId,
-            @ApiParam("运行时间,单位ms") @RequestParam(required = false) int time,
-            @ApiParam("运行内存,单位KB") @RequestParam(required = false) int memory,
-            @ApiParam("代码长度") @RequestParam(required = false) int text) {
-        ProblemLimit limit = new ProblemLimit(problemId, time, memory, text);
-        problemService.updateProblemLimit(limit);
-        return ResultEntity.success();
-    }
+//    @PostMapping("/updateProblemLimit")
+//    @ApiOperation("修改问题运行限制")
+//    @PreAuthorize("hasRole('TEACHER')")
+//    public ResultEntity updateProblemLimit(
+//            @ApiParam("问题id") @RequestParam Integer problemId,
+//            @ApiParam("运行时间,单位ms") @RequestParam(required = false) int time,
+//            @ApiParam("运行内存,单位KB") @RequestParam(required = false) int memory,
+//            @ApiParam("代码长度") @RequestParam(required = false) int text) {
+//        ProblemLimit limit = new ProblemLimit(problemId, time, memory, text);
+//        problemService.updateProblemLimit(limit);
+//        return ResultEntity.success();
+//    }
 
     @PostMapping("/getTopLevelTag")
     @ApiOperation("获取顶级标签")

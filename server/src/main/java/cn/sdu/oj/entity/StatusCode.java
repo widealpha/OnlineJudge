@@ -35,7 +35,7 @@ public enum StatusCode {
 
     /* 业务错误 */
     NO_PERMISSION(3001, "没有权限"),
-    NO_DATA_EXIST(3002, "数据不存在"),
+    DATA_NOT_EXIST(3002, "数据不存在"),
     NO_PERMISSION_OR_EMPTY(3003, "请求数据不存在或无权获取数据"),
     DATA_ALREADY_EXIST(3004, "数据已存在"),
     VALIDATE_ERROR(3005, "验证失败"),

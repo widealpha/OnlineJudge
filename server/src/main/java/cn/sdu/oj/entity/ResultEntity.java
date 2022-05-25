@@ -67,6 +67,9 @@ public class ResultEntity<T> {
     public static <T> ResultEntity<T> error(StatusCode entity) {
         return new ResultEntity<>(entity.getCode(), entity.getMessage(), null);
     }
+    public static <T> ResultEntity<T> error(StatusCode entity, String message) {
+        return new ResultEntity<>(entity.getCode(), message, null);
+    }
 
     public int getCode() {
         return code;

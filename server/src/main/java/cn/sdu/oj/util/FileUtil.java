@@ -6,6 +6,7 @@ import com.jcraft.jsch.JSchException;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -103,7 +104,7 @@ public class FileUtil {
         new File(ROOT_PATH + absolutePath).delete();
     }
 
-    public static void verifyZipFormat(byte[] data) throws Exception {
+    public static boolean verifyZipFormat(byte[] data) throws Exception {
         // 写完才发现不需要写临时文件 焯
         // Path tmpPath = Files.createTempFile("tmp", ".zip");
         // File tmpFile = tmpPath.toFile();
@@ -117,7 +118,7 @@ public class FileUtil {
         //构建解压输入流
         // Charset.forName("GBK") 不加这一句会因为编码问题报错
         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-        ZipInputStream zin = new ZipInputStream(inputStream, Charset.forName("GBK"));
+        ZipInputStream zin = new ZipInputStream(inputStream, StandardCharsets.UTF_8);
         ZipEntry entry = null;
         List<String> input = new ArrayList<>();
         List<String> output = new ArrayList<>();
@@ -132,12 +133,12 @@ public class FileUtil {
         zin.close();
         inputStream.close();
         //校验规则，每个in都要有对应的out
-        for (String in : input) {
-            String name = in.split("\\.")[0];
-            if (!output.contains(name)) {
-                throw new FileVerifyBadException("文件校验未通过");
+        for (int i = 1; i <= input.size(); i++) {
+            if (!output.contains(i+".out") || !input.contains(i+".in")) {
+                return false;
             }
         }
+        return true;
     }
 
 }

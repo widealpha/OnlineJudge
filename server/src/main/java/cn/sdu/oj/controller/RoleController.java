@@ -26,7 +26,6 @@ public class RoleController {
     @Resource
     RoleService roleService;
 
-
     @ApiOperation("所有可能的身份|ADMIN|SYSTEM")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SYSTEM')")
     @GetMapping("/allRoles")
@@ -34,7 +33,7 @@ public class RoleController {
         return ResultEntity.data(Arrays.toString(RoleEnum.values()));
     }
 
-    @ApiOperation("用户添加身份|ADMIN|SYETEM")
+    @ApiOperation("用户添加身份|ADMIN|SYSTEM")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SYSTEM')")
     @PostMapping("/addRole")
     ResultEntity<Boolean> addRole(@ApiParam("添加的身份") @RequestParam String role,

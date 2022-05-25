@@ -1,5 +1,6 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.dto.MinorUserInfoDto;
 import cn.sdu.oj.domain.dto.UserInfoDto;
 import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.domain.vo.User;
@@ -24,6 +25,13 @@ import javax.annotation.Resource;
 public class UserInfoController {
     @Resource
     private UserInfoService userInfoService;
+
+    @ApiOperation("获取他人简略用户信息")
+    @PostMapping("minorInfo")
+    @PreAuthorize("hasRole('COMMON')")
+    ResultEntity<MinorUserInfoDto> minorUserInfo(@ApiParam("用户Id") @RequestParam int userId) {
+        return userInfoService.minorUserInfo(userId);
+    }
 
     @ApiOperation("用户信息")
     @PostMapping("info")

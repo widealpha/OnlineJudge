@@ -15,10 +15,10 @@ public interface ProblemMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int addNonProgramProblem(NonProgramProblem problem);
 
-    @Insert("INSERT INTO problem_tag (P_ID,T_ID,TYPE) VALUES (#{p_id},#{t_id},#{type})")
+    @Insert("INSERT INTO problem_tag (problem_id,tag_id) VALUES (#{p_id},#{t_id},#{type})")
     int addTag(int p_id, int t_id, int type);
 
-    @Update("UPDATE problem_tag SET STATUS = 1 WHERE P_ID=#{p_id}  AND TYPE=#{type}")
+    @Update("UPDATE problem_tag SET STATUS = 1 WHERE problem_id=#{p_id}")
     int deleteTag(int p_id, int type);
 
     @Insert("INSERT INTO problem_limit (PROBLEM_ID,TIME,MEMORY,code_length) VALUES (#{problemId} ,#{time} ,#{memory} ,#{codeLength} )")
@@ -51,13 +51,13 @@ public interface ProblemMapper {
     NonProgramProblem getNonProgramProblemById(int id);
 
     @Select("SELECT * FROM tag WHERE ID IN " +
-            "(SELECT  T_ID FROM problem_tag WHERE P_ID =#{problemId} AND TYPE=#{type} AND STATUS=0)")
+            "(SELECT  tag_id FROM problem_tag WHERE problem_id =#{problemId} AND STATUS=0)")
     List<Tag> getTagListByProblemIdAndType(int problemId, int type);
 
     @Select("with recursive tmp as                                                                   " +
             "   ( select *                                                                                    " +
             "    from tag                                                                                 " +
-            "    where id in (select t_id from problem_tag where p_id = #{problemId} and type=#{type})                                   " +
+            "    where id in (select tag_id from problem_tag where problem_id = #{problemId})                                   " +
             "    union                                                                                                          " +
             "    select tmp.id, tag.parent, concat_ws('/', tag.name, tmp.name) name, tmp.level                                  " +
             "    from tmp                                                                               " +

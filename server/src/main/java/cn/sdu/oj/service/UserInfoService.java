@@ -3,6 +3,7 @@ package cn.sdu.oj.service;
 import cn.sdu.oj.dao.RoleMapper;
 import cn.sdu.oj.dao.UserInfoMapper;
 import cn.sdu.oj.dao.UserMapper;
+import cn.sdu.oj.domain.dto.MinorUserInfoDto;
 import cn.sdu.oj.domain.dto.UserInfoDto;
 import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.entity.ResultEntity;
@@ -32,8 +33,21 @@ public class UserInfoService {
             userInfoDto.setUsername(userMapper.selectUsernameById(userId));
             List<String> roles = roleMapper.selectRolesByUserId(userId);
             //添加默认身份
-            roles.add("COMMON");
+            roles.add("ROLE_COMMON");
             userInfoDto.setRoles(roles);
+            return ResultEntity.data(userInfoDto);
+        }
+    }
+
+    public ResultEntity<MinorUserInfoDto> minorUserInfo(int userId){
+        UserInfo userInfo = userInfoMapper.selectByUserId(userId);
+        if (userInfo == null) {
+            return ResultEntity.error(StatusCode.USER_ACCOUNT_NOT_EXIST);
+        } else {
+            MinorUserInfoDto userInfoDto = new MinorUserInfoDto();
+            userInfoDto.setUserId(userId);
+            userInfoDto.setAvatar(userInfo.getAvatar());
+            userInfoDto.setUsername(userMapper.selectUsernameById(userId));
             return ResultEntity.data(userInfoDto);
         }
     }
