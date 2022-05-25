@@ -49,7 +49,7 @@ public class ProblemService {
             problemDto.setCreator(generalProblem.getCreator());
             problemDto.setDifficulty(generalProblem.getDifficulty());
             problemDto.setDifficultyName(DifficultyEnum.difficultyName(generalProblem.getDifficulty()));
-            if (generalProblem.getType() == ProblemTypeEnum.PROGRAMING.value) {
+            if (generalProblem.getType() == ProblemTypeEnum.PROGRAMING.id) {
                 AsyncProblem asyncProblem = asyncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
                 problemDto.setName(asyncProblem.getName());
                 problemDto.setDescription(asyncProblem.getDescription());

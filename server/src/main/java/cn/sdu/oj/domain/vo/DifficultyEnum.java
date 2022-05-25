@@ -1,17 +1,21 @@
 package cn.sdu.oj.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum DifficultyEnum {
-    EASY(0),
-    MEDIUM(1),
-    HARD(2);
+    EASY(0, "简单"),
+    MEDIUM(1, "中等"),
+    HARD(2, "困难");
 
-    public final int value;
+    public final int id;
+    public final String name;
 
-    public static String difficultyName(Integer value) {
-        if (value == null){
+    public static String difficultyName(Integer typeId) {
+        if (typeId == null) {
             return null;
         }
-        switch (value) {
+        switch (typeId) {
             case 0:
                 return "简单";
             case 1:
@@ -19,11 +23,20 @@ public enum DifficultyEnum {
             case 2:
                 return "困难";
             default:
-                return "无";
+                return null;
         }
     }
 
-    DifficultyEnum(int value) {
-        this.value = value;
+    DifficultyEnum(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "DifficultyEnum{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

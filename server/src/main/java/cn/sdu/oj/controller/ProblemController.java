@@ -4,7 +4,9 @@ import cn.sdu.oj.domain.bo.Problem;
 import cn.sdu.oj.domain.bo.ProblemWithInfo;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.*;
+import cn.sdu.oj.domain.vo.DifficultyEnum;
 import cn.sdu.oj.domain.vo.ProbelmInfoVo;
+import cn.sdu.oj.domain.vo.ProblemTypeEnum;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
@@ -19,10 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -36,9 +35,21 @@ public class ProblemController {
     @Autowired
     private ProblemService problemService;
 
+    @ApiOperation("支持的难度")
+    @GetMapping("allDifficulties")
+    public ResultEntity<DifficultyEnum[]> allDifficulties(){
+        return ResultEntity.data(DifficultyEnum.values());
+    }
+    @ApiOperation("支持的题目种类")
+    @GetMapping("allTypes")
+    public ResultEntity<ProblemTypeEnum[]> allTypes(){
+        return ResultEntity.data(ProblemTypeEnum.values());
+    }
 
+
+    @ApiOperation("题目详细信息|TEACHER+")
     @PostMapping("info")
-    public ResultEntity<ProblemDto> problemInfo(@RequestParam int problemId) {
+    public ResultEntity<ProblemDto> problemInfo(@ApiParam("题目id") @RequestParam int problemId) {
         return problemService.findProblemInfo(problemId);
     }
 

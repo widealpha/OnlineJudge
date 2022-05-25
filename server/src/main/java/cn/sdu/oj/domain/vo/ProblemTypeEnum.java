@@ -1,18 +1,22 @@
 package cn.sdu.oj.domain.vo;
 
-public enum ProblemTypeEnum {
-    PROGRAMING(0),
-    CHOICE(1), //选择题
-    COMPLETION(2), //填空题
-    JUDGEMENT(3), //判断题
-    SHORT(4); //简答题
-    public final int value;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-    public static String typeName(Integer value) {
-        if (value == null) {
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+public enum ProblemTypeEnum {
+    PROGRAMING(0, "编程题"),
+    CHOICE(1, "选择题"), //选择题
+    COMPLETION(2, "填空题"), //填空题
+    JUDGEMENT(3, "判断题"), //判断题
+    SHORT(4, "简答题"); //简答题
+    public final int id;
+    public final String name;
+
+    public static String typeName(Integer typeId) {
+        if (typeId == null) {
             return "";
         }
-        switch (value) {
+        switch (typeId) {
             case 0:
                 return "编程题";
             case 1:
@@ -28,16 +32,17 @@ public enum ProblemTypeEnum {
         }
     }
 
-    public static ProblemTypeEnum valueOf(int value) {
+    public static ProblemTypeEnum valueOf(int typeId) {
         for (ProblemTypeEnum e : ProblemTypeEnum.values()) {
-            if (e.value == value) {
+            if (e.id == typeId) {
                 return e;
             }
         }
         return null;
     }
 
-    ProblemTypeEnum(int value) {
-        this.value = value;
+    ProblemTypeEnum(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
 }
