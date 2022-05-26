@@ -14,6 +14,11 @@ public interface AsyncProblemMapper {
     boolean insertProblem(AsyncProblem problem);
 
     @Update("UPDATE async_problem " +
+            "SET name = #{name}, description = #{description}, example = #{example}, difficulty = #{difficulty} " +
+            "WHERE id = #{id}")
+    boolean updateProblem(AsyncProblem problem);
+
+    @Update("UPDATE async_problem " +
             "SET memory_limit = #{memoryLimit}, time_limit = #{timeLimit}, code_length_limit = #{codeLengthLimit} " +
             "WHERE id = #{id}")
     boolean updateProblemLimit(AsyncProblem problem);

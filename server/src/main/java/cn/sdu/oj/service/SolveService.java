@@ -6,17 +6,21 @@ import cn.sdu.oj.domain.bo.JudgeResult;
 import cn.sdu.oj.domain.bo.JudgeStatus;
 import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.dto.SolveResultDto;
-import cn.sdu.oj.domain.po.AsyncProblem;
-import cn.sdu.oj.domain.po.ProblemLimit;
-import cn.sdu.oj.domain.po.SolveRecord;
+import cn.sdu.oj.domain.po.*;
+import cn.sdu.oj.domain.vo.ProblemTypeEnum;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -32,12 +36,17 @@ public class SolveService {
 
     @Resource
     AsyncProblemMapper asyncProblemMapper;
+    @Resource
+    SyncProblemMapper syncProblemMapper;
+    @Resource
+    AnswerRecordMapper answerRecordMapper;
 
     @Resource
     ProblemSetMapper problemSetMapper;
     @Value("${spring.rabbitmq.template.routing-key}")
     private String routingKey;
 
+    @Transactional
     public ResultEntity<String> trySolveProblem(JudgeTask task, int userId, int problemSetId) {
         Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(task.getProblemId());
         if (typeProblemId == null) {
@@ -45,7 +54,7 @@ public class SolveService {
 
         }
         AsyncProblem problem = asyncProblemMapper.selectProblem(typeProblemId);
-        //todo 检验题目集中是否有题目
+        //todo 判断用户能否提交
         if (problem == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }
@@ -87,6 +96,57 @@ public class SolveService {
 
     }
 
+    @Transactional
+    public ResultEntity<AnswerRecord> trySolveSyncProblem(int problemId, int userId, int problemSetId, String userAnswer) {
+        //todo 判断用户能否提交
+        AnswerRecord answerRecord = new AnswerRecord();
+        answerRecord.setProblemId(problemId);
+        answerRecord.setUserId(userId);
+        answerRecord.setProblemSetId(problemSetId);
+        //判断之前是否判过此题，如果有返回上一次判题的结果
+        Integer recordId = answerRecordMapper.exist(answerRecord);
+        if (recordId != null) {
+            answerRecord.setId(recordId);
+            return ResultEntity.data(answerRecordMapper.selectAnswerRecord(recordId));
+        }
+
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+
+        answerRecord.setUserAnswer(userAnswer);
+        answerRecord.setType(syncProblem.getType());
+        //是选择题的情况
+        if (answerRecord.getType() == ProblemTypeEnum.SELECTION.id) {
+            //单选多选一致
+            HashSet<String> userAnswerSet = new HashSet<>(JSON.parseArray(userAnswer, String.class));
+            HashSet<String> answerSet = new HashSet<>(JSON.parseArray(syncProblem.getAnswer(), String.class));
+            answerRecord.setCorrect(userAnswerSet.equals(answerSet));
+        } else if (answerRecord.getType() == ProblemTypeEnum.COMPLETION.id) {
+            //填空题
+            List<String> userAnswerList = JSON.parseArray(userAnswer, String.class);
+            List<String> answerList = JSON.parseArray(syncProblem.getAnswer(), String.class);
+            answerRecord.setCorrect(userAnswerList.equals(answerList));
+        } else if (answerRecord.getType() == ProblemTypeEnum.JUDGEMENT.id) {
+            //判断题
+            HashSet<String> userAnswerSet = new HashSet<>(JSON.parseArray(userAnswer, String.class));
+            HashSet<String> answerSet = new HashSet<>(JSON.parseArray(syncProblem.getAnswer(), String.class));
+            answerRecord.setCorrect(userAnswerSet.equals(answerSet));
+        } else if (answerRecord.getType() == ProblemTypeEnum.SHORT.id) {
+            answerRecord.setCorrect(null);
+        } else {
+            return ResultEntity.error(StatusCode.COMMON_FAIL, "题目类型错误");
+        }
+        answerRecord.setCorrect(Objects.equals(userAnswer, syncProblem.getAnswer()));
+        if (answerRecordMapper.insertAnswerRecord(answerRecord)) {
+            return ResultEntity.data(answerRecord);
+        } else {
+            return ResultEntity.data(StatusCode.DATA_ALREADY_EXIST, null);
+        }
+    }
+
     public ResultEntity<String> runTestCode(JudgeTask task, int userId, int problemSetId) {
         return trySolveProblem(task, userId, problemSetId);
     }
@@ -122,6 +182,7 @@ public class SolveService {
         JudgeResult judgeResult = JSONObject.parseObject(resultEntity.getData(), JudgeResult.class);
         SolveRecord record = solveRecordMapper.selectSolveRecordByPrimaryKey(Integer.parseInt(judgeResult.getTaskId()));
         record.setStatus(resultEntity.getCode());
+        //todo 判题结束，更新答卷中题目状态为完成
         //判题成功,插入判题的数据
         if (resultEntity.getCode() == JudgeStatus.JUDGE_SUCCESS.getCode()) {
             record.setStatus(JudgeStatus.JUDGE_SUCCESS.getCode());

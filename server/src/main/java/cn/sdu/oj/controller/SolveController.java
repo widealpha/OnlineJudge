@@ -3,10 +3,13 @@ package cn.sdu.oj.controller;
 import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.dto.SolveResultDto;
+import cn.sdu.oj.domain.po.AnswerRecord;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.service.SolveService;
+import com.alibaba.fastjson.JSONException;
+import com.fasterxml.jackson.core.io.JsonEOFException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -64,6 +67,20 @@ public class SolveController {
         return solveService.runTestCode(judgeTask, user.getId(), problemSetId);
     }
 
+
+    @ApiOperation("提交判题代码")
+    @PostMapping("trySolveSyncProblem")
+    @PreAuthorize("hasRole('COMMON')")
+    ResultEntity<AnswerRecord> trySolveSyncProblem(@ApiIgnore @AuthenticationPrincipal User user,
+                                                   @ApiParam("题目Id") @RequestParam int problemId,
+                                                   @ApiParam("题目集编号") @RequestParam int problemSetId,
+                                                   @ApiParam("答案内容") @RequestParam String answer) {
+        try {
+            return solveService.trySolveSyncProblem(problemId, user.getId(), problemSetId, answer);
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "非JSON标准格式");
+        }
+    }
 
     @ApiOperation("获取判题支持的语言")
     @GetMapping("supportLanguages")

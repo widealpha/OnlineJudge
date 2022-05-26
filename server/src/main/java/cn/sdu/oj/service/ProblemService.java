@@ -35,7 +35,7 @@ public class ProblemService {
     @Resource
     TagMapper tagMapper;
 
-    public ResultEntity<ProblemDto> findProblemInfo(int problemId) {
+    public ResultEntity<ProblemDto> findProblemInfo(int problemId, int userId) {
         ProblemDto problemDto = new ProblemDto();
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null) {
@@ -64,7 +64,10 @@ public class ProblemService {
                 problemDto.setAnswer(syncProblem.getAnswer());
                 problemDto.setOptions(syncProblem.getOptions());
             }
-
+            //非创建者无法看到答案
+            if (problemDto.getCreator() != userId) {
+                problemDto.setAnswer(null);
+            }
             return ResultEntity.data(problemDto);
         }
     }
@@ -79,13 +82,7 @@ public class ProblemService {
             generalProblem.setDifficulty(problem.getDifficulty());
             if (generalProblemMapper.insertGeneralProblem(generalProblem)) {
                 int problemId = generalProblem.getId();
-                for (Integer tagId : tags) {
-                    if (tagId == null) {
-                        throw new TagNotExistException();
-                    } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
-                        throw new TagNotExistException();
-                    }
-                }
+                changeProblemTags(problemId, tags);
                 return ResultEntity.data(generalProblem.getId());
             }
         }
@@ -102,20 +99,63 @@ public class ProblemService {
             generalProblem.setDifficulty(problem.getDifficulty());
             if (generalProblemMapper.insertGeneralProblem(generalProblem)) {
                 int problemId = generalProblem.getId();
-                for (Integer tagId : tags) {
-                    if (tagId == null) {
-                        throw new TagNotExistException();
-                    } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
-                        throw new TagNotExistException();
-                    }
-                }
+                changeProblemTags(problemId, tags);
                 return ResultEntity.data(generalProblem.getId());
             }
         }
         return ResultEntity.error(StatusCode.DATA_ALREADY_EXIST);
     }
 
+    @Transactional
+    public ResultEntity<Boolean> updateProgramingProblem(int problemId, AsyncProblem problem, List<Integer> tags) throws TagNotExistException {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        //如果数据不存在或者表示为非编程题，返回数据不存在
+        if (generalProblem == null || generalProblem.getTypeProblemId() != 0) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else {
+            problem.setId(generalProblem.getTypeProblemId());
+            generalProblem.setDifficulty(problem.getDifficulty());
+            generalProblemMapper.updateGeneralProblem(generalProblem);
+        }
+        if (asyncProblemMapper.updateProblem(problem)) {
+            changeProblemTags(problemId, tags);
+            return ResultEntity.data(true);
+        }
+        return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+    }
 
+    @Transactional
+    public ResultEntity<Boolean> updateOtherProblem(int problemId, SyncProblem problem, List<Integer> tags) throws TagNotExistException {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        //如果数据不存在或者表示为编程题，返回数据不存在,否则寻找专属的typeProblemId
+        if (generalProblem == null || generalProblem.getTypeProblemId() == 0) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else {
+            problem.setId(generalProblem.getTypeProblemId());
+            //更新generalProblem的难度与种类
+            generalProblem.setDifficulty(problem.getDifficulty());
+            generalProblem.setType(problem.getType());
+            generalProblemMapper.updateGeneralProblem(generalProblem);
+        }
+        if (syncProblemMapper.updateProblem(problem)) {
+            changeProblemTags(problemId, tags);
+            return ResultEntity.data(true);
+        }
+        return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+    }
+
+    private void changeProblemTags(int problemId, List<Integer> tags) throws TagNotExistException {
+        generalProblemMapper.deleteProblemTags(problemId);
+        for (Integer tagId : tags) {
+            if (tagId == null || !tagMapper.exist(tagId)) {
+                throw new TagNotExistException();
+            } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
+                throw new TagNotExistException();
+            }
+        }
+    }
+
+    @Transactional
     public ResultEntity<Boolean> updateProblemLimit(ProblemLimit problemLimit) {
         Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(problemLimit.getProblemId());
         if (typeProblemId == null) {
@@ -129,6 +169,17 @@ public class ProblemService {
         asyncProblem.setCodeLengthLimit(problemLimit.getCodeLength());
         asyncProblem.setTimeLimit(problemLimit.getTime());
         return ResultEntity.data(asyncProblemMapper.updateProblemLimit(asyncProblem));
+    }
+
+    public ResultEntity<Boolean> deleteProblem(int problemId, int userId) {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else if (generalProblem.getCreator() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        } else {
+            return ResultEntity.data(generalProblemMapper.deleteGeneralProblem(problemId));
+        }
     }
 
     public int addProblem(ProblemWithInfo problemWithInfo) {
@@ -203,17 +254,17 @@ public class ProblemService {
         return problemMapper.getChildrenTagByParentId(parentId);
     }
 
-    public void deleteProblem(int u_id, int p_id, int type) {
-        if (type == 0) {
-            //删除题目限制
-            problemMapper.deleteProgramProblem(u_id, p_id);
-        } else {
-            problemMapper.deleteNonProgramProblem(u_id, p_id);
-        }
-        // 删除标签
-        problemMapper.deleteTag(p_id, type);
-        // TODO: 2022/5/14 删除题目限制
-    }
+//    public void deleteProblem(int u_id, int p_id, int type) {
+//        if (type == 0) {
+//            //删除题目限制
+//            problemMapper.deleteProgramProblem(u_id, p_id);
+//        } else {
+//            problemMapper.deleteNonProgramProblem(u_id, p_id);
+//        }
+//        // 删除标签
+//        problemMapper.deleteTag(p_id, type);
+//        // TODO: 2022/5/14 删除题目限制
+//    }
 
     public void updateProblem(ProblemWithInfo problemWithInfo) {
         if (problemWithInfo.getType().equals(0)) {
