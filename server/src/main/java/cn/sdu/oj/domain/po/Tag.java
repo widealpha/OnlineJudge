@@ -12,4 +12,5 @@ public class Tag {
     private Integer parent;
     private String name;
     private Integer level;
+    private boolean hasChild;
 }

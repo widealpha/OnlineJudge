@@ -162,7 +162,7 @@ export default {
 		},
 	},
 	created() {
-		if (!this.$store.state.isTeacher) {
+		if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace("/");
 		} else {
 			this.getProblemsetList();

@@ -7,43 +7,92 @@
       <!--题目信息编辑区,包括基本信息,题面描述,标准答案,题目判定,点击提交按钮后进行表单格式化校验,校验标准全部是不为空-->
       <div class="questionInfo">
         <!--基本信息表单(标题,难度,作者,单位)-->
-        <el-form ref="BasicInfo" :model="BasicInfo" :rules="basicRules" class="basicInfo">
+        <el-form
+          ref="BasicInfo"
+          :model="BasicInfo"
+          :rules="basicRules"
+          class="basicInfo"
+        >
           <div class="text">
             <h3>基本信息</h3>
           </div>
           <el-form-item label="标题" prop="title">
-            <el-input v-model="BasicInfo.title" placeholder="请输入1-80个字符作为标题"></el-input>
+            <el-input
+              v-model="BasicInfo.title"
+              placeholder="请输入1-80个字符作为标题"
+            ></el-input>
           </el-form-item>
           <el-form-item label="难度" prop="difficulty">
-            <el-rate v-model="BasicInfo.difficulty" style="text-align: left; margin-top: 0.75em;"/>
+            <el-rate
+              v-model="BasicInfo.difficulty"
+              style="text-align: left; margin-top: 0.75em"
+            />
           </el-form-item>
-          <el-form-item prop="myTags" style="margin-top: -1em;">
-            <div style="text-align: left;">
-              <ul style="padding: 0; margin-top: 0; margin-bottom: 0.2em; list-style-type: none;">
-                <li v-for="item in BasicInfo.myTags" :key="item.index" style="height: 2em">
-                  <el-tag :disable-transitions="false" closable effect="plain" size="small" @close="deleteTag(item)">
+          <el-form-item prop="myTags" style="margin-top: -1em">
+            <div style="text-align: left">
+              <ul
+                style="
+                  padding: 0;
+                  margin-top: 0;
+                  margin-bottom: 0.2em;
+                  list-style-type: none;
+                "
+              >
+                <li
+                  v-for="item in BasicInfo.myTags"
+                  :key="item.index"
+                  style="height: 2em"
+                >
+                  <el-tag
+                    :disable-transitions="false"
+                    closable
+                    effect="plain"
+                    size="small"
+                    @close="deleteTag(item)"
+                  >
                     {{ item.value }}
                   </el-tag>
                 </li>
               </ul>
-              <el-dropdown ref="tagDrop" placement="bottom-start" size="mini" trigger="click">
-                <el-button icon="el-icon-circle-plus-outline" plain round size="mini" @click="tempTag=[];">添加知识点
+              <el-dropdown
+                ref="tagDrop"
+                placement="bottom-start"
+                size="mini"
+                trigger="click"
+              >
+                <el-button
+                  icon="el-icon-circle-plus-outline"
+                  plain
+                  round
+                  size="mini"
+                  @click="tempTag = []"
+                  >添加知识点
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-cascader-panel ref="tagCascader" v-model="tempTag" :props="tagCascaderProps" @change="selectTag"/>
+                  <el-cascader-panel
+                    ref="tagCascader"
+                    v-model="tempTag"
+                    :props="tagCascaderProps"
+                    @change="selectTag"
+                  />
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
           </el-form-item>
-          <el-divider/>
+          <el-divider />
           <el-form-item label="题面" prop="description">
-            <mavon-editor v-model="BasicInfo.description" :toolbars="markdownOption" class="markdown" fontSize="16px"/>
+            <mavon-editor
+              v-model="BasicInfo.description"
+              :toolbars="markdownOption"
+              class="markdown"
+              fontSize="16px"
+            />
           </el-form-item>
         </el-form>
       </div>
-      <el-divider/>
-      <el-button style="width: 10em;" type="primary" @click="onSubmit">
-        {{ problemId === 0 ? '题目上传' : '提交修改' }}
+      <el-divider />
+      <el-button style="width: 10em" type="primary" @click="onSubmit">
+        {{ problemId === 0 ? "题目上传" : "提交修改" }}
       </el-button>
     </el-card>
   </div>
@@ -66,31 +115,31 @@ export default {
         difficulty: 1,
         myTags: [],
         description:
-            "这是一个编程题模板。请在这里写题目描述。例如：本题目要求读入2个整数A和B，然后输出它们的和。\n" +
-            "\n" +
-            "### 输入格式:\n" +
-            "\n" +
-            "请在这里写输入格式。例如：输入在一行中给出2个绝对值不超过1000的整数A和B。\n" +
-            "\n" +
-            "### 输出格式:\n" +
-            "\n" +
-            "请在这里描述输出格式。例如：对每一组输入，在一行中输出A+B的值。\n" +
-            "\n" +
-            "### 输入样例:\n" +
-            "\n" +
-            "在这里给出一组输入。例如：\n" +
-            "\n" +
-            "```in\n" +
-            "18 -299\n" +
-            "```\n" +
-            "\n" +
-            "### 输出样例:\n" +
-            "\n" +
-            "在这里给出相应的输出。例如：\n" +
-            "\n" +
-            "```out\n" +
-            "-281\n" +
-            "```",
+          "这是一个编程题模板。请在这里写题目描述。例如：本题目要求读入2个整数A和B，然后输出它们的和。\n" +
+          "\n" +
+          "### 输入格式:\n" +
+          "\n" +
+          "请在这里写输入格式。例如：输入在一行中给出2个绝对值不超过1000的整数A和B。\n" +
+          "\n" +
+          "### 输出格式:\n" +
+          "\n" +
+          "请在这里描述输出格式。例如：对每一组输入，在一行中输出A+B的值。\n" +
+          "\n" +
+          "### 输入样例:\n" +
+          "\n" +
+          "在这里给出一组输入。例如：\n" +
+          "\n" +
+          "```in\n" +
+          "18 -299\n" +
+          "```\n" +
+          "\n" +
+          "### 输出样例:\n" +
+          "\n" +
+          "在这里给出相应的输出。例如：\n" +
+          "\n" +
+          "```out\n" +
+          "-281\n" +
+          "```",
       },
       // 基本信息校验标准(title长度在1-80&&不为空,其他不为空)
       basicRules: {
@@ -175,17 +224,18 @@ export default {
     };
   },
   methods: {
+    //根据问题id获取问题信息
     async getProblemInfoById() {
       let res = await this.$ajax.post(
-          "/problem/getProblemById",
-          {
-            id: this.problemId,
+        "/problem/Info",
+        {
+          id: this.problemId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.state.token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
-            },
-          }
+        }
       );
       if (res.data.code === 0) {
         let data = res.data.data;
@@ -199,7 +249,7 @@ export default {
             id: tag.id,
           });
           const node = this.$refs.tagCascader.getNodeByValue(
-              tag.name.split("/")
+            tag.name.split("/")
           );
           node;
         });
@@ -211,22 +261,22 @@ export default {
         if (valid) {
           if (this.problemId === 0) {
             let res = await this.$ajax.post(
-                "/problem/addAProblem",
-                {
-                  title: this.BasicInfo.title,
-                  difficulty: this.BasicInfo.difficulty,
-                  tagString: this.BasicInfo.myTags
-                      .map((tag) => {
-                        return tag.id;
-                      })
-                      .join("_"),
-                  description: this.BasicInfo.description,
+              "/problem/addAProblem",
+              {
+                title: this.BasicInfo.title,
+                difficulty: this.BasicInfo.difficulty,
+                tagString: this.BasicInfo.myTags
+                  .map((tag) => {
+                    return tag.id;
+                  })
+                  .join("_"),
+                description: this.BasicInfo.description,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${this.$store.state.token}`,
                 },
-                {
-                  headers: {
-                    Authorization: `Bearer ${this.$store.state.token}`,
-                  },
-                }
+              }
             );
             if (res.data.code == 0) {
               this.$message({
@@ -235,8 +285,8 @@ export default {
               });
               this.$router.push({
                 name: "newProblem",
-                query: {problemId: res.data.data},
-                params: {step: 2},
+                query: { problemId: res.data.data },
+                params: { step: 2 },
               });
             } else {
               this.$message({
@@ -246,23 +296,23 @@ export default {
             }
           } else {
             let res = await this.$ajax.post(
-                "/problem/updateAProblem",
-                {
-                  id: this.problemId,
-                  title: this.BasicInfo.title,
-                  difficulty: this.BasicInfo.difficulty,
-                  tagString: this.BasicInfo.myTags
-                      .map((tag) => {
-                        return tag.id;
-                      })
-                      .join("_"),
-                  description: this.BasicInfo.description,
+              "/problem/updateAProblem",
+              {
+                id: this.problemId,
+                title: this.BasicInfo.title,
+                difficulty: this.BasicInfo.difficulty,
+                tagString: this.BasicInfo.myTags
+                  .map((tag) => {
+                    return tag.id;
+                  })
+                  .join("_"),
+                description: this.BasicInfo.description,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${this.$store.state.token}`,
                 },
-                {
-                  headers: {
-                    Authorization: `Bearer ${this.$store.state.token}`,
-                  },
-                }
+              }
             );
             if (res.data.code == 0) {
               this.$message({
@@ -286,38 +336,38 @@ export default {
     },
     // 获取可选标签
     async getTags(node) {
+
       let res;
       if (node.root) {
         res = await this.$ajax.post(
-            "/tag/getTopTag",
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
-              },
-            }
+          "/problem/getTopLevelTag",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${this.$store.state.token}`,
+            },
+          }
         );
       } else {
         res = await this.$ajax.post(
-            "/tag/getChildrenTag",
-            {
-              parentId: node.data.id,
+          "/problem/getChildrenTagByParentTagId",
+          {
+            parentTagId: node.data.id,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${this.$store.state.token}`,
             },
-            {
-              headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
-              },
-            }
+          }
         );
       }
+console.log(res.data);
       const nodes = res.data.data.map((item) => ({
         value: item.name,
         label: item.name,
         id: item.id,
-        leaf: !item.hasChildren,
-        disabled: this.BasicInfo.myTags.some(
-            (tag) => tag.id === item.id
-        ),
+        leaf:item.level>=3,
+        disabled: this.BasicInfo.myTags.some((tag) => tag.id === item.id),
       }));
       return nodes;
     },
@@ -329,19 +379,17 @@ export default {
         value: value.join("/"),
         id: node.data.id,
       });
-      this.$refs.tagDrop.hide(); // el-dropdown 源码中的方法，手动关闭下拉列表
+
+  
+        this.$refs.tagDrop.hide(); // el-dropdown 源码中的方法，手动关闭下拉列表
+    
     },
     deleteTag(item) {
-      const node = this.$refs.tagCascader.getNodeByValue(
-          item.value.split("/")
-      );
+      const node = this.$refs.tagCascader.getNodeByValue(item.value.split("/"));
       if (node) {
         node.data.disabled = false;
       }
-      this.BasicInfo.myTags.splice(
-          this.BasicInfo.myTags.indexOf(item),
-          1
-      );
+      this.BasicInfo.myTags.splice(this.BasicInfo.myTags.indexOf(item), 1);
     },
   },
   async created() {
@@ -364,31 +412,31 @@ export default {
           difficulty: 1,
           myTags: [],
           description:
-              "这是一个编程题模板。请在这里写题目描述。例如：本题目要求读入2个整数A和B，然后输出它们的和。\n" +
-              "\n" +
-              "### 输入格式:\n" +
-              "\n" +
-              "请在这里写输入格式。例如：输入在一行中给出2个绝对值不超过1000的整数A和B。\n" +
-              "\n" +
-              "### 输出格式:\n" +
-              "\n" +
-              "请在这里描述输出格式。例如：对每一组输入，在一行中输出A+B的值。\n" +
-              "\n" +
-              "### 输入样例:\n" +
-              "\n" +
-              "在这里给出一组输入。例如：\n" +
-              "\n" +
-              "```in\n" +
-              "18 -299\n" +
-              "```\n" +
-              "\n" +
-              "### 输出样例:\n" +
-              "\n" +
-              "在这里给出相应的输出。例如：\n" +
-              "\n" +
-              "```out\n" +
-              "-281\n" +
-              "```",
+            "这是一个编程题模板。请在这里写题目描述。例如：本题目要求读入2个整数A和B，然后输出它们的和。\n" +
+            "\n" +
+            "### 输入格式:\n" +
+            "\n" +
+            "请在这里写输入格式。例如：输入在一行中给出2个绝对值不超过1000的整数A和B。\n" +
+            "\n" +
+            "### 输出格式:\n" +
+            "\n" +
+            "请在这里描述输出格式。例如：对每一组输入，在一行中输出A+B的值。\n" +
+            "\n" +
+            "### 输入样例:\n" +
+            "\n" +
+            "在这里给出一组输入。例如：\n" +
+            "\n" +
+            "```in\n" +
+            "18 -299\n" +
+            "```\n" +
+            "\n" +
+            "### 输出样例:\n" +
+            "\n" +
+            "在这里给出相应的输出。例如：\n" +
+            "\n" +
+            "```out\n" +
+            "-281\n" +
+            "```",
         };
       }
     },
@@ -399,10 +447,7 @@ export default {
 <style lang="less" scoped>
 .input {
   border-radius: 4px;
-
 }
-
-
 
 .text {
   text-align: left;

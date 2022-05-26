@@ -104,7 +104,7 @@ export default {
 				const TOKEN = jwt.decode(this.$store.state.token);
 				let isMyProblemSet = author == TOKEN.USER_ID;
 				this.$store
-					.dispatch("setProblemSetInfo", {
+					.commit("setProblemSetInfo", {
 						name,
 						announcement,
 						author,
@@ -193,7 +193,7 @@ export default {
 	},
 	async created() {
 		this.$store
-			.dispatch("setProblemSetInfo", {
+			.commit("setProblemSetInfo", {
 				problemSetId: Number(this.$route.params.problemSetId),
 			})
 			.then(() => {
@@ -201,7 +201,7 @@ export default {
 			});
 	},
 	beforeDestroy() {
-		this.$store.dispatch("setProblemSetInfo", {
+		this.$store.commit("setProblemSetInfo", {
 			problems: [],
 			title: "",
 			announcement: "",
@@ -220,7 +220,7 @@ export default {
 			if (to.path != from.path) {
 				if (to.params.problemSetId != from.params.problemSetId) {
 					this.$store
-						.dispatch("setProblemSetInfo", {
+						.commit("setProblemSetInfo", {
 							problemSetId: Number(
 								this.$route.params.problemSetId
 							),

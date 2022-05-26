@@ -23,7 +23,7 @@ export default {
 	methods: {
 		async getPublicProblemSets() {
 			let res = await this.$ajax.post(
-				"/problemset/getPublicProblemset",
+				"/problemSet/getPublicProblemSet",
 				{},
 				{
 					headers: {
@@ -32,6 +32,7 @@ export default {
 				}
 			);
 			if (res.data.code == 0) {
+				console.log(res);
 				this.problemSets = res.data.data;
 			}
 		},

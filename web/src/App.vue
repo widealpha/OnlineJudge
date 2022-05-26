@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- iconfont  -->
+    <!-- iconfont -->
     <link
       rel="stylesheet"
       href="//at.alicdn.com/t/font_3405352_lj553jmowze.css"
@@ -12,18 +12,22 @@
 <script>
 export default {
   methods: {
-    async getMyInfo(authorization) {
-      let res = await this.$ajax.get(
-        "/user/myUserInfo",
+    async getMyInfo() {
+      let _token = localStorage.getItem("token");
+      let info = await this.$ajax.post(
+        "/user/info",
         {},
         {
           headers: {
-            Authorization: authorization,
+            Authorization: `Bearer ${_token}`,
           },
         }
       );
-      if (res.data.code === 0 && res.data.message === "success") {
-        this.$store.dispatch("setMyInfo", res.data.data);
+
+      if (info.data.code === 0) {
+        this.$store.commit("setMyInfo", info.data.data);
+        this.$store.commit("setToken", _token);
+        this.$store.commit("setNoToken", false);
       }
     },
   },
@@ -36,30 +40,9 @@ export default {
     }
 
     let token = localStorage.getItem("token");
-    let jwt = require("jsonwebtoken");
-    const TOKEN = jwt.decode(token);
 
-    if (TOKEN != null) {
-      let exp = TOKEN.exp * 1000;
-      if (exp <= new Date().getTime()) {
-        this.$message({
-          message: "您的身份认证已过期，请重新登陆",
-          type: "warning",
-          duration: 1000,
-          onClose: () => {
-            localStorage.removeItem("token");
-            this.$router.push("/login");
-          },
-        });
-      } else {
-        this.$store.dispatch("setToken", token);
-        if (TOKEN.ROLE.indexOf("ROLE_ADMIN") != -1) {
-          this.$store.dispatch("setIsAdmin", true);
-        } else if (TOKEN.ROLE.indexOf("ROLE_TEACHER") != -1) {
-          this.$store.dispatch("setIsTeacher", true);
-        }
-        await this.getMyInfo(`Bearer ${token}`);
-      }
+    if (token != null) {
+      await this.getMyInfo();
     } else {
       this.$router.push("/login");
     }

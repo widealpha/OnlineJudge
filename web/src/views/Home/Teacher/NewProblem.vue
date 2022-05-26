@@ -1,5 +1,6 @@
 <template>
 	<div class="newProblem">
+		<!-- 教师添加题目 -->
 		<el-steps :active="step" simple>
 			<el-step title="编辑题目" icon="el-icon-edit" />
 			<el-step title="测试数据" icon="el-icon-upload" />
@@ -32,7 +33,7 @@ export default {
 		};
 	},
 	created() {
-		if (!this.$store.state.isTeacher) {
+		if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace("/");
 		} else {
 			let step = this.$route.params.step;

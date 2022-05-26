@@ -7,15 +7,15 @@ export default new Vuex.Store({
     state: {
         token: null,
         noToken: true,
-        isTeacher: false,
-        isAdmin: false,
+
         myInfo: {
-            headImage: null,
+            avatar: null,
             nickname: null,
-            realName: null,
-            stuNum: null,
+            name: null,
+           
+            email: null,
             userId: undefined,
-            username: null,
+            studentId: null,
         },
         problemSetInfo: {
             problems: [],
@@ -33,6 +33,7 @@ export default new Vuex.Store({
             problemSetId: 0,
         }
     },
+    //同步操作
     mutations: {
         setToken(state, token) {
             state.token = token
@@ -40,13 +41,7 @@ export default new Vuex.Store({
         setNoToken(state, noToken) {
             state.noToken = noToken;
         },
-        setIsTeacher(state, isTeacher) {
-            state.isTeacher = isTeacher;
-        },
-        setIsAdmin(state, isAdmin) {
-            state.isAdmin = isAdmin;
-            state.isTeacher = isAdmin;
-        },
+  
         setMyInfo(state, myInfo) {
             for (const key in myInfo) {
                 Vue.set(state.myInfo, key, myInfo[key])
@@ -58,26 +53,34 @@ export default new Vuex.Store({
             }
         },
     },
-    actions: {
-        setToken(context, token) {
-            context.commit('setToken', token);
-        },
-        setNoToken(context, noToken) {
-            context.commit('setNoToken', noToken);
-        },
-        setIsTeacher(context, isTeacher) {
-            context.commit('setIsTeacher', isTeacher);
-        },
-        setIsAdmin(context, isAdmin) {
-            context.commit('setIsAdmin', isAdmin);
-        },
-        setMyInfo(context, myInfo) {
-            context.commit('setMyInfo', myInfo);
-        },
-        setProblemSetInfo(context, newInfo) {
-            context.commit('setProblemSetInfo', newInfo);
-        },
-    },
+    // //异步操作
+    // actions: {
+
+    //     setToken(context, token) {
+    //         context.commit('setToken', token);
+    //     },
+    //     setNoToken(context, noToken) {
+    //         context.commit('setNoToken', noToken);
+    //     },
+    //     setIsTeacher(context, isTeacher) {
+    //         context.commit('setIsTeacher', isTeacher);
+    //     },
+    //     setIsAdmin(context, isAdmin) {
+    //         context.commit('setIsAdmin', isAdmin);
+    //     },
+    //     setIsStudent(context, isStudent) {
+    //         context.commit('setIsStudent', isStudent);
+    //     },
+    //     setIsCommon(context, isCommon) {
+    //         context.commit('setIsCommon', isCommon);
+    //     },
+    //     setMyInfo(context, myInfo) {
+    //         context.commit('setMyInfo', myInfo);
+    //     },
+    //     setProblemSetInfo(context, newInfo) {
+    //         context.commit('setProblemSetInfo', newInfo);
+    //     },
+    // },
     getters: {
         usernameToShow: (state) => {
             return state.myInfo.nickname ? state.myInfo.nickname : (state.myInfo.realName ? state.myInfo.realName : state.myInfo.username)

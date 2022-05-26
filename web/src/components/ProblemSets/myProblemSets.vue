@@ -23,7 +23,7 @@ export default {
 	methods: {
 		async getMyProblemSets() {
 			let res = await this.$ajax.post(
-				"/problemset/getMyProblemset",
+				"/problemSet/getSelfDoneProblemSet",
 				{},
 				{
 					headers: {

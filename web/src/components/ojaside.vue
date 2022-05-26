@@ -18,7 +18,7 @@
         <el-menu-item index="/student/userList">用户组列表</el-menu-item>
       </el-submenu>
 
-      <el-submenu v-if="!noToken&&(isTeacher||isAdmin)" index="teacher">
+      <el-submenu v-if="!noToken&&isTeacher" index="teacher">
         <template #title>
           <i class="el-icon-location"/>
           <span>教师相关</span>
@@ -53,10 +53,11 @@ export default {
       return this.$store.state.token === null;
     },
     isTeacher() {
-      return this.$store.state.isTeacher;
+      console.log(this.$store.state.myInfo);
+      return this.$store.state.myInfo.roles.includes("ROLE_TEACHER");
     },
     isAdmin() {
-      return this.$store.state.isAdmin;
+      return this.$store.state.myInfo.roles.includes("ROLE_ADMIN");
     },
   },
 };

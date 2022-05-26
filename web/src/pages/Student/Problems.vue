@@ -136,22 +136,22 @@ export default {
 		}
 	},
 	async created() {
-		let res = await this.$ajax.post(
-			"/problem/getProblemByDifficulty",
-			{
-				difficulty: this.difficulty,
-				page: this.page,
-				size: this.size,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${this.$store.state.token}`,
-				},
-			}
-		);
-		this.problems = res.data.data.rows;
-		this.total = res.data.data.total;
-		this.loading = false;
+	// 	let res = await this.$ajax.post(
+	// 		"/problem/getProblemByDifficulty",
+	// 		{
+	// 			difficulty: this.difficulty,
+	// 			page: this.page,
+	// 			size: this.size,
+	// 		},
+	// 		{
+	// 			headers: {
+	// 				Authorization: `Bearer ${this.$store.state.token}`,
+	// 			},
+	// 		}
+	// 	);
+	// 	this.problems = res.data.data.rows;
+	// 	this.total = res.data.data.total;
+	// 	this.loading = false;
 	},
 };
 </script>
