@@ -36,7 +36,7 @@ export default {
 		},
 	},
 	beforeCreate() {
-		if (!this.$store.state.isAdmin) {
+		if (!this.$store.state.myInfo.roles.includes("ROLE_ADMIN")) {
 			this.$router.replace("/");
 		}
 	},

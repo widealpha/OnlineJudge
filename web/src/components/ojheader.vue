@@ -25,6 +25,7 @@
             @mouseenter="nameColor = 'dodgerblue'"
             @mouseleave="nameColor = '#000'"
           >
+          {{this.$store.state.myInfo.username}}
             <i
               class="iconfont icon-user-filling"
               style="color: #0d4990; font-size: 33px; float: right"
@@ -65,12 +66,13 @@ export default {
       nameColor: "#000",
     };
   },
+
   methods: {
     Logout() {
       Promise.all([
-        this.$store.dispatch("setToken", null),
-        this.$store.dispatch("setIsAdmin", false),
-        this.$store.dispatch("setMyInfo", {
+        this.$store.commit("setToken", null),
+ 
+        this.$store.commit("setMyInfo", {
           headImage: null,
           nickname: null,
           realName: null,
@@ -101,10 +103,10 @@ export default {
       return this.$store.getters.usernameToShow;
     },
     isTeacher() {
-      return this.$store.state.isTeacher;
+      return this.$store.state.myInfo.roles.includes("ROLE_TEACHER");
     },
     isAdmin() {
-      return this.$store.state.isAdmin;
+      return this.$store.state.myInfo.roles.includes("ROLE_ADMIN");
     },
   },
 };

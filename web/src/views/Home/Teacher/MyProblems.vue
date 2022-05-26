@@ -140,12 +140,12 @@ export default {
 		},
 	},
 	beforeCreate() {
-		if (this.$store.state.token === null || !this.$store.state.isTeacher) {
+		if (this.$store.state.token === null || !this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace("/");
 		}
 	},
 	async created() {
-		if (!this.$store.state.isTeacher) {
+		if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace("/");
 		} else {
 			this.loading = true;

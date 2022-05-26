@@ -130,7 +130,7 @@ export default {
 		},
 	},
 	created() {
-		if (!this.$store.state.isTeacher) {
+		if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace(
 				`/problem-set/${this.$store.state.problemSetInfo.problemSetId}/`
 			);

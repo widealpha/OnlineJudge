@@ -208,7 +208,7 @@ export default {
 							message: "题目集信息修改成功",
 							type: "success",
 						});
-						this.$store.dispatch("setProblemSetInfo", {
+						this.$store.commit("setProblemSetInfo", {
 							name: this.infoForm.name,
 							announcement: this.infoForm.announcement,
 							beginTime: this.formatDate(

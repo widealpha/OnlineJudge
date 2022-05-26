@@ -148,7 +148,7 @@ export default {
 					problems.forEach((element) => {
 						problemIds.push(element.id);
 					});
-					this.$store.dispatch("setProblemSetInfo", {
+					this.$store.commit("setProblemSetInfo", {
 						problems,
 						problemIds,
 					});
@@ -197,7 +197,7 @@ export default {
 					problems.forEach((element) => {
 						problemIds.push(element.id);
 					});
-					this.$store.dispatch("setProblemSetInfo", {
+					this.$store.commit("setProblemSetInfo", {
 						problems,
 						problemIds,
 					});
@@ -226,7 +226,7 @@ export default {
 		},
 	},
 	created() {
-		if (!this.$store.state.isTeacher) {
+		if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace(
 				`/problem-set/${this.$store.state.problemSetInfo.problemSetId}/`
 			);
