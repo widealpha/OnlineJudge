@@ -128,6 +128,15 @@ public class UserGroupController {                  // TODO 权限
     }
 
     //获取一个用户组有的题目集  TODO
+    @ApiOperation("获取一个用户组有的题目集")  // 创建者（老师或者管理员）可以使用
+    @PostMapping("/getUserGroupProblemSet")    //获取一个用户组有的题目集
+    public ResultEntity getUserGroupProblemSet(
+            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        if (UserGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
+            return ResultEntity.data(UserGroupService.getUserGroupMembers(id));
+        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+    }
 
     //为一个用户组添加题目集
 }

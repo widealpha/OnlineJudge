@@ -280,6 +280,13 @@ public class ProblemController {
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getChildrenTagByParentTagId(@ApiParam("父标签的id") @RequestParam int parentTagId) {
         List<Tag> childrenList = problemService.getChildrenTagByParentId(parentTagId);
+        for (Tag a:childrenList
+             ) { Integer id  =a.getId();
+            List<Tag> c = problemService.getChildrenTagByParentId(id);
+            if (c!=null && c.size()!=0){
+                a.setHasChild(true);
+            } else  a.setHasChild(false);
+        }
         return ResultEntity.data(childrenList);
     }
 
