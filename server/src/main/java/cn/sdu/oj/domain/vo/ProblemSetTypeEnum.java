@@ -1,5 +1,8 @@
 package cn.sdu.oj.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ProblemSetTypeEnum {
     PRACTICE(1,"练习"),
     EXAM(2,"测验"),

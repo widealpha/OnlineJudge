@@ -185,8 +185,7 @@ public class ProblemService {
     }
 
     public List<Tag> getTopLevelTag() {
-        List<Tag> topLevelTag = tagMapper.getTopLevelTag();
-        return topLevelTag;
+        return tagMapper.getTopLevelTag();
     }
 
     public List<Tag> getChildrenTagByParentId(int parentId) {
