@@ -45,4 +45,13 @@ public interface UserGroupMapper {
 
     @Update("UPDATE user_group SET children_id=#{children} WHERE id=#{user_group_id} AND status = 0")
     void updateChildrenUserGroup(Integer user_group_id, String children);
+
+    @Select("SELECT DISTINCT problem_set_id FROM user_group_problem_set WHERE user_group_id=#{id}")
+    List<Integer> getUserGroupProblemSet(Integer id);
+
+    @Insert("INSERT INTO `user_group_problem_set` (user_group_id,problem_set_id) VALUES(#{user_group_id},#{problem_set_id})")
+    boolean addUserGroupProblemSet(Integer user_group_id, Integer problem_set_id);
+
+    @Update("UPDATE user_group_problem_set SET status=-1 WHERE `user_group_id`=#{user_group_id} AND `problem_set_id`=#{problem_set_id}")
+    boolean deleteUserGroupProblemSet(Integer user_group_id, Integer problem_set_id);
 }

@@ -17,6 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/userGroup")
@@ -127,16 +129,52 @@ public class UserGroupController {                  // TODO 权限
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
-    //获取一个用户组有的题目集  TODO
-    @ApiOperation("获取一个用户组有的题目集")  // 创建者（老师或者管理员）可以使用
+    //获取一个用户组有的题目集
+    @ApiOperation("获取一个用户组有的题目集")  // 创建者（老师）可以使用
     @PostMapping("/getUserGroupProblemSet")    //获取一个用户组有的题目集
     public ResultEntity getUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
         if (UserGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(UserGroupService.getUserGroupMembers(id));
+            return ResultEntity.data(UserGroupService.getUserGroupProblemSet(id));
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
     //为一个用户组添加题目集
+    @ApiOperation("为一个用户组添加题目集")  // 创建者（老师）可以使用
+    @PostMapping("/addUserGroupProblemSet")    //为一个用户组添加题目集
+    public ResultEntity addUserGroupProblemSet(
+            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer user_group_id,
+            @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problem_set_id,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        if (UserGroupService.getUserGroupInfoById(user_group_id).getCreatorId().equals(user.getId())) {
+            List<Integer> list =UserGroupService.getUserGroupProblemSet(user_group_id);
+            for (Integer i:list
+                 ) { if (i ==problem_set_id) {
+                return ResultEntity.error("该题目集已在用户组里");
+            }
+            }
+            return ResultEntity.data(UserGroupService.addUserGroupProblemSet(user_group_id, problem_set_id));
+        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+    }
+
+    //为一个用户组删除题目集
+    @ApiOperation("为一个用户组删除题目集")  // 创建者（老师）可以使用
+    @PostMapping("/deleteUserGroupProblemSet")    //为一个用户组删除题目集
+    public ResultEntity deleteUserGroupProblemSet(
+            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer user_group_id,
+            @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problem_set_id,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        if (UserGroupService.getUserGroupInfoById(user_group_id).getCreatorId().equals(user.getId())) {
+            List<Integer> list =UserGroupService.getUserGroupProblemSet(user_group_id);
+            for (Integer i:list
+            ) { if (i ==problem_set_id) {
+
+                return ResultEntity.data(UserGroupService.deleteUserGroupProblemSet(user_group_id,problem_set_id));
+            }
+            }
+            return ResultEntity.error("题目集不在用户组里");
+        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+    }
+
 }

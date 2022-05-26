@@ -109,4 +109,16 @@ public class UserGroupService {
        }
         UserGroupMapper.updateChildrenUserGroup(fatherId,j.toString());
     }
+
+    public List<Integer> getUserGroupProblemSet(Integer id) {
+        return  UserGroupMapper.getUserGroupProblemSet(id);
+    }
+
+    public boolean addUserGroupProblemSet(Integer user_group_id, Integer problem_set_id) {
+        return  UserGroupMapper.addUserGroupProblemSet(user_group_id,problem_set_id);
+    }
+
+    public boolean deleteUserGroupProblemSet(Integer user_group_id, Integer problem_set_id) {
+        return  UserGroupMapper.deleteUserGroupProblemSet(user_group_id,problem_set_id);
+    }
 }
