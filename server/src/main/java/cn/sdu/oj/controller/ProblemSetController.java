@@ -11,17 +11,12 @@ import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.service.ProblemSetService;
 import cn.sdu.oj.service.UserGroupService;
 import cn.sdu.oj.util.TimeUtil;
-import com.alibaba.fastjson.JSONArray;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.el.lang.ELArithmetic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
@@ -37,15 +32,21 @@ public class ProblemSetController {                  // TODO 权限
     @Autowired
     private UserGroupService userGroupService;
 
-    @ApiOperation("题目集创建") //创建题目集   //老师或者管理员可以使用
+    @ApiOperation("所有支持的题目集类型")
+    @GetMapping("/allTypes")
+    public ResultEntity<ProblemSetTypeEnum[]> allProblemSetTypes(){
+        return ResultEntity.data(ProblemSetTypeEnum.values());
+    }
+
+    @ApiOperation("题目集创建|TEACHER+") //创建题目集   //老师或者管理员可以使用
     @PostMapping("/createProblemSet")
-    public ResultEntity createProblemSet(
+    public ResultEntity<Integer> createProblemSet(
             @ApiParam(value = "名称") @RequestParam String name,
             @ApiParam(value = "类型") @RequestParam Integer type,
-            @ApiParam(value = "简介") @RequestParam String introducton,
+            @ApiParam(value = "简介") @RequestParam String introduction,
             @ApiParam(value = "是否公开") @RequestParam Integer isPublic,
-            @ApiParam(value = "开始时间") @RequestParam String beginTime,
-            @ApiParam(value = "结束时间") @RequestParam String endTime,
+            @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
+            @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             int[] types = {1, 2, 3};
@@ -57,7 +58,7 @@ public class ProblemSetController {                  // TODO 权限
                 }
             }
             if (type_valid) {
-                Integer id = problemSetService.createProblemSet(name, type, introducton, isPublic, beginTime, endTime, user.getId());
+                Integer id = problemSetService.createProblemSet(name, type, introduction, isPublic, beginTime, endTime, user.getId());
                 if (id != null) {
                     return ResultEntity.data(id);
                 } else return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -156,8 +157,8 @@ public class ProblemSetController {                  // TODO 权限
             //   @ApiParam(value = "类型") @RequestParam String type,  类型不允许修改
             @ApiParam(value = "简介") @RequestParam String introduction,
             @ApiParam(value = "是否公开") @RequestParam Integer isPublic,
-            @ApiParam(value = "开始时间") @RequestParam String beginTime,
-            @ApiParam(value = "结束时间") @RequestParam String endTime,
+            @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
+            @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             ProblemSet problemSet = problemSetService.getProblemSetInfo(id);
