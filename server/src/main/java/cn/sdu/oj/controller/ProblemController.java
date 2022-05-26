@@ -1,19 +1,15 @@
 package cn.sdu.oj.controller;
 
-import cn.sdu.oj.domain.bo.Problem;
-import cn.sdu.oj.domain.bo.ProblemWithInfo;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.po.Tag;
 import cn.sdu.oj.domain.vo.DifficultyEnum;
-import cn.sdu.oj.domain.vo.ProbelmInfoVo;
 import cn.sdu.oj.domain.vo.ProblemTypeEnum;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.service.ProblemService;
-import cn.sdu.oj.util.FileUtil;
 import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +80,7 @@ public class ProblemController {
     @ApiOperation("更新编程题目|TEACHER+")
     @PostMapping("/updateProgramingProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> updateOtherProblem(
+    public ResultEntity<Boolean> updateProgramingProblem(
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam("题目Id") @RequestParam Integer problemId,
             @ApiParam("题目名字") @RequestParam String name,
@@ -187,7 +183,7 @@ public class ProblemController {
     }
 
     @ApiOperation("更新非编程题目|TEACHER+")
-    @PostMapping("/updateOtherProblem")
+    @PostMapping("/updateTypeProblem")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<Boolean> updateOtherProblem(
             @ApiIgnore @AuthenticationPrincipal User user,
@@ -199,6 +195,26 @@ public class ProblemController {
             @ApiParam("难度") @RequestParam Integer difficulty,
             @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type,
             @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            List<String> answerList = JSON.parseArray(answer, String.class);
+            if (type == ProblemTypeEnum.PROGRAMING.id) {
+                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "编程题请通过专有添加");
+            } else if (type == ProblemTypeEnum.SELECTION.id) {
+                if (options == null || answerList.isEmpty()) {
+                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
+                }
+            } else if (type == ProblemTypeEnum.MULTIPLE_SELECTION.id) {
+                if (options == null || answerList.isEmpty()) {
+                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
+                }
+            } else if (type == ProblemTypeEnum.JUDGEMENT.id) {
+                if (answerList.size() != 1) {
+                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "判断题必须有且仅有一份答案");
+                }
+            }
+        } catch (Exception e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案格式错误");
+        }
         SyncProblem syncProblem = new SyncProblem();
         syncProblem.setName(name);
         syncProblem.setDescription(description);
@@ -222,132 +238,16 @@ public class ProblemController {
         return problemService.deleteProblem(problemId, user.getId());
     }
 
-
-
-//    @ApiOperation("添加题目")
-//    @PostMapping("/addProblem")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public ResultEntity addProblem(
-//            @ApiParam("题目名字") @RequestParam String name,
-//            @ApiParam("题目表述,题干") @RequestParam String description,
-//            @ApiParam("例子") @RequestParam(required = false) String example,
-//            @ApiParam("难度") @RequestParam(required = false) Integer difficulty,
-//            @ApiParam("是否开放，0私有，1开放，默认私有") @RequestParam(required = false) Integer isOpen,
-//            @ApiParam("提示") @RequestParam(required = false) String tip,
-//            @ApiParam("标签，用下划线分割的一组id") @RequestParam(required = false) String tags,
-//            @ApiParam("类型，0为编程题，否则为非编程题") @RequestParam Integer type,
-//            @ApiParam("答案，对于非编程题") @RequestParam(required = false) String answer,
-//            @ApiIgnore @AuthenticationPrincipal User user) {
-//        // 处理参数
-//        ProblemWithInfo info = new ProblemWithInfo(null, name, description, example, difficulty, isOpen, tip
-//                , user.getId(), answer, tags, type);
-//        problemService.addProblem(info);
-//        return ResultEntity.data(info.getId());
-//    }
-//
-//    @PostMapping("/deleteProblem")
-//    @ApiOperation("删除问题")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public ResultEntity deleteProblem(@ApiParam("问题id") @RequestParam int id,
-//                                      @ApiParam("0为编程，否则为其他") @RequestParam int type,
-//                                      @ApiIgnore @AuthenticationPrincipal User user) {
-//        problemService.deleteProblem(user.getId(), id, type);
-//        return ResultEntity.success();
-//    }
-//
-//    @ApiOperation("更新题目")
-//    @PostMapping("/updateProblem")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public ResultEntity updateProblem(
-//            @ApiParam(value = "题目的id") @RequestParam int id,
-//            @ApiParam("题目名字") @RequestParam String name,
-//            @ApiParam("题目表述,题干") @RequestParam String description,
-//            @ApiParam("例子") @RequestParam(required = false) String example,
-//            @ApiParam("难度") @RequestParam(required = false) Integer difficulty,
-//            @ApiParam("是否开放，0私有，1开放，默认私有") @RequestParam(required = false) Integer isOpen,
-//            @ApiParam("提示") @RequestParam(required = false) String tip,
-//            @ApiParam("标签，用下划线分割的一组id") @RequestParam(required = false) String tags,
-//            @ApiParam("类型，0为编程题，否则为非编程题") @RequestParam Integer type,
-//            @ApiParam("答案，对于非编程题") @RequestParam(required = false) String answer,
-//            @ApiIgnore @AuthenticationPrincipal User user
-//    ) {
-//        // 处理参数
-//        // 处理参数
-//        ProblemWithInfo info = new ProblemWithInfo(id, name, description, example, difficulty, isOpen, tip
-//                , user.getId(), answer, tags, type);
-//        problemService.updateProblem(info);
-//        return ResultEntity.success();
-//
-//    }
-//
-//    @ApiOperation("添加测试点")
-//    @PostMapping("/addTestPoints")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public ResultEntity addTestPoints(
-//            @ApiParam("问题id") @RequestParam int problemId,
-//            @ApiParam("sha256校验码") @RequestParam String sha256,
-//            @ApiParam("测试点压缩包") @RequestParam MultipartFile file) throws Exception {
-//        if (file == null || file.isEmpty()) {
-//            return ResultEntity.error("file is null");
-//        }
-//        String verify = FileUtil.getSHA256(file.getBytes());
-//        if (!verify.equals(sha256)) {
-//            return ResultEntity.error("file is bad");
-//        }
-//        // 写文件
-//        problemService.addTestPoints(problemId, file, sha256);
-//        return ResultEntity.success();
-//    }
-//
-//    @ApiOperation("添加题目限制")
-//    @PostMapping("/addProblemLimit")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public ResultEntity addProblemLimit(
-//            @ApiParam("问题id") @RequestParam Integer problemId,
-//            @ApiParam("运行时间,单位ms") @RequestParam(required = false) int time,
-//            @ApiParam("运行内存,单位KB") @RequestParam(required = false) int memory,
-//            @ApiParam("代码长度") @RequestParam(required = false) int text) {
-//
-//        if (problemId == null) {
-//            return ResultEntity.error("problemId is null");
-//        }
-//        ProblemLimit limit = new ProblemLimit(problemId, time, memory, text);
-//        problemService.addProblemLimit(limit);
-//        return ResultEntity.success();
-//
-//    }
-//
-//    @PostMapping("/getProblemAllInfoByProblemIdAndType")
-//    @ApiOperation("获取题目详细信息")
-//    @PreAuthorize("hasRole('COMMON')")
-//    public ResultEntity getProblemAllInfoByProblemIdAndType(
-//            @ApiParam("问题id") @RequestParam int problemId,
-//            @ApiParam("问题类型") @RequestParam int type) {
-//        Problem problem = problemService.getProblemByProblemIdAndType(problemId, type);
-//        List<Tag> tagList = problemService.getTagListWithPrefixByProblemIdAndType(problemId, type);
-//        UserInfo userInfo = problemService.getAuthorInfoByProblemIdAndType(problemId, type);
-//        ProblemLimit limit = problemService.getProblemLimitByProblemId(problemId);
-//        ProbelmInfoVo probelmInfoVo = new ProbelmInfoVo(problem, limit, userInfo, tagList);
-//        return ResultEntity.data(probelmInfoVo);
-//    }
-
-//    @PostMapping("/updateProblemLimit")
-//    @ApiOperation("修改问题运行限制")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public ResultEntity updateProblemLimit(
-//            @ApiParam("问题id") @RequestParam Integer problemId,
-//            @ApiParam("运行时间,单位ms") @RequestParam(required = false) int time,
-//            @ApiParam("运行内存,单位KB") @RequestParam(required = false) int memory,
-//            @ApiParam("代码长度") @RequestParam(required = false) int text) {
-//        ProblemLimit limit = new ProblemLimit(problemId, time, memory, text);
-//        problemService.updateProblemLimit(limit);
-//        return ResultEntity.success();
-//    }
+    @ApiOperation("所有的标签")
+    @GetMapping("/allTags")
+    public ResultEntity<List<Tag>> allTags() {
+        return problemService.allTags();
+    }
 
     @PostMapping("/getTopLevelTag")
     @ApiOperation("获取顶级标签")
     @PreAuthorize("hasRole('COMMON')")
-    public ResultEntity getTopLevelTag() {
+    public ResultEntity<List<Tag>> getTopLevelTag() {
         List<Tag> topLevelTag = problemService.getTopLevelTag();
         return ResultEntity.data(topLevelTag);
     }
@@ -355,14 +255,14 @@ public class ProblemController {
     @PostMapping("/getChildrenTagByParentTagId")
     @ApiOperation("根据父标签id获取子标签")
     @PreAuthorize("hasRole('COMMON')")
-    public ResultEntity getChildrenTagByParentTagId(@ApiParam("父标签的id") @RequestParam int parentTagId) {
+    public ResultEntity<List<Tag>> getChildrenTagByParentTagId(@ApiParam("父标签的id") @RequestParam int parentTagId) {
         List<Tag> childrenList = problemService.getChildrenTagByParentId(parentTagId);
-        for (Tag a:childrenList
-             ) { Integer id  =a.getId();
+        for (Tag a : childrenList) {
+            Integer id = a.getId();
             List<Tag> c = problemService.getChildrenTagByParentId(id);
-            if (c!=null && c.size()!=0){
+            if (c != null && c.size() != 0) {
                 a.setHasChild(true);
-            } else  a.setHasChild(false);
+            } else a.setHasChild(false);
         }
         return ResultEntity.data(childrenList);
     }

@@ -35,6 +35,10 @@ public class ProblemService {
     @Resource
     TagMapper tagMapper;
 
+    public ResultEntity<List<Tag>> allTags(){
+        return ResultEntity.data(tagMapper.selectAllTags());
+    }
+
     public ResultEntity<ProblemDto> findProblemInfo(int problemId, int userId) {
         ProblemDto problemDto = new ProblemDto();
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
@@ -110,7 +114,7 @@ public class ProblemService {
     public ResultEntity<Boolean> updateProgramingProblem(int problemId, AsyncProblem problem, List<Integer> tags) throws TagNotExistException {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         //如果数据不存在或者表示为非编程题，返回数据不存在
-        if (generalProblem == null || generalProblem.getTypeProblemId() != 0) {
+        if (generalProblem == null || generalProblem.getType() != 0) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
         } else {
             problem.setId(generalProblem.getTypeProblemId());
@@ -128,7 +132,7 @@ public class ProblemService {
     public ResultEntity<Boolean> updateOtherProblem(int problemId, SyncProblem problem, List<Integer> tags) throws TagNotExistException {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         //如果数据不存在或者表示为编程题，返回数据不存在,否则寻找专属的typeProblemId
-        if (generalProblem == null || generalProblem.getTypeProblemId() == 0) {
+        if (generalProblem == null || generalProblem.getType() == 0) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
         } else {
             problem.setId(generalProblem.getTypeProblemId());
