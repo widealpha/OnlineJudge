@@ -41,8 +41,10 @@ public class SolveService {
     @Resource
     AnswerRecordMapper answerRecordMapper;
 
+
+
     @Resource
-    ProblemSetMapper problemSetMapper;
+    ProblemSetService problemSetService;
     @Value("${spring.rabbitmq.template.routing-key}")
     private String routingKey;
 
@@ -99,6 +101,9 @@ public class SolveService {
     @Transactional
     public ResultEntity<AnswerRecord> trySolveSyncProblem(int problemId, int userId, int problemSetId, String userAnswer) {
         //todo 判断用户能否提交
+        boolean can_submit = problemSetService.getUserCanTrySolveProblemSet(userId,problemSetId);
+
+
         AnswerRecord answerRecord = new AnswerRecord();
         answerRecord.setProblemId(problemId);
         answerRecord.setUserId(userId);

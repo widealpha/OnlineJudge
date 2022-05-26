@@ -5,7 +5,7 @@ import java.util.Date;
 public class ProblemSet {
     private Integer id;
     private String name;
-    private String type;
+    private Integer type;
     private String introduction;
     private Integer isPublic;
     private Date beginTime;
@@ -28,13 +28,7 @@ public class ProblemSet {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
-    }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public String getIntroduction() {
         return introduction;
@@ -74,5 +68,13 @@ public class ProblemSet {
 
     public void setCreatorId(Integer creatorId) {
         this.creatorId = creatorId;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 }

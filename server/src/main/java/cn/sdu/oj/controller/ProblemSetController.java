@@ -3,6 +3,7 @@ package cn.sdu.oj.controller;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
 import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
+import cn.sdu.oj.domain.vo.ProblemSetTypeEnum;
 import cn.sdu.oj.domain.vo.ProblemSetVo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
@@ -33,27 +34,30 @@ public class ProblemSetController {                  // TODO 权限
     @Autowired
     private ProblemSetService problemSetService;
 
+    @Autowired
+    private UserGroupService userGroupService;
+
     @ApiOperation("题目集创建") //创建题目集   //老师或者管理员可以使用
     @PostMapping("/createProblemSet")
     public ResultEntity createProblemSet(
             @ApiParam(value = "名称") @RequestParam String name,
-            @ApiParam(value = "类型") @RequestParam String type,
-            @ApiParam(value = "简介") @RequestParam String introduction,
+            @ApiParam(value = "类型") @RequestParam Integer type,
+            @ApiParam(value = "简介") @RequestParam String introducton,
             @ApiParam(value = "是否公开") @RequestParam Integer isPublic,
             @ApiParam(value = "开始时间") @RequestParam String beginTime,
             @ApiParam(value = "结束时间") @RequestParam String endTime,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            String[] types = {"普通", "临时测验", "竞赛"};
+            int[] types = {1, 2, 3};
             boolean type_valid = false;
-            for (String a : types) {
-                if (type.equals(a)) {
+            for (int a : types) {
+                if (type==a) {
                     type_valid = true;
                     break;
                 }
             }
             if (type_valid) {
-                Integer id = problemSetService.createProblemSet(name, type, introduction, isPublic, beginTime, endTime, user.getId());
+                Integer id = problemSetService.createProblemSet(name, type, introducton, isPublic, beginTime, endTime, user.getId());
                 if (id != null) {
                     return ResultEntity.data(id);
                 } else return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -63,6 +67,22 @@ public class ProblemSetController {                  // TODO 权限
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
     }
+
+//    @ApiOperation("向题目集里加一个题") //向题目集里加一个题   //创建者可以使用
+//    @PostMapping("/addProblemToProblemSet")
+//    public ResultEntity addProblemToProblemSet(
+//            @ApiParam(value = "题目集ID") @RequestParam Integer problem_set_id,
+//            @ApiParam(value = "题目ID") @RequestParam Integer problem_set_id,
+//    ) {
+//        try {
+//            if (problemSetService.getProblemSetInfo(problem_set_id).getCreatorId().equals(user.getId()))
+//                List<ProblemSet> problemSets = problemSetService.getPublicProblemSet();
+//            return ResultEntity.success("公开题目集", problemSets);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResultEntity.error(StatusCode.COMMON_FAIL);
+//        }
+//    }
 
     @ApiOperation("查看公开题目集") //查看公开题目集   //所有人可以使用
     @PostMapping("/getPublicProblemSet")
@@ -164,10 +184,10 @@ public class ProblemSetController {                  // TODO 权限
     @ApiOperation("获取我做过的某题目集的完成情况") //获取我做过的某一题目集的完成情况   所有人可用  TODO
     @PostMapping("/getSelfCompletion")
     public ResultEntity getSelfCompletion(
-            @ApiParam(value = "ID") @RequestParam Integer id, //题目集id
+            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            int i =0;
+            int i = 0;
             List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(user.getId());
 
             for (ProblemSet p : problemSets) {
@@ -178,7 +198,7 @@ public class ProblemSetController {                  // TODO 权限
                     return ResultEntity.success("完成情况", problemSetProblemVos);
                 }
             }
-            if (i==0) {
+            if (i == 0) {
                 return ResultEntity.error("没有做过该题目集");
             }
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -189,18 +209,18 @@ public class ProblemSetController {                  // TODO 权限
     }
 
     //题目集创建者获取所有人的完成情况
-   // geng done all except competition
+    // geng done all except competition
 
     @ApiOperation("题目集创建者获取所有人的完成情况") //题目集创建者获取所有人的完成情况   创建人可用  TODO
     @PostMapping("/getALLCompletion")
     public ResultEntity getALLCompletion(
-            @ApiParam(value = "ID") @RequestParam Integer id, //题目集id
+            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             //获取用户组所有人的id
 
             //对于每个人进行操作
-            int i =0;
+            int i = 0;
             List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(user.getId());
 
             for (ProblemSet p : problemSets) {
@@ -211,7 +231,7 @@ public class ProblemSetController {                  // TODO 权限
                     return ResultEntity.success("完成情况", problemSetProblemVos);
                 }
             }
-            if (i==0) {
+            if (i == 0) {
                 return ResultEntity.error("没有做过该题目集");
             }
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -221,6 +241,47 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
+//    @ApiOperation("用户为一个题目集保存答案") //用户为一个题目集保存答案   答题人可用
+//    @PostMapping("/saveProblemAnswer")
+//    public ResultEntity saveProblemAnswer(
+//            @ApiIgnore @AuthenticationPrincipal User user,
+//            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
+//            @ApiParam(value = "answer", required = true) @RequestParam String answer //题目集答案
+//    ) {
+//        try {
+//            //判断是否是答题人
+//            if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), id)) {
+//                //查询是否提交过
+//                Boolean is_submit =problemSetService.judgeProblemSetSubmit(user.getId(), id);
+//             if (is_submit!=null && is_submit){
+//
+//             }
+//                //如果没有，保存答案到联系表中
+//                //判断是否存在
+//
+//                //否则返回
+//            } else return ResultEntity.error("不能答题");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResultEntity.error(StatusCode.COMMON_FAIL);
+//        }
+//    }
+
+//    @ApiOperation("用户为一个题目集提交答案") //用户为一个题目集保存答案   答题人可用
+//    @PostMapping("/saveProblemAnswer")
+//    public ResultEntity saveProblemAnswer(
+//            @ApiIgnore @AuthenticationPrincipal User user) {
+//        try {
+//            //判断是否是答题人
+//
+//            //保存答案到联系表中
+//
+//            return ResultEntity.success("查看我创建的题目集", problemSets);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResultEntity.error(StatusCode.COMMON_FAIL);
+//        }
+//    }
 
 
 }

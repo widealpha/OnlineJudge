@@ -23,7 +23,7 @@ public class UserGroupService {
         userGroup.setintroduction(introduction);
         userGroup.setFatherId(fatherId);
         userGroup.setCreatorId(creatorId);
-        if (UserGroupMapper.createUserGroup(userGroup)){
+        if (UserGroupMapper.createUserGroup(userGroup)) {
             return userGroup.getId();
         } else return null;
 
@@ -58,8 +58,8 @@ public class UserGroupService {
     public StatusCode addMemberToUserGroup(Integer creator, Integer id, JSONArray members) {
         if (UserGroupMapper.getUserGroupInfoById(id).getCreatorId().equals(creator)) {
             for (int i = 0; i < members.size(); i++) {
-                int onePersonId =members.getInteger(i);
-                if( !UserGroupMapper.addMemberToUserGroup(id,onePersonId)){
+                int onePersonId = members.getInteger(i);
+                if (!UserGroupMapper.addMemberToUserGroup(id, onePersonId)) {
                     return StatusCode.COMMON_FAIL;
                 }
             }
@@ -69,56 +69,64 @@ public class UserGroupService {
     }
 
     //从用户组里删除人（只能从我创建的用户组里删除）
-    public StatusCode deleteUserGroupMember(Integer creator,Integer UserGroup_id,JSONArray members){
-        if (UserGroupMapper.getUserGroupInfoById(UserGroup_id).getCreatorId().equals(creator)){
+    public StatusCode deleteUserGroupMember(Integer creator, Integer UserGroup_id, JSONArray members) {
+        if (UserGroupMapper.getUserGroupInfoById(UserGroup_id).getCreatorId().equals(creator)) {
             for (int i = 0; i < members.size(); i++) {
-                int onePersonId =members.getInteger(i);
-                UserGroupMapper.deleteUserGroupMember(UserGroup_id,onePersonId);
+                int onePersonId = members.getInteger(i);
+                UserGroupMapper.deleteUserGroupMember(UserGroup_id, onePersonId);
             }
             return StatusCode.SUCCESS;
-        }else
+        } else
             return StatusCode.NO_PERMISSION;
     }
 
 
     //为用户组添加子用户组 method2（复制现有用户组作为子用户组）.
-    public StatusCode copyUserGroupAsChildren(){
+    public StatusCode copyUserGroupAsChildren() {
         return StatusCode.NO_PERMISSION;
     }
 
     //查询一个用户组的所有人，目前只能查询最底层用户组
-    public List<Integer> getUserGroupMembers(Integer id){
+    public List<Integer> getUserGroupMembers(Integer id) {
         return UserGroupMapper.getUserGroupMembers(id);
     }
 
     //查询我加入的所有用户组
-    public List<Integer> getSelfJoinedUserGroup(Integer user_id){
+    public List<Integer> getSelfJoinedUserGroup(Integer user_id) {
         return UserGroupMapper.getSelfJoinedUserGroup(user_id);
     }
 
 
     public void updateChildrenUserGroup(Integer fatherId, Integer id) {
-       String children = UserGroupMapper.getUserGroupInfoById(fatherId).getChildrenId();
+        String children = UserGroupMapper.getUserGroupInfoById(fatherId).getChildrenId();
 
         JSONArray j = new JSONArray();
-        if (children!=null){
+        if (children != null) {
             j = JSONArray.parseArray(children);
         }
-       if (!j.contains(id)){
-           j.add(id);
-       }
-        UserGroupMapper.updateChildrenUserGroup(fatherId,j.toString());
+        if (!j.contains(id)) {
+            j.add(id);
+        }
+        UserGroupMapper.updateChildrenUserGroup(fatherId, j.toString());
     }
 
     public List<Integer> getUserGroupProblemSet(Integer id) {
-        return  UserGroupMapper.getUserGroupProblemSet(id);
+        return UserGroupMapper.getUserGroupProblemSet(id);
     }
 
     public boolean addUserGroupProblemSet(Integer user_group_id, Integer problem_set_id) {
-        return  UserGroupMapper.addUserGroupProblemSet(user_group_id,problem_set_id);
+        return UserGroupMapper.addUserGroupProblemSet(user_group_id, problem_set_id);
     }
 
     public boolean deleteUserGroupProblemSet(Integer user_group_id, Integer problem_set_id) {
-        return  UserGroupMapper.deleteUserGroupProblemSet(user_group_id,problem_set_id);
+        return UserGroupMapper.deleteUserGroupProblemSet(user_group_id, problem_set_id);
+    }
+
+    //判断用户组里是否有这个人
+    public boolean judgeUserGroupContainUser(Integer user_id, Integer user_group_id) {
+        List<Integer> userGroupMembers = UserGroupMapper.getUserGroupMembers(user_group_id);
+        if (userGroupMembers.contains(user_id)) {
+            return true;
+        } else return false;
     }
 }

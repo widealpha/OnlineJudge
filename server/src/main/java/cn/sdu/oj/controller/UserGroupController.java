@@ -140,6 +140,8 @@ public class UserGroupController {                  // TODO 权限
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
+    //获取一个题目集
+
     //为一个用户组添加题目集
     @ApiOperation("为一个用户组添加题目集")  // 创建者（老师）可以使用
     @PostMapping("/addUserGroupProblemSet")    //为一个用户组添加题目集

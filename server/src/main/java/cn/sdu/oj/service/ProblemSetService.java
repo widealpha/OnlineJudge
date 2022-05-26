@@ -3,8 +3,11 @@ package cn.sdu.oj.service;
 import cn.sdu.oj.dao.*;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
+import cn.sdu.oj.domain.po.ProblemSetUserGroup;
 import cn.sdu.oj.domain.po.UserGroup;
 import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
+import cn.sdu.oj.entity.ResultEntity;
+import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.util.TimeUtil;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +27,17 @@ public class ProblemSetService {
     @Autowired
     private ProblemSetProblemMapper problemSetProblemMapper;
 
+    @Autowired
+    private UserGroupService userGroupService;
+
+    @Autowired
+    private ProblemSetUserGroupMapper problemSetUserGroupMapper;
+
+    @Autowired
+    private ProblemSetSubmitMapper problemSetSubmitMapper;
+
     //新建题目集
-    public Integer createProblemSet(String name, String type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId) throws Exception {
+    public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId) throws Exception {
         ProblemSet problemSet = new ProblemSet();
         problemSet.setName(name);
         problemSet.setType(type);
@@ -85,14 +97,74 @@ public class ProblemSetService {
         for (ProblemSetProblem p : problemSetProblems) {
             if (p.getType() == 0) // 编程题
             {
-                Integer c = solveRecordMapper.getSelfCompletion(p.getProblem_id(),p.getProblem_set_id(),user_id);;
+                Integer c = solveRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), user_id);
+                ;
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, c));
             } else if (p.getType() == 1)//非编程题
             {
-                Integer is_correct = answerRecordMapper.getSelfCompletion(p.getProblem_id(),p.getProblem_set_id(),p,user_id);
+                Integer is_correct = answerRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), p, user_id);
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, is_correct));
             }
         }
         return problemSetProblemVos;
+    }
+
+    //判断 一个用户是否能做这个题
+    public ResultEntity getUserCanTrySolveProblem(Integer user_id, Integer problem_id, Integer problem_set_id) {
+
+        List<ProblemSetProblem> problemSetProblem = problemSetProblemMapper.getProblemSetProblem(problem_set_id);
+        for (ProblemSetProblem p : problemSetProblem
+        ) {
+            if (p.getProblem_id() == problem_id) { //题目在题目集中
+                ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
+                if (problemSet.getIsPublic() == 1) {  //public
+                    return ResultEntity.success("公开题目集", true);
+                } else { // not public
+                    List<ProblemSetUserGroup> problemSetUserGroups = problemSetUserGroupMapper.getUserGroupByProblemSet(problem_set_id);
+                    for (ProblemSetUserGroup problemSetUserGroup : problemSetUserGroups
+                    ) {
+                        Integer user_group_id = problemSetUserGroup.getUser_group_id();
+                        if (userGroupService.judgeUserGroupContainUser(user_id, user_group_id)) {
+                            return ResultEntity.success("可以判题", true);
+                        }
+                    }
+                    return ResultEntity.error("不可判题", false);
+                }
+            }
+
+        }
+        return ResultEntity.error("题目不在题目集中", false);
+
+    }
+
+    //判断 一个用户是否能做这个题目集
+    public boolean getUserCanTrySolveProblemSet(Integer user_id, Integer problem_set_id) {
+
+
+        ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
+        if (problemSet.getIsPublic() == 1) {  //public
+            return true;
+        } else { // not public
+            List<ProblemSetUserGroup> problemSetUserGroups = problemSetUserGroupMapper.getUserGroupByProblemSet(problem_set_id);
+            for (ProblemSetUserGroup problemSetUserGroup : problemSetUserGroups
+            ) {
+                Integer user_group_id = problemSetUserGroup.getUser_group_id();
+                if (userGroupService.judgeUserGroupContainUser(user_id, user_group_id)) {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+
+    }
+
+    public Boolean judgeProblemSetSubmit(Integer user_id, Integer problem_set_id) {
+        Integer submit = problemSetSubmitMapper.judgeProblemSetSubmit(user_id,problem_set_id);
+        if (submit==null || submit!=1){
+            return false;
+        }else if (submit == 1){
+            return true;
+        }else return null;
     }
 }
