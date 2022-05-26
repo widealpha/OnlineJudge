@@ -25,4 +25,11 @@ public interface TagMapper {
 
     @Update("UPDATE tag SET `status`=-`status` WHERE id=#{id} AND status<0")
     boolean recoverTag(int tagId);
+
+    @Select("SELECT * FROM tag WHERE PARENT=#{parentId} ")
+    List<Tag> getChildrenTagByParentId(int parentId);
+
+    @Select("SELECT * FROM tag WHERE LEVEL=1")
+    List<Tag> getTopLevelTag();
+
 }

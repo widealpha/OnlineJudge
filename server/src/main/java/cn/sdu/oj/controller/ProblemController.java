@@ -240,6 +240,7 @@ public class ProblemController {
 
     @ApiOperation("所有的标签")
     @GetMapping("/allTags")
+    @PreAuthorize("hasRole('COMMON')")
     public ResultEntity<List<Tag>> allTags() {
         return problemService.allTags();
     }
