@@ -51,7 +51,7 @@ public class ProblemSetController {                  // TODO 权限
             int[] types = {1, 2, 3};
             boolean type_valid = false;
             for (int a : types) {
-                if (type==a) {
+                if (type == a) {
                     type_valid = true;
                     break;
                 }
@@ -68,21 +68,26 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
-//    @ApiOperation("向题目集里加一个题") //向题目集里加一个题   //创建者可以使用
-//    @PostMapping("/addProblemToProblemSet")
-//    public ResultEntity addProblemToProblemSet(
-//            @ApiParam(value = "题目集ID") @RequestParam Integer problem_set_id,
-//            @ApiParam(value = "题目ID") @RequestParam Integer problem_set_id,
-//    ) {
-//        try {
-//            if (problemSetService.getProblemSetInfo(problem_set_id).getCreatorId().equals(user.getId()))
-//                List<ProblemSet> problemSets = problemSetService.getPublicProblemSet();
-//            return ResultEntity.success("公开题目集", problemSets);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResultEntity.error(StatusCode.COMMON_FAIL);
-//        }
-//    }
+    @ApiOperation("向题目集里加一个题") //向题目集里加一个题   //创建者可以使用
+    @PostMapping("/addProblemToProblemSet")
+    public ResultEntity addProblemToProblemSet(
+            @ApiParam(value = "题目集ID") @RequestParam Integer problem_set_id,
+            @ApiParam(value = "题目ID") @RequestParam Integer problem_id,
+            @ApiIgnore @AuthenticationPrincipal User user
+    ) {
+        try {
+            if (problemSetService.getProblemSetInfo(problem_set_id).getCreatorId().equals(user.getId())) {
+
+                problemSetService.addProblemToProblemSet(problem_id,problem_set_id);
+                return ResultEntity.success();
+            } else return ResultEntity.error(StatusCode.NO_PERMISSION);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
 
     @ApiOperation("查看公开题目集") //查看公开题目集   //所有人可以使用
     @PostMapping("/getPublicProblemSet")
@@ -112,9 +117,13 @@ public class ProblemSetController {                  // TODO 权限
 
     @ApiOperation("查看一个题目集的信息和题号") //查看一个题目集的信息   管理员，题目集创建者和题目集参与者可用
     @PostMapping("/getProblemSetInfo")
-    public ResultEntity getProblemSetInfo(@ApiIgnore @AuthenticationPrincipal User user) {
+    public ResultEntity getProblemSetInfo(
+            @ApiParam(value = "题目集ID") @RequestParam Integer problem_set_id,
+            @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            ProblemSet problemSet = problemSetService.getProblemSetInfo(user.getId());  //获取题目集信息
+            //TODO 管理员，题目集创建者和题目集参与者可用
+
+            ProblemSet problemSet = problemSetService.getProblemSetInfo(problem_set_id);  //获取题目集信息
             List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
             ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problems);
 

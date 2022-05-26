@@ -160,11 +160,27 @@ public class ProblemSetService {
     }
 
     public Boolean judgeProblemSetSubmit(Integer user_id, Integer problem_set_id) {
-        Integer submit = problemSetSubmitMapper.judgeProblemSetSubmit(user_id,problem_set_id);
-        if (submit==null || submit!=1){
+        Integer submit = problemSetSubmitMapper.judgeProblemSetSubmit(user_id, problem_set_id);
+        if (submit == null || submit != 1) {
             return false;
-        }else if (submit == 1){
+        } else if (submit == 1) {
             return true;
-        }else return null;
+        } else return null;
+    }
+
+    //判断题目集里有没有这个题
+    public Boolean judgeProblemSetHasProblem(Integer problem_set_id, Integer problem_id) {
+        List<ProblemSetProblem> problems = problemSetProblemMapper.getProblemSetProblem(problem_set_id);
+        for (ProblemSetProblem p : problems
+        ) {
+            if (p.getProblem_id().equals(problem_id)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    public void addProblemToProblemSet(Integer problem_id, Integer problem_set_id) {
     }
 }
