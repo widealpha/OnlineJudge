@@ -106,13 +106,9 @@ public class ProblemController {
     @ApiOperation("更新编程题目测试点|TEACHER+")
     @PostMapping("/uploadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> uploadCheckpoints(
-            @ApiParam("题目id") @RequestParam Integer problemId,
-            @ApiParam("测试点sha256校验码") @RequestParam String sha256,
-            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file) {
+    public ResultEntity<Boolean> uploadCheckpoints(@ApiParam("题目id") @RequestParam Integer problemId, @ApiParam("测试点sha256校验码") @RequestParam String sha256, @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file, @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            problemService.uploadCheckpoints(problemId, file, sha256);
-            return ResultEntity.data(true);
+            return problemService.uploadCheckpoints(problemId, user.getId(), file, sha256);
         } catch (Exception e) {
             return ResultEntity.data(StatusCode.COMMON_FAIL, false);
         }
@@ -121,10 +117,7 @@ public class ProblemController {
     @ApiOperation("下载题目测试点|TEACHER+")
     @GetMapping("downloadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
-    public void downloadCheckpoints(
-            @ApiParam("题目id") @RequestParam Integer problemId,
-            @ApiIgnore HttpServletResponse response,
-            @ApiIgnore @AuthenticationPrincipal User user) throws IOException {
+    public void downloadCheckpoints(@ApiParam("题目id") @RequestParam Integer problemId, @ApiIgnore HttpServletResponse response, @ApiIgnore @AuthenticationPrincipal User user) throws IOException {
         problemService.downloadCheckpoints(problemId, user.getId(), response);
     }
 

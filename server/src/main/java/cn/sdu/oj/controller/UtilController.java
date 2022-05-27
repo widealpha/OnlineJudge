@@ -29,8 +29,8 @@ public class UtilController {
         String filename = System.currentTimeMillis() + ".jpg";
         File localFile = new File("/home/share/image/" + filename);
         try {
-            localFile.setReadable(true, false);
             file.transferTo(localFile);
+            localFile.setReadable(true, false);
             return "http://121.196.101.7/image/" + filename;
         } catch (IOException e) {
             return null;

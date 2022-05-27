@@ -193,7 +193,11 @@ public class ProblemService {
         return tagMapper.getChildrenTagByParentId(parentId);
     }
 
-    public void uploadCheckpoints(int problemId, MultipartFile file, String sha256) throws Exception {
+    public ResultEntity<Boolean> uploadCheckpoints(int problemId, int userId, MultipartFile file, String sha256) throws Exception {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null || generalProblem.getCreator() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
         // 校验内部文件的正确性
         FileUtil.verifyZipFormat(file.getBytes());
         // 初始化目标目标文件夹
@@ -205,10 +209,10 @@ public class ProblemService {
         sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
-
+        return ResultEntity.data(true);
     }
 
-    public void downloadCheckpoints(int problemId, int userId, HttpServletResponse response) throws IOException {
+    public void downloadCheckpoints(int problemId, int userId, HttpServletResponse response) {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null || generalProblem.getCreator() != userId) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
