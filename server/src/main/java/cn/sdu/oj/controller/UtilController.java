@@ -27,7 +27,7 @@ public class UtilController {
             return null;
         }
         String filename = System.currentTimeMillis() + ".jpg";
-        File localFile = new File("/home/share/image/");
+        File localFile = new File("/home/share/image/" + filename);
         try {
             file.transferTo(localFile);
             return "http://121.196.101.7/image/" + filename;
