@@ -37,6 +37,9 @@ public class ProblemSetService {
     @Autowired
     private ProblemSetSubmitMapper problemSetSubmitMapper;
 
+    @Autowired
+    private ProblemSetUserAnswerMapper problemSetUserAnswerMapper;
+
     //新建题目集
     public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId) throws Exception {
         ProblemSet problemSet = new ProblemSet();
@@ -162,11 +165,9 @@ public class ProblemSetService {
 
     public Boolean judgeProblemSetSubmit(Integer user_id, Integer problem_set_id) {
         Integer submit = problemSetSubmitMapper.judgeProblemSetSubmit(user_id, problem_set_id);
-        if (submit == null || submit != 1) {
-            return false;
-        } else if (submit == 1) {
+        if (submit  != null && submit == 1) {
             return true;
-        } else return null;
+        } else return false;
     }
 
     //判断题目集里有没有这个题
@@ -183,5 +184,22 @@ public class ProblemSetService {
     }
 
     public void addProblemToProblemSet(Integer problem_id, Integer problem_set_id) {
+        problemSetProblemMapper.addProblemToProblemSet(problem_id,problem_set_id);
+    }
+
+    public Boolean judgeProblemSetUserAnswerExist(Integer user_id, Integer problem_set_id) {
+      Integer i = problemSetUserAnswerMapper.judgeProblemSetUserAnswerExist(user_id,problem_set_id);
+      if (i==null || i==0){
+          return false;
+      } else return true;
+
+    }
+
+    public void insertProblemSetUserAnswer(Integer user_id, Integer problem_set_id, String answer) {
+        problemSetUserAnswerMapper.insertProblemSetUserAnswer(user_id,problem_set_id,answer);
+    }
+
+    public void updateProblemSetUserAnswer(Integer user_id, Integer problem_set_id, String answer) {
+        problemSetUserAnswerMapper.updateProblemSetUserAnswer(user_id,problem_set_id,answer);
     }
 }

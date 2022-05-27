@@ -78,12 +78,13 @@ public class ProblemSetController {                  // TODO 权限
     ) {
         try {
             if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
-
-                problemSetService.addProblemToProblemSet(problemId, problemSetId);
-                return ResultEntity.success();
+                if (problemSetService.judgeProblemSetHasProblem(problemSetId, problemId)) {
+                    return ResultEntity.error("题目集已有该题");
+                } else {
+                    problemSetService.addProblemToProblemSet(problemId, problemSetId);
+                    return ResultEntity.success();
+                }
             } else return ResultEntity.error(StatusCode.NO_PERMISSION);
-
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -251,31 +252,41 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
-//    @ApiOperation("用户为一个题目集保存答案") //用户为一个题目集保存答案   答题人可用
-//    @PostMapping("/saveProblemAnswer")
-//    public ResultEntity saveProblemAnswer(
-//            @ApiIgnore @AuthenticationPrincipal User user,
-//            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
-//            @ApiParam(value = "answer", required = true) @RequestParam String answer //题目集答案
-//    ) {
-//        try {
-//            //判断是否是答题人
-//            if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), id)) {
-//                //查询是否提交过
-//                Boolean is_submit =problemSetService.judgeProblemSetSubmit(user.getId(), id);
-//             if (is_submit!=null && is_submit){
-//
-//             }
-//                //如果没有，保存答案到联系表中
-//                //判断是否存在
-//
-//                //否则返回
-//            } else return ResultEntity.error("不能答题");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResultEntity.error(StatusCode.COMMON_FAIL);
-//        }
-//    }
+    @ApiOperation("用户为一个题目集保存答案") //用户为一个题目集保存答案   答题人可用
+    @PostMapping("/saveProblemAnswer")
+    public ResultEntity saveProblemAnswer(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
+            @ApiParam(value = "answer", required = true) @RequestParam String answer //题目集答案
+    ) {
+        try {
+            //判断是否是答题人
+            if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), id)) {
+                //查询是否提交过
+                Boolean is_submit =problemSetService.judgeProblemSetSubmit(user.getId(), id);
+             if (is_submit){  //提交过
+                return ResultEntity.error("已经提交过了");
+             } else {//如果没有，保存答案到联系表中
+                 //判断是否存在
+                Boolean is_exist = problemSetService.judgeProblemSetUserAnswerExist(user.getId(),id);
+                    //不存在 插入
+                 if (!is_exist){
+                     problemSetService.insertProblemSetUserAnswer(user.getId(),id,answer);
+                     return ResultEntity.success("第一次保存");
+                 }
+                    //存在，更新
+                 else {
+                     problemSetService.updateProblemSetUserAnswer(user.getId(),id,answer);
+                     return ResultEntity.success("更新保存");
+                 }
+             }
+                //否则返回
+            } else return ResultEntity.error("不能答题");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
 
 //    @ApiOperation("用户为一个题目集提交答案") //用户为一个题目集保存答案   答题人可用
 //    @PostMapping("/saveProblemAnswer")
