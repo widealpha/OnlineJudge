@@ -34,7 +34,7 @@ public class ProblemSetController {                  // TODO 权限
 
     @ApiOperation("所有支持的题目集类型")
     @GetMapping("/allTypes")
-    public ResultEntity<ProblemSetTypeEnum[]> allProblemSetTypes(){
+    public ResultEntity<ProblemSetTypeEnum[]> allProblemSetTypes() {
         return ResultEntity.data(ProblemSetTypeEnum.values());
     }
 
@@ -71,15 +71,15 @@ public class ProblemSetController {                  // TODO 权限
 
     @ApiOperation("向题目集里加一个题") //向题目集里加一个题   //创建者可以使用
     @PostMapping("/addProblemToProblemSet")
-    public ResultEntity addProblemToProblemSet(
-            @ApiParam(value = "题目集ID") @RequestParam Integer problem_set_id,
-            @ApiParam(value = "题目ID") @RequestParam Integer problem_id,
+    public ResultEntity<Boolean> addProblemToProblemSet(
+            @ApiParam(value = "题目集ID") @RequestParam Integer problemSetId,
+            @ApiParam(value = "题目ID") @RequestParam Integer problemId,
             @ApiIgnore @AuthenticationPrincipal User user
     ) {
         try {
-            if (problemSetService.getProblemSetInfo(problem_set_id).getCreatorId().equals(user.getId())) {
+            if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
 
-                problemSetService.addProblemToProblemSet(problem_id,problem_set_id);
+                problemSetService.addProblemToProblemSet(problemId, problemSetId);
                 return ResultEntity.success();
             } else return ResultEntity.error(StatusCode.NO_PERMISSION);
 

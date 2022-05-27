@@ -42,7 +42,6 @@ public class SolveService {
     AnswerRecordMapper answerRecordMapper;
 
 
-
     @Resource
     ProblemSetService problemSetService;
     @Value("${spring.rabbitmq.template.routing-key}")
@@ -50,6 +49,11 @@ public class SolveService {
 
     @Transactional
     public ResultEntity<String> trySolveProblem(JudgeTask task, int userId, int problemSetId) {
+        //查看是否可以判题
+        ResultEntity<Boolean> result = problemSetService.getUserCanTrySolveProblem(userId, problemSetId, task.getProblemId());
+        if (!result.getData()) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY, result.getMessage());
+        }
         Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(task.getProblemId());
         if (typeProblemId == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
@@ -100,16 +104,17 @@ public class SolveService {
 
     @Transactional
     public ResultEntity<AnswerRecord> trySolveSyncProblem(int problemId, int userId, int problemSetId, String userAnswer) {
-        //todo 判断用户能否提交
-        boolean can_submit = problemSetService.getUserCanTrySolveProblemSet(userId,problemSetId);
-
-
+        //查看是否可以判题
+        ResultEntity<Boolean> result = problemSetService.getUserCanTrySolveProblem(userId, problemSetId, problemId);
+        if (!result.getData()) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY, result.getMessage());
+        }
         AnswerRecord answerRecord = new AnswerRecord();
         answerRecord.setProblemId(problemId);
         answerRecord.setUserId(userId);
         answerRecord.setProblemSetId(problemSetId);
         //判断之前是否判过此题，如果有返回上一次判题的结果
-        Integer recordId = answerRecordMapper.exist(answerRecord);
+        Integer recordId = answerRecordMapper.selectRecordByRelationIds(answerRecord);
         if (recordId != null) {
             answerRecord.setId(recordId);
             return ResultEntity.data(answerRecordMapper.selectAnswerRecord(recordId));

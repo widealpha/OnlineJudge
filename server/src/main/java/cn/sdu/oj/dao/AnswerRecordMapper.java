@@ -1,17 +1,7 @@
 package cn.sdu.oj.dao;
 
 import cn.sdu.oj.domain.po.AnswerRecord;
-import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
-
-import java.util.List;
-
-
-import cn.sdu.oj.domain.po.ProblemSet;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -27,8 +17,8 @@ public interface AnswerRecordMapper {
             "(#{problemId}, #{userId}, #{userAnswer}, #{problemSetId}, #{type}, #{isCorrect})")
     boolean insertAnswerRecord(AnswerRecord answerRecord);
 
-    @Select("SELECT id FROM answer_record WHERE problem_id = #{problem_id} AND problem_set_id = #{problem_set_id} AND user_id = #{user_id} AND `status` >= 0 LIMIT 1")
-    Integer exist(AnswerRecord answerRecord);
+    @Select("SELECT id FROM answer_record WHERE problem_id = #{problemId} AND problem_set_id = #{problemSetId} AND user_id = #{userId} AND `status` >= 0 LIMIT 1")
+    Integer selectRecordByRelationIds(AnswerRecord answerRecord);
 
     @Select("SELECT * FROM answer_record WHERE id = #{id} AND `status` >= 0")
     AnswerRecord selectAnswerRecord(int id);

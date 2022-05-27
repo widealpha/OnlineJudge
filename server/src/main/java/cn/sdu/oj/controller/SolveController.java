@@ -74,7 +74,7 @@ public class SolveController {
     ResultEntity<AnswerRecord> trySolveSyncProblem(@ApiIgnore @AuthenticationPrincipal User user,
                                                    @ApiParam("题目Id") @RequestParam int problemId,
                                                    @ApiParam("题目集编号") @RequestParam int problemSetId,
-                                                   @ApiParam("答案内容") @RequestParam String answer) {
+                                                   @ApiParam(value = "答案内容(JSON格式)", example = "[\"A\"]") @RequestParam String answer) {
         try {
             return solveService.trySolveSyncProblem(problemId, user.getId(), problemSetId, answer);
         } catch (JSONException e) {

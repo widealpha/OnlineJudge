@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ProblemSetService {
@@ -110,12 +111,12 @@ public class ProblemSetService {
     }
 
     //判断 一个用户是否能做这个题
-    public ResultEntity getUserCanTrySolveProblem(Integer user_id, Integer problem_id, Integer problem_set_id) {
+    public ResultEntity<Boolean> getUserCanTrySolveProblem(Integer user_id, Integer problem_id, Integer problem_set_id) {
 
         List<ProblemSetProblem> problemSetProblem = problemSetProblemMapper.getProblemSetProblem(problem_set_id);
         for (ProblemSetProblem p : problemSetProblem
         ) {
-            if (p.getProblem_id() == problem_id) { //题目在题目集中
+            if (Objects.equals(p.getProblem_id(), problem_id)) { //题目在题目集中
                 ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
                 if (problemSet.getIsPublic() == 1) {  //public
                     return ResultEntity.success("公开题目集", true);
