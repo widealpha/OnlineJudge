@@ -202,4 +202,8 @@ public class ProblemSetService {
     public void updateProblemSetUserAnswer(Integer user_id, Integer problem_set_id, String answer) {
         problemSetUserAnswerMapper.updateProblemSetUserAnswer(user_id,problem_set_id,answer);
     }
+
+    public String getProblemSetUserAnswer(Integer user_id, Integer problem_set_id) {
+        return problemSetUserAnswerMapper.getProblemSetUserAnswer(user_id,problem_set_id);
+    }
 }

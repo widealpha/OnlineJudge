@@ -1,5 +1,7 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.bo.JudgeTask;
+import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
 import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
@@ -9,8 +11,12 @@ import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.service.ProblemSetService;
+import cn.sdu.oj.service.SolveService;
 import cn.sdu.oj.service.UserGroupService;
 import cn.sdu.oj.util.TimeUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -30,7 +37,7 @@ public class ProblemSetController {                  // TODO 权限
     private ProblemSetService problemSetService;
 
     @Autowired
-    private UserGroupService userGroupService;
+    private SolveService solveService;
 
     @ApiOperation("所有支持的题目集类型")
     @GetMapping("/allTypes")
@@ -257,29 +264,32 @@ public class ProblemSetController {                  // TODO 权限
     public ResultEntity saveProblemAnswer(
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
-            @ApiParam(value = "answer", required = true) @RequestParam String answer //题目集答案
+            @ApiParam(value = "answer", required = true,example = "[\n" +
+                    "{\"problem_id\":1,\"type\":1,\"answer\":\"{\"code\":\"*****\",\"language\":\"Java\"}\"},\n" +
+                    "{\"problem_id\":2,\"type\":2,\"answer\":\"A\"}\n" +
+                    "]") @RequestParam String answer //题目集答案
     ) {
         try {
             //判断是否是答题人
             if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), id)) {
                 //查询是否提交过
-                Boolean is_submit =problemSetService.judgeProblemSetSubmit(user.getId(), id);
-             if (is_submit){  //提交过
-                return ResultEntity.error("已经提交过了");
-             } else {//如果没有，保存答案到联系表中
-                 //判断是否存在
-                Boolean is_exist = problemSetService.judgeProblemSetUserAnswerExist(user.getId(),id);
+                Boolean is_submit = problemSetService.judgeProblemSetSubmit(user.getId(), id);
+                if (is_submit) {  //提交过
+                    return ResultEntity.error("已经提交过了");
+                } else {//如果没有，保存答案到联系表中
+                    //判断是否存在
+                    Boolean is_exist = problemSetService.judgeProblemSetUserAnswerExist(user.getId(), id);
                     //不存在 插入
-                 if (!is_exist){
-                     problemSetService.insertProblemSetUserAnswer(user.getId(),id,answer);
-                     return ResultEntity.success("第一次保存");
-                 }
+                    if (!is_exist) {
+                        problemSetService.insertProblemSetUserAnswer(user.getId(), id, answer);
+                        return ResultEntity.success("第一次保存");
+                    }
                     //存在，更新
-                 else {
-                     problemSetService.updateProblemSetUserAnswer(user.getId(),id,answer);
-                     return ResultEntity.success("更新保存");
-                 }
-             }
+                    else {
+                        problemSetService.updateProblemSetUserAnswer(user.getId(), id, answer);
+                        return ResultEntity.success("更新保存");
+                    }
+                }
                 //否则返回
             } else return ResultEntity.error("不能答题");
         } catch (Exception e) {
@@ -288,21 +298,60 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
-//    @ApiOperation("用户为一个题目集提交答案") //用户为一个题目集保存答案   答题人可用
-//    @PostMapping("/saveProblemAnswer")
-//    public ResultEntity saveProblemAnswer(
-//            @ApiIgnore @AuthenticationPrincipal User user) {
-//        try {
-//            //判断是否是答题人
-//
-//            //保存答案到联系表中
-//
-//            return ResultEntity.success("查看我创建的题目集", problemSets);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResultEntity.error(StatusCode.COMMON_FAIL);
-//        }
-//    }
+    @ApiOperation("用户为一个题目集提交答案") //用户为一个题目集保存答案   答题人可用
+    @PostMapping("/saveProblemAnswer")
+    public ResultEntity saveProblemAnswer(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam(value = "ID", required = true) @RequestParam Integer id //题目集id
+    ) {
+        try {
+            //判断是否是答题人
+            if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), id)) {
+                //查询时间
+                if (problemSetService.getProblemSetInfo(id).getEndTime().getTime() >= new Date().getTime()) {
+                    //查询是否提交过
+                    Boolean is_submit = problemSetService.judgeProblemSetSubmit(user.getId(), id);
+                    if (is_submit) {  //提交过
+                        return ResultEntity.error("已经提交过了");
+                    } else {//如果没有，提交答案到判题
+                        //拿到答案
+                        String answers = problemSetService.getProblemSetUserAnswer(user.getId(), id);
+                        if (answers != null) {
+                            JSONArray jsonArray = JSONArray.parseArray(answers);
+                            for (int i = 0; i < jsonArray.size(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                Integer problem_id = jsonObject.getInteger("problem_id");
+                                Integer type = jsonObject.getInteger("type");
+                                String answer = jsonObject.getString("answer");
+                                if (type == 0)//编程题
+                                {
+                                    JSONObject a = JSON.parseObject(answer);
+                                    JudgeTask judgeTask = new JudgeTask();
+                                    judgeTask.setProblemId(problem_id);
+                                    judgeTask.setCode(a.getString("code"));
+                                    judgeTask.setLanguage(LanguageEnum.valueOf(a.getString("language")));
+                                    if (judgeTask.getLanguage() == null) {
+                                        return ResultEntity.error(StatusCode.LANGUAGE_NOT_SUPPORT);
+                                    }
+                                    solveService.trySolveProblem(judgeTask, user.getId(), id);
+
+                                } else {
+                                    solveService.trySolveSyncProblem(problem_id, user.getId(), id, answer);
+                                }
+                            }
+                            return ResultEntity.success("提交成功，正在判题");
+                        }
+                        else return ResultEntity.error("空的答卷");
+                    }
+                } else return ResultEntity.error("已经结束，无法提交");
+
+                //否则返回
+            } else return ResultEntity.error("不能答题");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
 
 
 }
