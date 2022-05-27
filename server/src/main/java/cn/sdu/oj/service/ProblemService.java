@@ -1,8 +1,6 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
-import cn.sdu.oj.domain.bo.Problem;
-import cn.sdu.oj.domain.bo.ProblemWithInfo;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.DifficultyEnum;
@@ -12,12 +10,15 @@ import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class ProblemService {
     @Resource
     TagMapper tagMapper;
 
-    public ResultEntity<List<Tag>> allTags(){
+    public ResultEntity<List<Tag>> allTags() {
         return ResultEntity.data(tagMapper.selectAllTags());
     }
 
@@ -192,12 +193,12 @@ public class ProblemService {
         return tagMapper.getChildrenTagByParentId(parentId);
     }
 
-    public void addTestPoints(int problemId, MultipartFile file, String sha256) throws Exception {
+    public void uploadCheckpoints(int problemId, MultipartFile file, String sha256) throws Exception {
         // 校验内部文件的正确性
         FileUtil.verifyZipFormat(file.getBytes());
         // 初始化目标目标文件夹
-        StringBuffer destinationDir = new StringBuffer(SFTPUtil.ROOT_PATH);
-        destinationDir.append(SFTPUtil.SEPARATOR + problemId);
+        StringBuilder destinationDir = new StringBuilder(SFTPUtil.ROOT_PATH);
+        destinationDir.append(SFTPUtil.SEPARATOR).append(problemId);
         // 初始化工具类
         SFTPUtil sftpUtil = new SFTPUtil();
         // 1、写入压缩包
@@ -205,6 +206,27 @@ public class ProblemService {
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
 
+    }
+
+    public void downloadCheckpoints(int problemId, int userId, HttpServletResponse response) throws IOException {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null || generalProblem.getCreator() != userId) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        response.setContentType("application/x-zip-compressed");
+        response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-disposition", "attachment;filename=checkpoints.zip");
+        ServletOutputStream outputStream;
+        try {
+            outputStream = response.getOutputStream();
+            // 初始化目标目标文件夹
+            SFTPUtil sftpUtil = new SFTPUtil();
+            sftpUtil.downloadSingleFile(SFTPUtil.ROOT_PATH + SFTPUtil.SEPARATOR + problemId, "checkpoints.zip", outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception ignore) {
+        }
     }
 
 }

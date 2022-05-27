@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -43,14 +46,12 @@ public class ProblemController {
         return ResultEntity.data(ProblemTypeEnum.values());
     }
 
-
     @ApiOperation("题目详细信息|TEACHER+")
     @PostMapping("info")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<ProblemDto> problemInfo(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目id") @RequestParam int problemId) {
         return problemService.findProblemInfo(problemId, user.getId());
     }
-
 
     @ApiOperation("添加编程题目|TEACHER+")
     @PostMapping("/addProgramingProblem")
@@ -106,15 +107,25 @@ public class ProblemController {
     @PostMapping("/uploadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<Boolean> uploadCheckpoints(
-            @ApiParam("题目id") @RequestPart Integer problemId,
-            @ApiParam("测试点sha256校验码") @RequestPart String sha256,
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiParam("测试点sha256校验码") @RequestParam String sha256,
             @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file) {
         try {
-            problemService.addTestPoints(problemId, file, sha256);
+            problemService.uploadCheckpoints(problemId, file, sha256);
             return ResultEntity.data(true);
         } catch (Exception e) {
             return ResultEntity.data(StatusCode.COMMON_FAIL, false);
         }
+    }
+
+    @ApiOperation("下载题目测试点|TEACHER+")
+    @GetMapping("downloadCheckpoints")
+    @PreAuthorize("hasRole('TEACHER')")
+    public void downloadCheckpoints(
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiIgnore HttpServletResponse response,
+            @AuthenticationPrincipal User user) throws IOException {
+        problemService.downloadCheckpoints(problemId, user.getId(), response);
     }
 
     @ApiOperation("添加选择/判断/填空/简答|TEACHER+")
