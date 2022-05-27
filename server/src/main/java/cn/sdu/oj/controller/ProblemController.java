@@ -124,7 +124,7 @@ public class ProblemController {
     public void downloadCheckpoints(
             @ApiParam("题目id") @RequestParam Integer problemId,
             @ApiIgnore HttpServletResponse response,
-            @AuthenticationPrincipal User user) throws IOException {
+            @ApiIgnore @AuthenticationPrincipal User user) throws IOException {
         problemService.downloadCheckpoints(problemId, user.getId(), response);
     }
 
