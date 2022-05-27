@@ -105,7 +105,10 @@ public class ProblemController {
     @ApiOperation("更新编程题目测试点|TEACHER+")
     @PostMapping("/uploadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> uploadCheckpoints(@ApiParam("题目id") @RequestParam Integer problemId, @ApiParam("测试点sha256校验码") @RequestParam String sha256, @ApiParam("测试点压缩包,格式按照之前拟定") @RequestParam MultipartFile file) {
+    public ResultEntity<Boolean> uploadCheckpoints(
+            @ApiParam("题目id") @RequestPart Integer problemId,
+            @ApiParam("测试点sha256校验码") @RequestPart String sha256,
+            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file) {
         try {
             problemService.addTestPoints(problemId, file, sha256);
             return ResultEntity.data(true);
@@ -229,9 +232,7 @@ public class ProblemController {
         for (Tag a : childrenList) {
             Integer id = a.getId();
             List<Tag> c = problemService.getChildrenTagByParentId(id);
-            if (c != null && c.size() != 0) {
-                a.setHasChild(true);
-            } else a.setHasChild(false);
+            a.setHasChild(c != null && c.size() != 0);
         }
         return ResultEntity.data(childrenList);
     }
