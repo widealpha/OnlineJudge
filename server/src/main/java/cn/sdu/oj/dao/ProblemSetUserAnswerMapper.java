@@ -1,9 +1,12 @@
 package cn.sdu.oj.dao;
 
+import cn.sdu.oj.domain.po.ProblemSetUserAnswer;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
 
 @Mapper
 public interface ProblemSetUserAnswerMapper {
@@ -21,4 +24,10 @@ public interface ProblemSetUserAnswerMapper {
 
     @Select("SELECT answer FROM problem_set_user_answer WHERE user_id=#{user_id} AND problem_set_id=#{problem_set_id} AND status>=0")
     String getProblemSetUserAnswer(Integer user_id, Integer problem_set_id);
+
+    @Select("SELECT is_submit FROM  problem_set_user_answer WHERE  user_id=#{user_id} AND problem_set_id =#{problem_set_id} AND status >= 0")
+    Integer judgeProblemSetSubmit(Integer user_id, Integer problem_set_id);
+
+    @Select("SELECT * FROM  problem_set_user_answer WHERE  is_submit=-1  AND status >= 0")
+    List<ProblemSetUserAnswer> getUncommittedProblemSetUserAnswer();
 }

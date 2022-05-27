@@ -227,8 +227,6 @@ public class ProblemSetController {                  // TODO 权限
     }
 
     //题目集创建者获取所有人的完成情况
-    // geng done all except competition
-
     @ApiOperation("题目集创建者获取所有人的完成情况") //题目集创建者获取所有人的完成情况   创建人可用  TODO
     @PostMapping("/getALLCompletion")
     public ResultEntity getALLCompletion(
@@ -264,7 +262,7 @@ public class ProblemSetController {                  // TODO 权限
     public ResultEntity saveProblemAnswer(
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
-            @ApiParam(value = "answer", required = true,example = "[\n" +
+            @ApiParam(value = "answer", required = true, example = "[\n" +
                     "{\"problem_id\":1,\"type\":1,\"answer\":\"{\"code\":\"*****\",\"language\":\"Java\"}\"},\n" +
                     "{\"problem_id\":2,\"type\":2,\"answer\":\"A\"}\n" +
                     "]") @RequestParam String answer //题目集答案
@@ -299,8 +297,8 @@ public class ProblemSetController {                  // TODO 权限
     }
 
     @ApiOperation("用户为一个题目集提交答案") //用户为一个题目集保存答案   答题人可用
-    @PostMapping("/saveProblemAnswer")
-    public ResultEntity saveProblemAnswer(
+    @PostMapping("/submitProblemAnswer")
+    public ResultEntity submitProblemAnswer(
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam(value = "ID", required = true) @RequestParam Integer id //题目集id
     ) {
@@ -340,11 +338,9 @@ public class ProblemSetController {                  // TODO 权限
                                 }
                             }
                             return ResultEntity.success("提交成功，正在判题");
-                        }
-                        else return ResultEntity.error("空的答卷");
+                        } else return ResultEntity.error("空的答卷");
                     }
                 } else return ResultEntity.error("已经结束，无法提交");
-
                 //否则返回
             } else return ResultEntity.error("不能答题");
         } catch (Exception e) {
@@ -352,6 +348,5 @@ public class ProblemSetController {                  // TODO 权限
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
     }
-
 
 }

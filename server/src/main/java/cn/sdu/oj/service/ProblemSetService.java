@@ -1,10 +1,7 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
-import cn.sdu.oj.domain.po.ProblemSet;
-import cn.sdu.oj.domain.po.ProblemSetProblem;
-import cn.sdu.oj.domain.po.ProblemSetUserGroup;
-import cn.sdu.oj.domain.po.UserGroup;
+import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
@@ -34,8 +31,6 @@ public class ProblemSetService {
     @Autowired
     private ProblemSetUserGroupMapper problemSetUserGroupMapper;
 
-    @Autowired
-    private ProblemSetSubmitMapper problemSetSubmitMapper;
 
     @Autowired
     private ProblemSetUserAnswerMapper problemSetUserAnswerMapper;
@@ -102,7 +97,7 @@ public class ProblemSetService {
             if (p.getType() == 0) // 编程题
             {
                 Integer c = solveRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), user_id);
-                ;
+
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, c));
             } else if (p.getType() == 1)//非编程题
             {
@@ -135,15 +130,12 @@ public class ProblemSetService {
                     return ResultEntity.error("不可判题", false);
                 }
             }
-
         }
         return ResultEntity.error("题目不在题目集中", false);
-
     }
 
     //判断 一个用户是否能做这个题目集
     public boolean getUserCanTrySolveProblemSet(Integer user_id, Integer problem_set_id) {
-
 
         ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
         if (problemSet.getIsPublic() == 1) {  //public
@@ -159,12 +151,10 @@ public class ProblemSetService {
             }
             return false;
         }
-
-
     }
 
     public Boolean judgeProblemSetSubmit(Integer user_id, Integer problem_set_id) {
-        Integer submit = problemSetSubmitMapper.judgeProblemSetSubmit(user_id, problem_set_id);
+        Integer submit = problemSetUserAnswerMapper.judgeProblemSetSubmit(user_id, problem_set_id);
         if (submit  != null && submit == 1) {
             return true;
         } else return false;
@@ -178,7 +168,6 @@ public class ProblemSetService {
             if (p.getProblem_id().equals(problem_id)) {
                 return true;
             }
-
         }
         return false;
     }
@@ -205,5 +194,9 @@ public class ProblemSetService {
 
     public String getProblemSetUserAnswer(Integer user_id, Integer problem_set_id) {
         return problemSetUserAnswerMapper.getProblemSetUserAnswer(user_id,problem_set_id);
+    }
+
+    public List<ProblemSetUserAnswer> getUncommittedProblemSetUserAnswer() {
+        return problemSetUserAnswerMapper.getUncommittedProblemSetUserAnswer();
     }
 }
