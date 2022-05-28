@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File 转 Blob</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<body>
+    <input type="file" name="file" id="file"></br>
+    <button id="fileToBlob">File 转 Blob</button><br>
+    <script>
+
+        // 文件类型转Blob
+        const fileToBlob = (file, callback) => {
+            const type = file.type;
+
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                const blob = new Blob([evt.target.result], { type });
+                if (typeof callback === 'function') {
+                    callback(blob)
+                } else {
+                    console.log("我是 blob:", blob);
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+        $("#fileToBlob").click(function (e) {
+            e.preventDefault();
+            // 获取文件对象
+            const _file = $("#file")[0].files[0];
+            fileToBlob(_file, blob => {
+                console.log('我是 blob:', blob);
+            });
+        });
+
+    </script>
+</body>
+
+</html>
