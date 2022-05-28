@@ -226,7 +226,7 @@ public class ProblemService {
 
     public ResultEntity<Boolean> uploadCheckpoints(int problemId, int userId, MultipartFile file, String sha256) throws Exception {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
-        if (generalProblem == null || generalProblem.getCreator() != userId) {
+        if (generalProblem == null || generalProblem.getCreator() != userId || file.isEmpty()) {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
         }
         // 校验内部文件的正确性

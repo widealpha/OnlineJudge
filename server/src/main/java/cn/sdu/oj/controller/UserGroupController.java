@@ -63,7 +63,7 @@ public class UserGroupController {
     @PostMapping("/getUserGroupInfo")
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getUserGroupInfo(
-            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
+            @ApiParam(value = "用户组id") @RequestParam Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
         UserGroup userGroup = UserGroupService.getUserGroupInfoById(id);
         if (userGroup.getCreatorId().equals(user.getId())) {

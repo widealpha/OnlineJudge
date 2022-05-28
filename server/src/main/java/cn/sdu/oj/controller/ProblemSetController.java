@@ -141,7 +141,7 @@ public class ProblemSetController {                  // TODO 权限
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getProblemSetInfo(
             @ApiParam(value = "题目集ID") @RequestParam(required = true) Integer problemSetId,
-            @ApiParam(value = "克隆码（可选）") @RequestParam(required = true) String cloneCode,
+            @ApiParam(value = "克隆码（可选）") @RequestParam(required = false) String cloneCode,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             //TODO 创建者和参与者可用

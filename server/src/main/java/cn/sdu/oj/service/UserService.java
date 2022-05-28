@@ -130,7 +130,7 @@ public class UserService {
         List<User> users = new ArrayList<>();
         Random random = new Random(problemSetId);
         for (int i = 0; i < size; i++) {
-            String username = "js-" + problemSetId + "-" + random.nextInt(10000, 99999);
+            String username = "js-" + problemSetId + "-" + (10000 + random.nextInt(9999));
             User user = new User(username, passwordEncoder.encode("123456"));
             userMapper.insert(user);
             users.add(user);

@@ -4,9 +4,7 @@ import cn.sdu.oj.dao.*;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
 import cn.sdu.oj.entity.ResultEntity;
-import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.util.TimeUtil;
-import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -94,14 +92,14 @@ public class ProblemSetService {
     public List<ProblemSetProblemVo> getSelfCompletion(List<ProblemSetProblem> problemSetProblems, Integer user_id) {
         List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
         for (ProblemSetProblem p : problemSetProblems) {
-            if (p.getType() == 0) // 编程题
+            if (p.getScore() == 0) // 编程题
             {
-                Integer c = solveRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), user_id);
+                Integer c = solveRecordMapper.getSelfCompletion(p.getProblemId(), p.getProblemSetId(), user_id);
 
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, c));
-            } else if (p.getType() != 1)//非编程题
+            } else if (p.getScore() != 1)//非编程题
             {
-                Integer is_correct = answerRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), p, user_id);
+                Integer is_correct = answerRecordMapper.getSelfCompletion(p.getProblemId(), p.getProblemSetId(), p, user_id);
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, is_correct));
             }
         }
@@ -114,7 +112,7 @@ public class ProblemSetService {
         List<ProblemSetProblem> problemSetProblem = problemSetProblemMapper.getProblemSetProblem(problem_set_id);
         for (ProblemSetProblem p : problemSetProblem
         ) {
-            if (Objects.equals(p.getProblem_id(), problem_id)) { //题目在题目集中
+            if (Objects.equals(p.getProblemId(), problem_id)) { //题目在题目集中
                 ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
                 if (problemSet.getIsPublic() == 1) {  //public
                     return ResultEntity.success("公开题目集", true);
@@ -155,17 +153,14 @@ public class ProblemSetService {
 
     public Boolean judgeProblemSetSubmit(Integer user_id, Integer problem_set_id) {
         Integer submit = problemSetUserAnswerMapper.judgeProblemSetSubmit(user_id, problem_set_id);
-        if (submit  != null && submit == 1) {
-            return true;
-        } else return false;
+        return submit != null && submit == 1;
     }
 
     //判断题目集里有没有这个题
     public Boolean judgeProblemSetHasProblem(Integer problem_set_id, Integer problem_id) {
         List<ProblemSetProblem> problems = problemSetProblemMapper.getProblemSetProblem(problem_set_id);
-        for (ProblemSetProblem p : problems
-        ) {
-            if (p.getProblem_id().equals(problem_id)) {
+        for (ProblemSetProblem p : problems) {
+            if (p.getProblemId().equals(problem_id)) {
                 return true;
             }
         }
@@ -173,27 +168,27 @@ public class ProblemSetService {
     }
 
     public void addProblemToProblemSet(Integer problem_id, Integer problem_set_id) {
-        problemSetProblemMapper.addProblemToProblemSet(problem_id,problem_set_id);
+        problemSetProblemMapper.addProblemToProblemSet(problem_id, problem_set_id);
     }
 
     public Boolean judgeProblemSetUserAnswerExist(Integer user_id, Integer problem_set_id) {
-      Integer i = problemSetUserAnswerMapper.judgeProblemSetUserAnswerExist(user_id,problem_set_id);
-      if (i==null || i==0){
-          return false;
-      } else return true;
+        Integer i = problemSetUserAnswerMapper.judgeProblemSetUserAnswerExist(user_id, problem_set_id);
+        if (i == null || i == 0) {
+            return false;
+        } else return true;
 
     }
 
     public void insertProblemSetUserAnswer(Integer user_id, Integer problem_set_id, String answer) {
-        problemSetUserAnswerMapper.insertProblemSetUserAnswer(user_id,problem_set_id,answer);
+        problemSetUserAnswerMapper.insertProblemSetUserAnswer(user_id, problem_set_id, answer);
     }
 
     public void updateProblemSetUserAnswer(Integer user_id, Integer problem_set_id, String answer) {
-        problemSetUserAnswerMapper.updateProblemSetUserAnswer(user_id,problem_set_id,answer);
+        problemSetUserAnswerMapper.updateProblemSetUserAnswer(user_id, problem_set_id, answer);
     }
 
     public String getProblemSetUserAnswer(Integer user_id, Integer problem_set_id) {
-        return problemSetUserAnswerMapper.getProblemSetUserAnswer(user_id,problem_set_id);
+        return problemSetUserAnswerMapper.getProblemSetUserAnswer(user_id, problem_set_id);
     }
 
     public List<ProblemSetUserAnswer> getUncommittedProblemSetUserAnswer() {
