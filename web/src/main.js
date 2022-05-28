@@ -5,6 +5,7 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import $ajax from './ajax';
 import store from './store';
+
 import Vue from 'vue'
 
 Vue.prototype.$ajax = $ajax;
