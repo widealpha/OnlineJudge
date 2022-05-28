@@ -1,17 +1,13 @@
 package cn.sdu.oj.controller;
 
-import cn.sdu.oj.config.UsernameLoginConfig;
 import cn.sdu.oj.domain.po.UserGroup;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
-import cn.sdu.oj.filter.UsernamePasswordAuthenticationFilter;
 import cn.sdu.oj.service.UserGroupService;
-import cn.sdu.oj.service.UserService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import io.swagger.annotations.*;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,7 +22,7 @@ import java.util.List;
 @Api(value = "用户组接口", tags = "用户组接口")
 public class UserGroupController {
     @Autowired
-    private UserGroupService UserGroupService;
+    private UserGroupService userGroupService;
 
     @ApiOperation("用户组创建|TEACHER+") //创建用户组，父用户组id为可选   //老师或者管理员可以使用
     @PostMapping("/createUserGroup")
@@ -39,18 +35,18 @@ public class UserGroupController {
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             if (fatherId == null) {  //创建新用户组
-                String a = UserGroupService.createUserGroup(name, type, introduction, fatherId, user.getId()).toString();
+                String a = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId()).toString();
                 return ResultEntity.success("创建新用户组成功", a);
             } else {  //为一个用户组创建子用户组
                 //要求：该 用户组目前不含人 ，且是我创建
-                if (UserGroupService.getUserGroupInfoById(fatherId).getCreatorId() != user.getId()) {
+                if (userGroupService.getUserGroupInfoById(fatherId).getCreatorId() != user.getId()) {
                     return ResultEntity.error(StatusCode.NO_PERMISSION);
-                } else if (UserGroupService.getUserGroupMembers(fatherId).size() != 0) {
+                } else if (userGroupService.getUserGroupMembers(fatherId).size() != 0) {
                     return ResultEntity.error("无法为已有成员的用户组添加子用户组");
                 }
-                Integer id = UserGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+                Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
 
-                UserGroupService.updateChildrenUserGroup(fatherId, id);
+                userGroupService.updateChildrenUserGroup(fatherId, id);
                 return ResultEntity.success();
             }
         } catch (Exception e) {
@@ -65,11 +61,11 @@ public class UserGroupController {
     public ResultEntity getUserGroupInfo(
             @ApiParam(value = "用户组id") @RequestParam Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        UserGroup userGroup = UserGroupService.getUserGroupInfoById(id);
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
         if (userGroup.getCreatorId().equals(user.getId())) {
             return ResultEntity.data(userGroup);
         } else {
-            if (UserGroupService.getUserGroupMembers(id).contains(user.getId())) {
+            if (userGroupService.getUserGroupMembers(id).contains(user.getId())) {
                 return ResultEntity.data(userGroup);
             } else return ResultEntity.error(StatusCode.NO_PERMISSION);
         }
@@ -81,9 +77,9 @@ public class UserGroupController {
     public ResultEntity deleteUserGroup(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        UserGroup userGroup = UserGroupService.getUserGroupInfoById(id);
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
         if (userGroup.getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(UserGroupService.deleteUserGroup(user.getId(), id));
+            return ResultEntity.data(userGroupService.deleteUserGroup(user.getId(), id));
         } else return ResultEntity.error(StatusCode.NO_PERMISSION);
     }
 
@@ -95,9 +91,9 @@ public class UserGroupController {
             @ApiParam(value = "用户组名称") @RequestParam(required = true) String name,
             @ApiParam(value = "用户组简介") @RequestParam(required = true) String introduction,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        UserGroup userGroup = UserGroupService.getUserGroupInfoById(id);
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
         if (userGroup.getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(UserGroupService.alterUserGroupInfo(user.getId(), id, name, introduction));
+            return ResultEntity.data(userGroupService.alterUserGroupInfo(user.getId(), id, name, introduction));
         } else return ResultEntity.error(StatusCode.NO_PERMISSION);
 
     }
@@ -107,7 +103,7 @@ public class UserGroupController {
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getSelfCreatedUserGroup(
             @ApiIgnore @AuthenticationPrincipal User user) {
-        return ResultEntity.data(UserGroupService.getSelfCreatedUserGroup(user.getId()));
+        return ResultEntity.data(userGroupService.getSelfCreatedUserGroup(user.getId()));
     }
 
     @ApiOperation("向我创建的用户组加人|TEACHER+")   //创建者（老师）可以使用
@@ -117,13 +113,13 @@ public class UserGroupController {
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiParam(value = "人员ID列表,请使用JSONArray") @RequestParam(required = true) String member,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        UserGroup userGroup = UserGroupService.getUserGroupInfoById(id);
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
         if (userGroup.getCreatorId().equals(user.getId())) {
             JSONArray jsonArray = JSON.parseArray(member);
             if (jsonArray.contains(user.getId())) {
                 return ResultEntity.error("创建者已在用户组内！");
             }
-            return ResultEntity.data(UserGroupService.addMemberToUserGroup(user.getId(), id, jsonArray));
+            return ResultEntity.data(userGroupService.addMemberToUserGroup(user.getId(), id, jsonArray));
         } else return ResultEntity.error(StatusCode.NO_PERMISSION);
     }
 
@@ -134,10 +130,10 @@ public class UserGroupController {
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiParam(value = "人员ID列表,请使用JSONArray") @RequestParam(required = true) String member,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        UserGroup userGroup = UserGroupService.getUserGroupInfoById(id);
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
         if (userGroup.getCreatorId().equals(user.getId())) {
             JSONArray jsonArray = JSON.parseArray(member);
-            return ResultEntity.data(UserGroupService.deleteUserGroupMember(user.getId(), id, jsonArray));
+            return ResultEntity.data(userGroupService.deleteUserGroupMember(user.getId(), id, jsonArray));
         } else return ResultEntity.error(StatusCode.NO_PERMISSION);
     }
 
@@ -146,7 +142,7 @@ public class UserGroupController {
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getSelfJoinedUserGroup(
             @ApiIgnore @AuthenticationPrincipal User user) {
-        return ResultEntity.data(UserGroupService.getSelfJoinedUserGroup(user.getId()));
+        return ResultEntity.data(userGroupService.getSelfJoinedUserGroup(user.getId()));
     }
 
     @ApiOperation("查询我创建的用户组人员ID列表|TEACHER+")  // 创建者（老师）可以使用
@@ -155,8 +151,8 @@ public class UserGroupController {
     public ResultEntity getUserGroupMembers(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (UserGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(UserGroupService.getUserGroupMembers(id));
+        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
+            return ResultEntity.data(userGroupService.getUserGroupMembers(id));
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
@@ -167,29 +163,29 @@ public class UserGroupController {
     public ResultEntity getUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (UserGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(UserGroupService.getUserGroupProblemSet(id));
+        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
+            return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
 
     //为一个用户组添加题目集
     @ApiOperation("为一个用户组添加题目集|TEACHER+")  // 创建者（老师）可以使用
-    @PostMapping("/addUserGroupProblemSet")    //为一个用户组添加题目集
+    @PostMapping("/linkUserGroupProblemSet")    //为一个用户组添加题目集
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity addUserGroupProblemSet(
+    public ResultEntity linkUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer userGroupId,
             @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (UserGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
-            List<Integer> list = UserGroupService.getUserGroupProblemSet(userGroupId);
+        if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
+            List<Integer> list = userGroupService.getUserGroupProblemSet(userGroupId);
             for (Integer i : list
             ) {
                 if (i == problemSetId) {
                     return ResultEntity.error("该题目集已在用户组里");
                 }
             }
-            return ResultEntity.data(UserGroupService.addUserGroupProblemSet(userGroupId, problemSetId));
+            return ResultEntity.data(userGroupService.linkUserGroupProblemSet(userGroupId, problemSetId));
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
@@ -201,13 +197,13 @@ public class UserGroupController {
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer userGroupId,
             @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (UserGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
-            List<Integer> list = UserGroupService.getUserGroupProblemSet(userGroupId);
+        if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
+            List<Integer> list = userGroupService.getUserGroupProblemSet(userGroupId);
             for (Integer i : list
             ) {
                 if (i == problemSetId) {
 
-                    return ResultEntity.data(UserGroupService.deleteUserGroupProblemSet(userGroupId, problemSetId));
+                    return ResultEntity.data(userGroupService.deleteUserGroupProblemSet(userGroupId, problemSetId));
                 }
             }
             return ResultEntity.error("题目集不在用户组里");

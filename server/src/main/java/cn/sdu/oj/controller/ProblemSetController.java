@@ -431,7 +431,7 @@ public class ProblemSetController {
                         for (ProblemSetProblem p : problems
                         ) {
                             try {
-                                ResultEntity<Integer> new_problem_id = problemService.cloneProblem(p.getProblem_id(), user.getId());
+                                ResultEntity<Integer> new_problem_id = problemService.cloneProblem(p.getProblemId(), user.getId());
                                 problemSetService.addProblemToProblemSet(new_problem_id.getData(), new_problem_set_id);
                             } catch (Exception e) {
                                 e.printStackTrace();
