@@ -15,7 +15,7 @@ public class UserGroupService {
     @Autowired
     private UserGroupMapper UserGroupMapper;
 
-    //新建用户组 添加子用户组 method1
+    //新建用户组 || 添加子用户组
     public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId) {
         UserGroup userGroup = new UserGroup();
         userGroup.setName(name);
@@ -81,7 +81,7 @@ public class UserGroupService {
     }
 
 
-    //为用户组添加子用户组 method2（复制现有用户组作为子用户组）.
+    //为用户组添加子用户组 （复制现有用户组作为子用户组）. //TODO
     public StatusCode copyUserGroupAsChildren() {
         return StatusCode.NO_PERMISSION;
     }
@@ -95,7 +95,6 @@ public class UserGroupService {
     public List<Integer> getSelfJoinedUserGroup(Integer user_id) {
         return UserGroupMapper.getSelfJoinedUserGroup(user_id);
     }
-
 
     public void updateChildrenUserGroup(Integer fatherId, Integer id) {
         String children = UserGroupMapper.getUserGroupInfoById(fatherId).getChildrenId();
