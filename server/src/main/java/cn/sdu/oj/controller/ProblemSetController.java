@@ -127,12 +127,12 @@ public class ProblemSetController {                  // TODO 权限
     @ApiOperation("查看一个题目集的信息和题号") //查看一个题目集的信息   管理员，题目集创建者和题目集参与者可用
     @PostMapping("/getProblemSetInfo")
     public ResultEntity getProblemSetInfo(
-            @ApiParam(value = "题目集ID") @RequestParam Integer problem_set_id,
+            @ApiParam(value = "题目集ID") @RequestParam Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             //TODO 管理员，题目集创建者和题目集参与者可用
 
-            ProblemSet problemSet = problemSetService.getProblemSetInfo(problem_set_id);  //获取题目集信息
+            ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
             List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
             ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problems);
 

@@ -35,23 +35,23 @@ public class UserGroupController {                  // TODO 权限
             @ApiParam(value = "简介") @RequestParam String introduction,
             @ApiParam(value = "父用户组") @RequestParam(required = false) Integer fatherId,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        try{
-            if (fatherId==null) {  //创建新用户组
+        try {
+            if (fatherId == null) {  //创建新用户组
                 String a = UserGroupService.createUserGroup(name, type, introduction, fatherId, user.getId()).toString();
-                return ResultEntity.success("创建新用户组成功",a);
+                return ResultEntity.success("创建新用户组成功", a);
             } else {  //为一个用户组创建子用户组
                 //要求：该 用户组目前不含人 ，且是我创建
-                if (UserGroupService.getUserGroupInfoById(fatherId).getCreatorId()!=user.getId()){
-                    return  ResultEntity.error(StatusCode.NO_PERMISSION);
-                } else if (UserGroupService.getUserGroupMembers(fatherId).size()!=0){
+                if (UserGroupService.getUserGroupInfoById(fatherId).getCreatorId() != user.getId()) {
+                    return ResultEntity.error(StatusCode.NO_PERMISSION);
+                } else if (UserGroupService.getUserGroupMembers(fatherId).size() != 0) {
                     return ResultEntity.error("无法为已有成员的用户组添加子用户组");
                 }
                 Integer id = UserGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
 
-                UserGroupService.updateChildrenUserGroup(fatherId,id);
+                UserGroupService.updateChildrenUserGroup(fatherId, id);
                 return ResultEntity.success();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
@@ -97,8 +97,8 @@ public class UserGroupController {                  // TODO 权限
             @ApiIgnore @AuthenticationPrincipal User user) {
         JSONArray jsonArray = JSON.parseArray(member);
         if (jsonArray.contains(user.getId())) {
-                return ResultEntity.error("创建者已在用户组内！");
-            }
+            return ResultEntity.error("创建者已在用户组内！");
+        }
         return ResultEntity.data(UserGroupService.addMemberToUserGroup(user.getId(), id, jsonArray));
     }
 
@@ -146,17 +146,18 @@ public class UserGroupController {                  // TODO 权限
     @ApiOperation("为一个用户组添加题目集")  // 创建者（老师）可以使用
     @PostMapping("/addUserGroupProblemSet")    //为一个用户组添加题目集
     public ResultEntity addUserGroupProblemSet(
-            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer user_group_id,
-            @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problem_set_id,
+            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer userGroupId,
+            @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (UserGroupService.getUserGroupInfoById(user_group_id).getCreatorId().equals(user.getId())) {
-            List<Integer> list =UserGroupService.getUserGroupProblemSet(user_group_id);
-            for (Integer i:list
-                 ) { if (i ==problem_set_id) {
-                return ResultEntity.error("该题目集已在用户组里");
+        if (UserGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
+            List<Integer> list = UserGroupService.getUserGroupProblemSet(userGroupId);
+            for (Integer i : list
+            ) {
+                if (i == problemSetId) {
+                    return ResultEntity.error("该题目集已在用户组里");
+                }
             }
-            }
-            return ResultEntity.data(UserGroupService.addUserGroupProblemSet(user_group_id, problem_set_id));
+            return ResultEntity.data(UserGroupService.addUserGroupProblemSet(userGroupId, problemSetId));
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
@@ -164,16 +165,17 @@ public class UserGroupController {                  // TODO 权限
     @ApiOperation("为一个用户组删除题目集")  // 创建者（老师）可以使用
     @PostMapping("/deleteUserGroupProblemSet")    //为一个用户组删除题目集
     public ResultEntity deleteUserGroupProblemSet(
-            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer user_group_id,
-            @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problem_set_id,
+            @ApiParam(value = "用户组id") @RequestParam(required = true) Integer userGroupId,
+            @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (UserGroupService.getUserGroupInfoById(user_group_id).getCreatorId().equals(user.getId())) {
-            List<Integer> list =UserGroupService.getUserGroupProblemSet(user_group_id);
-            for (Integer i:list
-            ) { if (i ==problem_set_id) {
+        if (UserGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
+            List<Integer> list = UserGroupService.getUserGroupProblemSet(userGroupId);
+            for (Integer i : list
+            ) {
+                if (i == problemSetId) {
 
-                return ResultEntity.data(UserGroupService.deleteUserGroupProblemSet(user_group_id,problem_set_id));
-            }
+                    return ResultEntity.data(UserGroupService.deleteUserGroupProblemSet(userGroupId, problemSetId));
+                }
             }
             return ResultEntity.error("题目集不在用户组里");
         } else return ResultEntity.data(StatusCode.NO_PERMISSION);
