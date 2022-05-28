@@ -230,7 +230,9 @@ public class ProblemService {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
         }
         // 校验内部文件的正确性
-        FileUtil.verifyZipFormat(file.getBytes());
+        if (!FileUtil.verifyZipFormat(file.getBytes())){
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID);
+        }
         // 初始化目标目标文件夹
         StringBuilder destinationDir = new StringBuilder(SFTPUtil.ROOT_PATH);
         destinationDir.append(SFTPUtil.SEPARATOR).append(problemId);

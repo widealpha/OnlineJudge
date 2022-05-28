@@ -53,7 +53,9 @@ public class FileUtil {
         } catch (NoSuchAlgorithmException | IOException e) {
             return null;
         }
-    } /**
+    }
+
+    /**
      * 计算文件的sha256
      *
      * @param bytes 需要计算的byte
@@ -155,9 +157,12 @@ public class FileUtil {
         }
         zin.close();
         inputStream.close();
+        if (input.isEmpty() || output.isEmpty()) {
+            return false;
+        }
         //校验规则，每个in都要有对应的out
         for (int i = 1; i <= input.size(); i++) {
-            if (!output.contains(i+".out") || !input.contains(i+".in")) {
+            if (!output.contains(i + ".out") || !input.contains(i + ".in")) {
                 return false;
             }
         }
