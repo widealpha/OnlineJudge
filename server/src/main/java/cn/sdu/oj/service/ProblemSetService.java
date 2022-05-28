@@ -68,7 +68,7 @@ public class ProblemSetService {
                 list1.add(a);
             }
         }
-        List<ProblemSet> problemSets = null;
+        List<ProblemSet> problemSets = new ArrayList<>();
         for (Integer b : list1) {
             problemSets.add(problemSetMapper.getProblemSetInfo(b));
         }
@@ -99,7 +99,7 @@ public class ProblemSetService {
                 Integer c = solveRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), user_id);
 
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, c));
-            } else if (p.getType() == 1)//非编程题
+            } else if (p.getType() != 1)//非编程题
             {
                 Integer is_correct = answerRecordMapper.getSelfCompletion(p.getProblem_id(), p.getProblem_set_id(), p, user_id);
                 problemSetProblemVos.add(new ProblemSetProblemVo(p, is_correct));
