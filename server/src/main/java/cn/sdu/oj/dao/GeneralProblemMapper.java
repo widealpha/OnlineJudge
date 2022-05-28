@@ -13,6 +13,11 @@ public interface GeneralProblemMapper {
             "VALUES (#{type}, #{typeProblemId}, #{difficulty}, #{creator})")
     boolean insertGeneralProblem(GeneralProblem generalProblem);
 
+    @Update("UPDATE general_problem " +
+            "SET type = #{type}, type_problem_id = #{typeProblemId}, difficulty = #{difficulty} " +
+            "WHERE id = #{id} ")
+    boolean updateGeneralProblem(GeneralProblem generalProblem);
+
     @Update("UPDATE general_problem SET status =-status WHERE id = #{id} AND status > 0")
     boolean deleteGeneralProblem(int id);
 
@@ -31,6 +36,9 @@ public interface GeneralProblemMapper {
 
     @Update("UPDATE problem_tag SET status=-status WHERE problem_id = #{problemId} AND tag_id = #{tagId} AND status > 0")
     boolean deleteProblemTag(int problemId, int tagId);
+
+    @Update("UPDATE problem_tag SET status=-status WHERE problem_id = #{problemId} AND status > 0")
+    boolean deleteProblemTags(int problemId);
 
     @Update("UPDATE problem_tag SET status=-status WHERE problem_id = #{problemId} AND tag_id = #{tagId} AND status < 0")
     boolean recoveryProblemTag(int problemId, int tagId);

@@ -9,8 +9,12 @@ import java.util.List;
 public interface TagMapper {
     @Select("SELECT distinct * FROM tag WHERE `status` > 0")
     List<Tag> selectAllTags();
+
     @Select("SELECT id FROM tag WHERE name = #{name}")
     Integer selectTagIdByTagName(String tagName);
+
+    @Select("SELECT 1 FROM tag WHERE id=#{id} AND `status`>0")
+    boolean exist(int tagId);
 
     @Options(useGeneratedKeys = true, keyProperty = "id")
     @Insert("INSERT INTO tag (`name`, `level`) VALUES (#{name}, 1)")
@@ -21,4 +25,11 @@ public interface TagMapper {
 
     @Update("UPDATE tag SET `status`=-`status` WHERE id=#{id} AND status<0")
     boolean recoverTag(int tagId);
+
+    @Select("SELECT * FROM tag WHERE PARENT=#{parentId} ")
+    List<Tag> getChildrenTagByParentId(int parentId);
+
+    @Select("SELECT * FROM tag WHERE LEVEL=1")
+    List<Tag> getTopLevelTag();
+
 }

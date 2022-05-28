@@ -1,8 +1,6 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
-import cn.sdu.oj.domain.bo.Problem;
-import cn.sdu.oj.domain.bo.ProblemWithInfo;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.DifficultyEnum;
@@ -12,19 +10,21 @@ import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
 public class ProblemService {
-    @Autowired
-    private ProblemMapper problemMapper;
 
     @Resource
     AsyncProblemMapper asyncProblemMapper;
@@ -35,7 +35,11 @@ public class ProblemService {
     @Resource
     TagMapper tagMapper;
 
-    public ResultEntity<ProblemDto> findProblemInfo(int problemId) {
+    public ResultEntity<List<Tag>> allTags() {
+        return ResultEntity.data(tagMapper.selectAllTags());
+    }
+
+    public ResultEntity<ProblemDto> findProblemInfo(int problemId, int userId) {
         ProblemDto problemDto = new ProblemDto();
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null) {
@@ -64,7 +68,10 @@ public class ProblemService {
                 problemDto.setAnswer(syncProblem.getAnswer());
                 problemDto.setOptions(syncProblem.getOptions());
             }
-
+            //非创建者无法看到答案
+            if (problemDto.getCreator() != userId) {
+                problemDto.setAnswer(null);
+            }
             return ResultEntity.data(problemDto);
         }
     }
@@ -79,13 +86,7 @@ public class ProblemService {
             generalProblem.setDifficulty(problem.getDifficulty());
             if (generalProblemMapper.insertGeneralProblem(generalProblem)) {
                 int problemId = generalProblem.getId();
-                for (Integer tagId : tags) {
-                    if (tagId == null) {
-                        throw new TagNotExistException();
-                    } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
-                        throw new TagNotExistException();
-                    }
-                }
+                changeProblemTags(problemId, tags);
                 return ResultEntity.data(generalProblem.getId());
             }
         }
@@ -102,20 +103,63 @@ public class ProblemService {
             generalProblem.setDifficulty(problem.getDifficulty());
             if (generalProblemMapper.insertGeneralProblem(generalProblem)) {
                 int problemId = generalProblem.getId();
-                for (Integer tagId : tags) {
-                    if (tagId == null) {
-                        throw new TagNotExistException();
-                    } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
-                        throw new TagNotExistException();
-                    }
-                }
+                changeProblemTags(problemId, tags);
                 return ResultEntity.data(generalProblem.getId());
             }
         }
         return ResultEntity.error(StatusCode.DATA_ALREADY_EXIST);
     }
 
+    @Transactional
+    public ResultEntity<Boolean> updateProgramingProblem(int problemId, AsyncProblem problem, List<Integer> tags) throws TagNotExistException {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        //如果数据不存在或者表示为非编程题，返回数据不存在
+        if (generalProblem == null || generalProblem.getType() != 0) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else {
+            problem.setId(generalProblem.getTypeProblemId());
+            generalProblem.setDifficulty(problem.getDifficulty());
+            generalProblemMapper.updateGeneralProblem(generalProblem);
+        }
+        if (asyncProblemMapper.updateProblem(problem)) {
+            changeProblemTags(problemId, tags);
+            return ResultEntity.data(true);
+        }
+        return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+    }
 
+    @Transactional
+    public ResultEntity<Boolean> updateOtherProblem(int problemId, SyncProblem problem, List<Integer> tags) throws TagNotExistException {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        //如果数据不存在或者表示为编程题，返回数据不存在,否则寻找专属的typeProblemId
+        if (generalProblem == null || generalProblem.getType() == 0) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else {
+            problem.setId(generalProblem.getTypeProblemId());
+            //更新generalProblem的难度与种类
+            generalProblem.setDifficulty(problem.getDifficulty());
+            generalProblem.setType(problem.getType());
+            generalProblemMapper.updateGeneralProblem(generalProblem);
+        }
+        if (syncProblemMapper.updateProblem(problem)) {
+            changeProblemTags(problemId, tags);
+            return ResultEntity.data(true);
+        }
+        return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+    }
+
+    private void changeProblemTags(int problemId, List<Integer> tags) throws TagNotExistException {
+        generalProblemMapper.deleteProblemTags(problemId);
+        for (Integer tagId : tags) {
+            if (tagId == null || !tagMapper.exist(tagId)) {
+                throw new TagNotExistException();
+            } else if (!generalProblemMapper.addProblemTag(problemId, tagId)) {
+                throw new TagNotExistException();
+            }
+        }
+    }
+
+    @Transactional
     public ResultEntity<Boolean> updateProblemLimit(ProblemLimit problemLimit) {
         Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(problemLimit.getProblemId());
         if (typeProblemId == null) {
@@ -131,178 +175,98 @@ public class ProblemService {
         return ResultEntity.data(asyncProblemMapper.updateProblemLimit(asyncProblem));
     }
 
-    public int addProblem(ProblemWithInfo problemWithInfo) {
-        // 0编程 1选择 答案 2填空 答案
-        if (problemWithInfo.getType().equals(0)) {
-            //编程题
-            ProgramProblem programProblem = new ProgramProblem(null,
-                    problemWithInfo.getName(),
-                    problemWithInfo.getDescription(),
-                    problemWithInfo.getExample(),
-                    problemWithInfo.getDifficulty(),
-                    problemWithInfo.getIsOpen(),
-                    problemWithInfo.getTip(),
-                    problemWithInfo.getAuthor());
-            problemMapper.addProgramProblem(programProblem);
-            problemWithInfo.setId(programProblem.getId());
+    public ResultEntity<Boolean> deleteProblem(int problemId, int userId) {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else if (generalProblem.getCreator() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
         } else {
-            //非编程题
-            NonProgramProblem nonProgramProblem = new NonProgramProblem(null,
-                    problemWithInfo.getName(),
-                    problemWithInfo.getDescription(),
-                    problemWithInfo.getExample(),
-                    problemWithInfo.getDifficulty(),
-                    problemWithInfo.getIsOpen(),
-                    problemWithInfo.getTip(),
-                    problemWithInfo.getAuthor(),
-                    problemWithInfo.getAnswer());
-            problemMapper.addNonProgramProblem(nonProgramProblem);
-            problemWithInfo.setId(nonProgramProblem.getId());
+            return ResultEntity.data(generalProblemMapper.deleteGeneralProblem(problemId));
         }
-        if (problemWithInfo.getTags() != null) {
-            // 插入标签
-            String tags = problemWithInfo.getTags();
-            String[] tagArr = tags.split("_");
-            for (int i = 0; i < tagArr.length; i++) {
-                problemMapper.addTag(problemWithInfo.getId(), Integer.parseInt(tagArr[i]), problemWithInfo.getType());
-            }
-        }
-
-
-        return problemWithInfo.getId();
-
     }
 
     /**
-     * 添加一个题目限制
+     * 克隆题目,仅允许有克隆码的用户使用
      *
-     * @param limit
-     * @return
+     * @param problemId 需要克隆的题目Id
+     * @return clone完成的题目Id
      */
-    public int addProblemLimit(ProblemLimit limit) {
-        problemMapper.addProblemLimit(limit);
-        return limit.getProblemId();
-    }
-
-    /**
-     * 通过题目id查找对应题目限制
-     *
-     * @param problemId
-     * @return
-     */
-    public ProblemLimit getProblemLimitByProblemId(int problemId) {
-        return problemMapper.getProblemLimitByProblemId(problemId);
+    @Transactional
+    public ResultEntity<Integer> cloneProblem(int problemId, int userId) {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return null;
+        }
+        int type = generalProblem.getType();
+        //是编程题
+        if (type == ProblemTypeEnum.PROGRAMING.id) {
+            AsyncProblem asyncProblem = asyncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+            asyncProblem.setCreator(userId);
+            asyncProblemMapper.insertProblem(asyncProblem);
+            generalProblem.setTypeProblemId(asyncProblem.getId());
+        } else {
+            SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+            syncProblem.setCreator(userId);
+            syncProblemMapper.insertProblem(syncProblem);
+            generalProblem.setTypeProblemId(syncProblem.getId());
+        }
+        generalProblem.setCreator(userId);
+        generalProblemMapper.insertGeneralProblem(generalProblem);
+        return ResultEntity.data(generalProblem.getId());
     }
 
     public List<Tag> getTopLevelTag() {
-        List<Tag> topLevelTag = problemMapper.getTopLevelTag();
-        return topLevelTag;
+        return tagMapper.getTopLevelTag();
     }
 
     public List<Tag> getChildrenTagByParentId(int parentId) {
-        return problemMapper.getChildrenTagByParentId(parentId);
+        return tagMapper.getChildrenTagByParentId(parentId);
     }
 
-    public void deleteProblem(int u_id, int p_id, int type) {
-        if (type == 0) {
-            //删除题目限制
-            problemMapper.deleteProgramProblem(u_id, p_id);
-        } else {
-            problemMapper.deleteNonProgramProblem(u_id, p_id);
+    public ResultEntity<Boolean> uploadCheckpoints(int problemId, int userId, MultipartFile file, String sha256) throws Exception {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null || generalProblem.getCreator() != userId || file.isEmpty()) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
         }
-        // 删除标签
-        problemMapper.deleteTag(p_id, type);
-        // TODO: 2022/5/14 删除题目限制
-    }
-
-    public void updateProblem(ProblemWithInfo problemWithInfo) {
-        if (problemWithInfo.getType().equals(0)) {
-            //编程题
-            ProgramProblem programProblem = new ProgramProblem(null,
-                    problemWithInfo.getName(),
-                    problemWithInfo.getDescription(),
-                    problemWithInfo.getExample(),
-                    problemWithInfo.getDifficulty(),
-                    problemWithInfo.getIsOpen(),
-                    problemWithInfo.getTip(),
-                    problemWithInfo.getAuthor());
-            problemMapper.updateProgramProblem(programProblem);
-        } else {
-            //非编程题
-            NonProgramProblem nonProgramProblem = new NonProgramProblem(null,
-                    problemWithInfo.getName(),
-                    problemWithInfo.getDescription(),
-                    problemWithInfo.getExample(),
-                    problemWithInfo.getDifficulty(),
-                    problemWithInfo.getIsOpen(),
-                    problemWithInfo.getTip(),
-                    problemWithInfo.getAuthor(),
-                    problemWithInfo.getAnswer());
-            problemMapper.updateNonProgramProblem(nonProgramProblem);
-        }
-        // 先删除之前的标签
-        problemMapper.deleteTag(problemWithInfo.getId(), problemWithInfo.getType());
-        if (problemWithInfo.getTags() != null) {
-            // 插入标签
-            String tags = problemWithInfo.getTags();
-            String[] tagArr = tags.split("_");
-            for (int i = 0; i < tagArr.length; i++) {
-                problemMapper.addTag(problemWithInfo.getId(), Integer.parseInt(tagArr[i]), problemWithInfo.getType());
-            }
-        }
-    }
-
-    public void addTestPoints(int p_id, MultipartFile file, String sha256) throws Exception {
         // 校验内部文件的正确性
-        FileUtil.verifyZipFormat(file.getBytes());
+        if (!FileUtil.verifyZipFormat(file.getBytes())){
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID);
+        }
         // 初始化目标目标文件夹
-        StringBuffer destinationDir = new StringBuffer(SFTPUtil.ROOT_PATH);
-        destinationDir.append(SFTPUtil.SEPARATOR + p_id);
+        StringBuilder destinationDir = new StringBuilder(SFTPUtil.ROOT_PATH);
+        destinationDir.append(SFTPUtil.SEPARATOR).append(problemId);
         // 初始化工具类
         SFTPUtil sftpUtil = new SFTPUtil();
         // 1、写入压缩包
         sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
+        sha256 = FileUtil.sha256(file.getBytes());
+        if (sha256 == null) {
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
-
+        return ResultEntity.data(true);
     }
 
-    /**
-     * 检查一个问题是否存在
-     * * @param problemId
-     *
-     * @return
-     */
-    public boolean isProblemExist(int problemId) {
-        return problemMapper.isProblemExist(problemId);
-    }
-
-    public Problem getProblemByProblemIdAndType(int problemId, int type) {
-        if (type == 0) {
-            ProgramProblem problem = problemMapper.getProgramProblemById(problemId);
-            return problem;
-        } else {
-            NonProgramProblem problem = problemMapper.getNonProgramProblemById(problemId);
-            return problem;
+    public void downloadCheckpoints(int problemId, int userId, HttpServletResponse response) {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null || generalProblem.getCreator() != userId) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
-
-    }
-
-    public List<Tag> getTagListByProblemIdAndType(int problemId, int type) {
-        List<Tag> tagListByProblemIdAndType = problemMapper.getTagListByProblemIdAndType(problemId, type);
-        return tagListByProblemIdAndType;
-    }
-
-    public List<Tag> getTagListWithPrefixByProblemIdAndType(int problemId, int type) {
-        List<Tag> tagListByProblemIdAndType = problemMapper.getTagListWithPrefixByProblemIdAndType(problemId, type);
-        return tagListByProblemIdAndType;
-    }
-
-    public UserInfo getAuthorInfoByProblemIdAndType(int problemId, int type) {
-        if (type == 0) {
-            return problemMapper.getAuthorNameByProgramProblemId(problemId);
-        } else {
-            return problemMapper.getAuthorNameByNonProgramProblemId(problemId);
+        response.setContentType("application/x-zip-compressed");
+        response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-disposition", "attachment;filename=checkpoints.zip");
+        ServletOutputStream outputStream;
+        try {
+            outputStream = response.getOutputStream();
+            // 初始化目标目标文件夹
+            SFTPUtil sftpUtil = new SFTPUtil();
+            sftpUtil.downloadSingleFile(SFTPUtil.ROOT_PATH + SFTPUtil.SEPARATOR + problemId, "checkpoints.zip", outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception ignore) {
         }
     }
 

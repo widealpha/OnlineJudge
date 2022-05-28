@@ -138,7 +138,7 @@ public class MybatisIntercepter implements Interceptor {
     public void setProperties(Properties properties) {
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
-        // TODO: 2019/2/28  业务逻辑处理...
+
     }
 
     public static void setDefaultVal(Object o) throws Exception {

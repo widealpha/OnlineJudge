@@ -32,23 +32,48 @@ public class FileUtil {
         return byteArrayOs.toByteArray();
     }
 
-    public static String getSHA256(byte[] data) throws Exception {
-
+    /**
+     * 计算文件的sha256
+     *
+     * @param file 需要计算hash的文件
+     * @return 文件sha256哈希值, 可能返回null
+     */
+    public static String sha256(File file) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(data);
+            byte[] hash = digest.digest(Files.readAllBytes(file.toPath()));
             final StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 final String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException | IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * 计算文件的sha256
+     *
+     * @param bytes 需要计算的byte
+     * @return 文件sha256哈希值, 可能返回null
+     */
+    public static String sha256(byte[] bytes) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(bytes);
+            final StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                final String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-
             return null;
         }
     }
@@ -105,18 +130,7 @@ public class FileUtil {
     }
 
     public static boolean verifyZipFormat(byte[] data) throws Exception {
-        // 写完才发现不需要写临时文件 焯
-        // Path tmpPath = Files.createTempFile("tmp", ".zip");
-        // File tmpFile = tmpPath.toFile();
-        // FileOutputStream outputStream = new FileOutputStream(tmpFile);
-        // outputStream.write(data);
-        // outputStream.flush();
-        // outputStream.close();
-        // String absolutePath = tmpFile.getAbsolutePath();
-        // System.out.println(absolutePath);
-
         //构建解压输入流
-        // Charset.forName("GBK") 不加这一句会因为编码问题报错
         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
         ZipInputStream zin = new ZipInputStream(inputStream, StandardCharsets.UTF_8);
         ZipEntry entry = null;
@@ -132,9 +146,12 @@ public class FileUtil {
         }
         zin.close();
         inputStream.close();
+        if (input.isEmpty() || output.isEmpty()) {
+            return false;
+        }
         //校验规则，每个in都要有对应的out
         for (int i = 1; i <= input.size(); i++) {
-            if (!output.contains(i+".out") || !input.contains(i+".in")) {
+            if (!output.contains(i + ".out") || !input.contains(i + ".in")) {
                 return false;
             }
         }

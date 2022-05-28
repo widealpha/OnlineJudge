@@ -14,9 +14,9 @@ public class ProblemSetProblemVo {
         this.complement = complement;
 
         this.id = problemSetProblem.getId();
-        this.problem_id =problemSetProblem.getProblem_id();
-        this.problem_set_id =problemSetProblem.getProblem_set_id();
-        this.type = problemSetProblem.getType();
+        this.problem_id =problemSetProblem.getProblemId();
+        this.problem_set_id =problemSetProblem.getProblemSetId();
+        this.type = problemSetProblem.getScore();
     }
 
     public Integer getComplement() {

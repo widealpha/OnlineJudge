@@ -13,6 +13,9 @@ public interface SyncProblemMapper {
             "VALUES (#{name}, #{type}, #{description}, #{difficulty}, #{options}, #{answer}, #{creator})")
     boolean insertProblem(SyncProblem problem);
 
+    @Update("UPDATE sync_problem SET name = #{name}, type = #{type}, description = #{description}, difficulty = #{difficulty}, options = #{options}, answer = #{answer} WHERE id = #{id}")
+    boolean updateProblem(SyncProblem problem);
+
     @Update("UPDATE sync_problem SET status=-status WHERE id = #{id} AND status > 0")
     boolean deleteProblem(int id);
 

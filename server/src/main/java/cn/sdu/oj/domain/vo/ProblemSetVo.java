@@ -9,7 +9,7 @@ import java.util.List;
 public class ProblemSetVo {
     private Integer id;
     private String name;
-    private String type;
+    private Integer type;
     private String introduction;
     private Integer isPublic;
     private Date beginTime;
@@ -45,11 +45,11 @@ public class ProblemSetVo {
         this.name = name;
     }
 
-    public String getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 

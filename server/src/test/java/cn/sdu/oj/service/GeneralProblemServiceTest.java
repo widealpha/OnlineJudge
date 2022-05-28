@@ -6,13 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 public class GeneralProblemServiceTest {
-    @Autowired
-    private ProblemService service;
-
     @Test
     public void isProblemExist() {
-        service.isProblemExist(38);
-        service.isProblemExist(5555);
-
     }
 }

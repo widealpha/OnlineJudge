@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -109,5 +111,30 @@ public class UserService {
         }
         String redisKey = "register:" + email;
         return code.equals(redisUtil.get(redisKey));
+    }
+
+    public ResultEntity<Boolean> changePassword(int userId, String oldPassword, String newPassword) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user == null) {
+            return ResultEntity.data(StatusCode.USER_ACCOUNT_NOT_EXIST, false);
+        }
+        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+            User newUser = new User(user.getUsername(), passwordEncoder.encode(newPassword));
+            return ResultEntity.data(userMapper.updateByPrimaryKey(user));
+        } else {
+            return ResultEntity.data(StatusCode.USER_CREDENTIALS_ERROR, false);
+        }
+    }
+
+    public ResultEntity<List<User>> generateCompetitionUserList(int problemSetId, int size) {
+        List<User> users = new ArrayList<>();
+        Random random = new Random(problemSetId);
+        for (int i = 0; i < size; i++) {
+            String username = "js-" + problemSetId + "-" + (10000 + random.nextInt(9999));
+            User user = new User(username, passwordEncoder.encode("123456"));
+            userMapper.insert(user);
+            users.add(user);
+        }
+        return ResultEntity.data(users);
     }
 }

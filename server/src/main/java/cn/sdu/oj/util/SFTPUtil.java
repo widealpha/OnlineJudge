@@ -1,8 +1,6 @@
 package cn.sdu.oj.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -214,6 +212,15 @@ public class SFTPUtil {
         channel.put(input, fileName);
         log.info("文件上传成功！！ 耗时：{}ms", (System.currentTimeMillis() - start));
 
+    }
+
+    public void downloadSingleFile(String destinationDir, String fileName, OutputStream output) throws Exception {
+        SFTPUtil sftpUtil = new SFTPUtil();
+        ChannelSftp channel = sftpUtil.getChannelSftp();
+        long start = System.currentTimeMillis();
+        channel.cd(destinationDir);
+        channel.get(fileName, output);
+        log.info("文件下载成功！！ 耗时：{}ms", (System.currentTimeMillis() - start));
     }
 }
 
