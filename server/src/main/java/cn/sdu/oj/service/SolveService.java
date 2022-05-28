@@ -60,7 +60,9 @@ public class SolveService {
 
         }
         AsyncProblem problem = asyncProblemMapper.selectProblem(typeProblemId);
+
         //todo 判断用户能否提交
+
         if (problem == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }
@@ -192,7 +194,8 @@ public class SolveService {
         JudgeResult judgeResult = JSONObject.parseObject(resultEntity.getData(), JudgeResult.class);
         SolveRecord record = solveRecordMapper.selectSolveRecordByPrimaryKey(Integer.parseInt(judgeResult.getTaskId()));
         record.setStatus(resultEntity.getCode());
-        //todo 判题结束，更新答卷中题目状态为完成
+
+
         //判题成功,插入判题的数据
         if (resultEntity.getCode() == JudgeStatus.JUDGE_SUCCESS.getCode()) {
             record.setStatus(JudgeStatus.JUDGE_SUCCESS.getCode());

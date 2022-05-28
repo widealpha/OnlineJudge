@@ -53,15 +53,18 @@ public class UserGroupService {
         return UserGroupMapper.getSelfCreatedUserGroup(creator);
     }
 
-    //向用户组里加人(只能向我创建的用户组里加人)   TODO 判重
+    //向用户组里加人(只能向我创建的用户组里加人)
 
     public StatusCode addMemberToUserGroup(Integer creator, Integer id, JSONArray members) {
         if (UserGroupMapper.getUserGroupInfoById(id).getCreatorId().equals(creator)) {
             for (int i = 0; i < members.size(); i++) {
                 int onePersonId = members.getInteger(i);
-                if (!UserGroupMapper.addMemberToUserGroup(id, onePersonId)) {
-                    return StatusCode.COMMON_FAIL;
-                }
+
+               if( !judgeUserGroupContainUser(onePersonId,id)){
+                   if (!UserGroupMapper.addMemberToUserGroup(id, onePersonId)) {
+                       return StatusCode.COMMON_FAIL;
+                   }
+               } else continue;
             }
             return StatusCode.SUCCESS;
         } else
