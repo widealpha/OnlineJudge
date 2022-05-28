@@ -10,6 +10,7 @@ import cn.sdu.oj.domain.vo.ProblemSetVo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
+import cn.sdu.oj.service.ProblemService;
 import cn.sdu.oj.service.ProblemSetService;
 import cn.sdu.oj.service.SolveService;
 import cn.sdu.oj.service.UserGroupService;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/problemSet")
 @Api(value = "题目集接口", tags = "题目集接口")
-public class ProblemSetController {                  // TODO 权限
+public class ProblemSetController {
 
     //TODO  统计
 
@@ -44,11 +45,19 @@ public class ProblemSetController {                  // TODO 权限
 
     @Autowired
     private SolveService solveService;
+
+    @Autowired
+    private ProblemService problemService;
+
+    @Autowired
+    private UserGroupService userGroupService;
+
     @Autowired
     RedisUtil redisUtil;
 
     @ApiOperation("所有支持的题目集类型")
     @GetMapping("/allTypes")
+    @PreAuthorize("hasRole('COMMON')")
     public ResultEntity<ProblemSetTypeEnum[]> allProblemSetTypes() {
         return ResultEntity.data(ProblemSetTypeEnum.values());
     }
@@ -85,15 +94,16 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
-    @ApiOperation("向题目集里加一个题|COMMON+") //向题目集里加一个题   //创建者可以使用
+    @ApiOperation("向题目集里加一个题|TEACHER+") //向题目集里加一个题   //创建者可以使用
     @PostMapping("/addProblemToProblemSet")
-    @PreAuthorize("hasRole('COMMON')")
+    @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<Boolean> addProblemToProblemSet(
             @ApiParam(value = "题目集ID") @RequestParam Integer problemSetId,
             @ApiParam(value = "题目ID") @RequestParam Integer problemId,
             @ApiIgnore @AuthenticationPrincipal User user
     ) {
         try {
+            //创建者
             if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
                 if (problemSetService.judgeProblemSetHasProblem(problemSetId, problemId)) {
                     return ResultEntity.error("题目集已有该题");
@@ -144,7 +154,7 @@ public class ProblemSetController {                  // TODO 权限
             @ApiParam(value = "克隆码（可选）") @RequestParam(required = false) String cloneCode,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            //TODO 创建者和参与者可用
+
             if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
 
                 ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
@@ -164,7 +174,7 @@ public class ProblemSetController {                  // TODO 权限
                     } else return ResultEntity.error("无效的克隆码");
                 } else return ResultEntity.error("题目集未被分享");
             } else {  //判断是否是参与者
-                if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)){
+                if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
                     ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
                     ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problems);
@@ -265,30 +275,35 @@ public class ProblemSetController {                  // TODO 权限
         }
     }
 
-    //题目集创建者获取所有人的完成情况
+    //题目集创建者获取用户组成员的完成情况
     @ApiOperation("题目集创建者获取所有人的完成情况") //题目集创建者获取所有人的完成情况   创建人可用  TODO
     @PostMapping("/getALLCompletion")
     public ResultEntity getALLCompletion(
-            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
+            @ApiParam(value = "ID", required = true) @RequestParam Integer problemSetId, //题目集id
+            @ApiParam(value = "用户组ID", required = true) @RequestParam Integer userGroupId, //用户组id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            //获取用户组所有人的id
+            if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())){
+                //获取用户组所有人的id
+               List<Integer> members =  userGroupService.getUserGroupMembers(userGroupId);
+                //对于每个人进行操作
+                int i = 0;
+                List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(members.get(i));
 
-            //对于每个人进行操作
-            int i = 0;
-            List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(user.getId());
-
-            for (ProblemSet p : problemSets) {
-                if (p.getId().equals(id)) {
-                    i++;
-                    List<ProblemSetProblem> problemSetProblems = problemSetService.getProblemSetProblems(id);
-                    List<ProblemSetProblemVo> problemSetProblemVos = problemSetService.getSelfCompletion(problemSetProblems, user.getId());
-                    return ResultEntity.success("完成情况", problemSetProblemVos);
+                for (ProblemSet p : problemSets) {
+                    if (p.getId().equals(problemSetId)) {
+                        i++;
+                        List<ProblemSetProblem> problemSetProblems = problemSetService.getProblemSetProblems(problemSetId);
+                        List<ProblemSetProblemVo> problemSetProblemVos = problemSetService.getSelfCompletion(problemSetProblems, user.getId());
+                        return ResultEntity.success("完成情况", problemSetProblemVos);
+                    }
                 }
-            }
-            if (i == 0) {
-                return ResultEntity.error("没有做过该题目集");
-            }
+                if (i == 0) {
+                    return ResultEntity.error("没有做过该题目集");
+                }
+
+            } else return  ResultEntity.error(StatusCode.NO_PERMISSION);
+
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         } catch (Exception e) {
             e.printStackTrace();
@@ -397,25 +412,37 @@ public class ProblemSetController {                  // TODO 权限
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity cloneProblemSet(
             @ApiParam(value = "ID", required = true) @RequestParam Integer problemSetId, //题目集id
-            @ApiParam(value = "有效期(给天数）", required = false) @RequestParam Integer day,
+            @ApiParam(value = "克隆码", required = true) @RequestParam String cloneCode,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
+            if (cloneCode != null) {
                 String key = "cloneCode:" + problemSetId;
-                RedisUtil redisUtil = new RedisUtil();
                 if (redisUtil.hasKey(key)) {
                     String code = redisUtil.get(key);
-                    return ResultEntity.data(code);
-                } else {
-                    String value = StringUtil.getRandomString(6);
-                    Integer validDay = 7;
-                    if (day != null) {
-                        validDay = day;
-                    }
-                    redisUtil.setEx(key, value, validDay, TimeUnit.DAYS);
-                    return ResultEntity.success("设置成功");
-                }
-            } else return ResultEntity.error(StatusCode.NO_PERMISSION);
+                    if (code.equals(cloneCode)) {
+
+                        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
+                        Integer new_problem_set_id = problemSetService.createProblemSet(problemSet.getName(),
+                                problemSet.getType(), problemSet.getIntroduction(), problemSet.getIsPublic(),
+                                TimeUtil.dateToStringLong(problemSet.getBeginTime()),
+                                TimeUtil.dateToStringLong(problemSet.getEndTime()), user.getId());
+
+                        List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
+                        for (ProblemSetProblem p : problems
+                        ) {
+                            try {
+                                ResultEntity<Integer> new_problem_id = problemService.cloneProblem(p.getProblem_id(), user.getId());
+                                problemSetService.addProblemToProblemSet(new_problem_id.getData(), new_problem_set_id);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                continue;
+                            }
+                        }
+                        return ResultEntity.success("克隆成功", new_problem_set_id);
+                    } else return ResultEntity.error("无效的克隆码");
+                } else return ResultEntity.error("题目集未被分享");
+            } else return ResultEntity.error(StatusCode.PARAM_EMPTY);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -445,7 +472,7 @@ public class ProblemSetController {                  // TODO 权限
                         validDay = day;
                     }
                     redisUtil.setEx(key, value, validDay, TimeUnit.DAYS);
-                    return ResultEntity.success("设置成功");
+                    return ResultEntity.success("设置成功",value);
                 }
             } else return ResultEntity.error(StatusCode.NO_PERMISSION);
         } catch (Exception e) {
