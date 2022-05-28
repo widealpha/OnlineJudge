@@ -110,4 +110,17 @@ public class UserService {
         String redisKey = "register:" + email;
         return code.equals(redisUtil.get(redisKey));
     }
+
+    public ResultEntity<Boolean> changePassword(int userId, String oldPassword, String newPassword) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user == null) {
+            return ResultEntity.data(StatusCode.USER_ACCOUNT_NOT_EXIST, false);
+        }
+        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+            User newUser = new User(user.getUsername(), passwordEncoder.encode(newPassword));
+            return ResultEntity.data(userMapper.updateByPrimaryKey(user));
+        } else {
+            return ResultEntity.data(StatusCode.USER_CREDENTIALS_ERROR, false);
+        }
+    }
 }

@@ -53,6 +53,16 @@ public class UserController {
         return userService.logout(user);
     }
 
+    @ApiOperation(value = "修改密码", authorizations = {@Authorization("common")})
+    @PostMapping("/changePassword")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity<Boolean> changePassword(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("原始密码") @RequestParam String oldPassword,
+            @ApiParam("新密码") @RequestParam String newPassword) {
+        return userService.changePassword(user.getId(), oldPassword, newPassword);
+    }
+
     /**
      * 非真实接口,只用于生成文档
      * 实际登录处于拦截器层{@link UsernameLoginConfig}{@link UsernamePasswordAuthenticationFilter}
