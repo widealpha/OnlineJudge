@@ -10,6 +10,7 @@ import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
+import javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -185,6 +186,36 @@ public class ProblemService {
         }
     }
 
+    /**
+     * 克隆题目,仅允许有克隆码的用户使用
+     *
+     * @param problemId 需要克隆的题目Id
+     * @return clone完成的题目Id
+     */
+    @Transactional
+    public ResultEntity<Integer> cloneProblem(int problemId, int userId) {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return null;
+        }
+        int type = generalProblem.getType();
+        //是编程题
+        if (type == ProblemTypeEnum.PROGRAMING.id) {
+            AsyncProblem asyncProblem = asyncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+            asyncProblem.setCreator(userId);
+            asyncProblemMapper.insertProblem(asyncProblem);
+            generalProblem.setTypeProblemId(asyncProblem.getId());
+        } else {
+            SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+            syncProblem.setCreator(userId);
+            syncProblemMapper.insertProblem(syncProblem);
+            generalProblem.setTypeProblemId(syncProblem.getId());
+        }
+        generalProblem.setCreator(userId);
+        generalProblemMapper.insertGeneralProblem(generalProblem);
+        return ResultEntity.data(generalProblem.getId());
+    }
+
     public List<Tag> getTopLevelTag() {
         return tagMapper.getTopLevelTag();
     }
@@ -207,6 +238,10 @@ public class ProblemService {
         SFTPUtil sftpUtil = new SFTPUtil();
         // 1、写入压缩包
         sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
+        sha256 = FileUtil.sha256(file.getBytes());
+        if (sha256 == null) {
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
         return ResultEntity.data(true);

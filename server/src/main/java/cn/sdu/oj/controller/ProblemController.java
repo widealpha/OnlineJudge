@@ -49,14 +49,22 @@ public class ProblemController {
     @ApiOperation("题目详细信息|TEACHER+")
     @PostMapping("info")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<ProblemDto> problemInfo(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目id") @RequestParam int problemId) {
+    public ResultEntity<ProblemDto> problemInfo(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目id") @RequestParam int problemId) {
         return problemService.findProblemInfo(problemId, user.getId());
     }
 
     @ApiOperation("添加编程题目|TEACHER+")
     @PostMapping("/addProgramingProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Integer> addProgramingProblem(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目名字") @RequestParam String name, @ApiParam("题目表述,题干") @RequestParam String description, @ApiParam("例子") @RequestParam(required = false) String example, @ApiParam("难度") @RequestParam Integer difficulty, @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+    public ResultEntity<Integer> addProgramingProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目名字") @RequestParam String name,
+            @ApiParam("题目表述,题干") @RequestParam String description,
+            @ApiParam("题目结果样例") @RequestParam(required = false) String example,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", defaultValue = "[1,2]") @RequestParam String tags) {
         AsyncProblem asyncProblem = new AsyncProblem();
         asyncProblem.setName(name);
         asyncProblem.setDescription(description);
@@ -75,7 +83,14 @@ public class ProblemController {
     @ApiOperation("更新编程题目|TEACHER+")
     @PostMapping("/updateProgramingProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> updateProgramingProblem(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目Id") @RequestParam Integer problemId, @ApiParam("题目名字") @RequestParam String name, @ApiParam("题目表述,题干") @RequestParam String description, @ApiParam("例子") @RequestParam(required = false) String example, @ApiParam("难度") @RequestParam Integer difficulty, @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+    public ResultEntity<Boolean> updateProgramingProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目Id") @RequestParam Integer problemId,
+            @ApiParam("题目名字") @RequestParam String name,
+            @ApiParam("题目表述,题干") @RequestParam String description,
+            @ApiParam("例子") @RequestParam(required = false) String example,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         AsyncProblem asyncProblem = new AsyncProblem();
         asyncProblem.setName(name);
         asyncProblem.setDescription(description);
@@ -94,7 +109,11 @@ public class ProblemController {
     @ApiOperation("更新编程题目限制信息|TEACHER+")
     @PostMapping("/updateLimit")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> updateProblemLimit(@ApiParam("题目id") @RequestParam Integer problemId, @ApiParam("限制时间ms") @RequestParam Integer timeLimit, @ApiParam("限制内存kb") @RequestParam Integer memoryLimit, @ApiParam("代码长度byte") @RequestParam Integer codeLengthLimit) {
+    public ResultEntity<Boolean> updateProblemLimit(
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiParam("限制时间ms") @RequestParam Integer timeLimit,
+            @ApiParam("限制内存kb") @RequestParam Integer memoryLimit,
+            @ApiParam("代码长度byte") @RequestParam Integer codeLengthLimit) {
         ProblemLimit problemLimit = new ProblemLimit();
         problemLimit.setProblemId(problemId);
         problemLimit.setTime(timeLimit);
@@ -106,7 +125,11 @@ public class ProblemController {
     @ApiOperation("更新编程题目测试点|TEACHER+")
     @PostMapping("/uploadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> uploadCheckpoints(@ApiParam("题目id") @RequestParam Integer problemId, @ApiParam("测试点sha256校验码") @RequestParam String sha256, @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file, @ApiIgnore @AuthenticationPrincipal User user) {
+    public ResultEntity<Boolean> uploadCheckpoints(
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiParam("测试点sha256校验码") @RequestParam String sha256,
+            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestParam MultipartFile file,
+            @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             return problemService.uploadCheckpoints(problemId, user.getId(), file, sha256);
         } catch (Exception e) {
@@ -117,14 +140,25 @@ public class ProblemController {
     @ApiOperation("下载题目测试点|TEACHER+")
     @GetMapping("downloadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
-    public void downloadCheckpoints(@ApiParam("题目id") @RequestParam Integer problemId, @ApiIgnore HttpServletResponse response, @ApiIgnore @AuthenticationPrincipal User user) throws IOException {
+    public void downloadCheckpoints(
+            @ApiParam("题目id") @RequestParam Integer problemId,
+            @ApiIgnore HttpServletResponse response,
+            @ApiIgnore @AuthenticationPrincipal User user) {
         problemService.downloadCheckpoints(problemId, user.getId(), response);
     }
 
     @ApiOperation("添加选择/判断/填空/简答|TEACHER+")
     @PostMapping("/addTypeProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Integer> addTypeProblem(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目内容") @RequestParam String name, @ApiParam("题目描述") @RequestParam(required = false) String description, @ApiParam(value = "题目答案(简答题需提供参考答案,需要均以jsonArray形式给出)", example = "[\"A\"]") @RequestParam String answer, @ApiParam(value = "选项(选择题必须有)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam(required = false) String options, @ApiParam("难度") @RequestParam Integer difficulty, @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type, @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+    public ResultEntity<Integer> addTypeProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案(简答题需提供参考答案,需要均以jsonArray形式给出)", example = "[\"A\"]") @RequestParam String answer,
+            @ApiParam(value = "选项(选择题必须有)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam(required = false) String options,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         try {
             List<String> answerList = JSON.parseArray(answer, String.class);
             if (type == ProblemTypeEnum.PROGRAMING.id) {
@@ -169,7 +203,16 @@ public class ProblemController {
     @ApiOperation("更新非编程题目|TEACHER+")
     @PostMapping("/updateTypeProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> updateOtherProblem(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目Id") @RequestParam Integer problemId, @ApiParam("题目内容") @RequestParam String name, @ApiParam("题目描述") @RequestParam(required = false) String description, @ApiParam(value = "题目答案(简答题需提供参考答案,需要均以jsonArray形式给出)", example = "[\"A\"]") @RequestParam String answer, @ApiParam(value = "选项(选择题必须有)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam(required = false) String options, @ApiParam("难度") @RequestParam Integer difficulty, @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type, @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+    public ResultEntity<Boolean> updateOtherProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目Id") @RequestParam Integer problemId,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案(简答题需提供参考答案,需要均以jsonArray形式给出)", example = "[\"A\"]") @RequestParam String answer,
+            @ApiParam(value = "选项(选择题必须有)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam(required = false) String options,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         try {
             List<String> answerList = JSON.parseArray(answer, String.class);
             if (type == ProblemTypeEnum.PROGRAMING.id) {
@@ -209,7 +252,9 @@ public class ProblemController {
     @ApiOperation("删除题目|TEACHER+")
     @PostMapping("/deleteProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> deleteProblem(@ApiIgnore @AuthenticationPrincipal User user, @ApiParam("题目Id") @RequestParam Integer problemId) {
+    public ResultEntity<Boolean> deleteProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目Id") @RequestParam Integer problemId) {
         return problemService.deleteProblem(problemId, user.getId());
     }
 
