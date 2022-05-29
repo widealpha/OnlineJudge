@@ -53,7 +53,7 @@ export default {
       return this.$store.state.token === null;
     },
     isTeacher() {
-      console.log(this.$store.state.myInfo);
+       (this.$store.state.myInfo);
       return this.$store.state.myInfo.roles.includes("ROLE_TEACHER");
     },
     isAdmin() {

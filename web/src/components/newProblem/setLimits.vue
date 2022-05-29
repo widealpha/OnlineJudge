@@ -313,7 +313,7 @@ export default {
 			 */
 			if (res.data.code == 0) {
 				// this.limits = res.data.data;
-				console.log(res);
+				 (res);
 			} else {
 				this.$message({
 					message: res.data.message,
@@ -326,7 +326,7 @@ export default {
 		addLimit() {
 			this.$refs.addForm.validate(async (valid) => {
 				if (valid) {
-					console.log(this.addForm);
+					 (this.addForm);
 					this.limits.push(JSON.parse(JSON.stringify(this.addForm)));
 					this.$message({
 						message: "添加成功",

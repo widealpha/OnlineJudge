@@ -381,7 +381,7 @@ export default {
     updatePsw() {
       this.$refs.updatePswForm.validate(async (valid) => {
         if (valid) {
-          console.log(valid);
+           (valid);
         }
       });
     },

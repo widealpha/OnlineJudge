@@ -25,18 +25,20 @@
             @mouseenter="nameColor = 'dodgerblue'"
             @mouseleave="nameColor = '#000'"
           >
-          {{this.$store.state.myInfo.username}}
             <i
               class="iconfont icon-user-filling"
-              style="color: #0d4990; font-size: 33px; float: right"
+              style="
+                color: #0d4990;
+                font-size: 33px;
+                float: right;
+                margin-left: 10px;
+              "
             >
             </i>
             <el-link
               :underline="false"
               :style="{
-                'font-size': '2em',
-                'font-family': 'KaiTi',
-                'margin-left': '0.25em',
+                'font-size': '1.3em',
                 color: nameColor,
               }"
               >{{ username }}</el-link
@@ -71,7 +73,7 @@ export default {
     Logout() {
       Promise.all([
         this.$store.commit("setToken", null),
- 
+
         this.$store.commit("setMyInfo", {
           headImage: null,
           nickname: null,

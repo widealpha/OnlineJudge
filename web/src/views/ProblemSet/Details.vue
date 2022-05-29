@@ -24,8 +24,8 @@
         <el-row>
           <el-col :span="12">
             <el-descriptions title="基本信息" :column="1">
-              <el-descriptions-item label="作者">
-                <el-tag size="small">{{ problemSetInfo.author }}</el-tag>
+              <el-descriptions-item label="作者id">
+                <el-tag size="small">{{ problemSetInfo.creatorId }}</el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="开始时间">
                 {{ problemSetInfo.beginTime }}
@@ -77,13 +77,9 @@
       </div>
       <div>
         <el-table :data="problemSetInfo.problems">
-          <el-table-column
-            type="index"
-            label="标号"
-            width="75"
-          ></el-table-column>
-          <el-table-column prop="id" label="题号" width="75"></el-table-column>
-          <el-table-column prop="title" label="标题">
+          <el-table-column type="index" label="标号"></el-table-column>
+          <el-table-column prop="id" label="题号"></el-table-column>
+          <el-table-column prop="name" label="标题">
             <template slot-scope="props">
               <el-link
                 type="primary"
@@ -92,21 +88,16 @@
               >
             </template>
           </el-table-column>
-          <el-table-column prop="passRadio" label="通过率">
-            <template slot-scope="props">
-              {{ Number(props.row.passRadio * 100).toFixed(1) + "%" }}
-            </template>
-          </el-table-column>
+          <el-table-column prop="score" label="分数"> </el-table-column>
         </el-table>
       </div>
     </el-card>
-
+    <!-- 更新题目集信息 -->
     <div class="others">
       <el-dialog
         title="题目集概况"
         :append-to-body="true"
         :visible.sync="alteringInfo"
-        width="35%"
         @open="initInfoForm"
       >
         <el-form
@@ -115,6 +106,9 @@
           :rules="infoRules"
           ref="infoForm"
         >
+          <el-form-item label="新名称" prop="name">
+            <el-input v-model="infoForm.name" class="input"></el-input>
+          </el-form-item>
           <el-form-item label=" 新时间范围" prop="timeRange">
             <el-date-picker
               style="width: 100%"
@@ -126,9 +120,7 @@
             >
             </el-date-picker>
           </el-form-item>
-          <el-form-item label="新名称" prop="name">
-            <el-input v-model="infoForm.name" class="input"></el-input>
-          </el-form-item>
+
           <el-form-item label="新公告" prop="introduction">
             <el-input
               v-model="infoForm.introduction"
@@ -136,10 +128,11 @@
               class="input"
             ></el-input>
           </el-form-item>
-          <el-form-item label="题目集状态">
-            <el-select v-model="infoForm.status">
+
+          <el-form-item label="是否公开">
+            <el-select v-model="infoForm.openValue">
               <el-option
-                v-for="item in statuses"
+                v-for="item in infoForm.open"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -163,8 +156,13 @@ export default {
         timeRange: "",
         name: "",
         introduction: "",
-        status: 0,
-        creatorId: 0,
+
+        openValue: 0,
+
+        open: [
+          { value: 0, label: "非公开" },
+          { value: 1, label: "公开" },
+        ],
       },
       infoRules: {
         timeRange: [
@@ -204,21 +202,6 @@ export default {
     };
   },
   methods: {
-    //
-    async getAuthorById() {
-      let res = await this.axios.post(
-        "/user/minorInfo",
-        {
-          userId: this.infoForm.creatorId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
-          },
-        }
-      );
-      console.log(res);
-    },
     //进入问题详情
     getToProblem(index, problem) {
       this.$router.push({
@@ -228,35 +211,40 @@ export default {
     changeIndex(index) {
       this.menuIndex = index;
     },
-    initInfoForm() {
-      this.infoForm.name = this.problemSetInfo.name;
+    //更新题目集信息之前初始化
+    async initInfoForm() {
+      this.infoForm.name = this.problemSetInfo.title;
       this.infoForm.introduction = this.problemSetInfo.introduction;
       this.infoForm.timeRange = [
         new Date(this.problemSetInfo.beginTime),
         new Date(this.problemSetInfo.endTime),
       ];
-      this.infoForm.status = this.problemSetInfo.status;
+
+      this.infoForm.openValue = this.problemSetInfo.open;
     },
     // 修改题目集信息
     alterInfo() {
       this.$refs.infoForm.validate(async (valid) => {
         if (valid) {
+          const request = {
+            id: this.$route.params.problemSetId,
+            name: this.infoForm.name,
+            introduction: this.infoForm.introduction,
+            beginTime: this.formatDate(this.infoForm.timeRange[0]),
+            endTime: this.formatDate(this.infoForm.timeRange[1]),
+            isPublic: this.infoForm.openValue,
+          };
+
           let res = await this.$ajax.post(
-            "/problemset/alterInfo",
-            {
-              id: this.$route.params.problemSetId,
-              name: this.infoForm.name,
-              introduction: this.infoForm.introduction,
-              beginTime: this.formatDate(this.infoForm.timeRange[0]),
-              endTime: this.formatDate(this.infoForm.timeRange[1]),
-              status: this.infoForm.status,
-            },
+            "/problemSet/alterProblemSetInfo",
+            request,
             {
               headers: {
                 Authorization: `Bearer ${this.$store.state.token}`,
               },
             }
           );
+
           if (res.data.code == 0) {
             this.$notify({
               title: "成功",
@@ -268,7 +256,7 @@ export default {
               introduction: this.infoForm.introduction,
               beginTime: this.formatDate(this.infoForm.timeRange[0]),
               endTime: this.formatDate(this.infoForm.timeRange[1]),
-              status: this.infoForm.status,
+              open: this.infoForm.openValue,
             });
             this.alteringInfo = false;
           } else {
@@ -305,11 +293,10 @@ export default {
   },
   computed: {
     problemSetInfo() {
-      
+      console.log(this.$store.state.problemSetInfo);
       return this.$store.state.problemSetInfo;
     },
     isMyProblemSet() {
-      console.log(this.$store.state.problemSetInfo.isMyProblemSet);
       return this.$store.state.problemSetInfo.isMyProblemSet;
     },
     problemSetStatus() {

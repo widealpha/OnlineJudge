@@ -255,7 +255,7 @@ export default {
               },
             }
           );
-          console.log(res);
+           (res);
           if (res.data.code === 0) {
             this.$message.success("上传成功！");
           } else {
@@ -319,7 +319,7 @@ export default {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(res);
+       (res);
     },
     async downloadTestPoints() {
       let res = await this.$ajax.get(
@@ -334,7 +334,7 @@ export default {
           // responseType: "blob", // 以 blob 类型接收后端发回的响应数据
         }
       );
-      console.log(res);
+       (res);
       const content = res.data; // 接收响应内容
       const blob = new Blob([content]); // 构造一个blob对象来处理数据
       let fileName = `测试点${this.problemId}.zip`;

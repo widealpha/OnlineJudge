@@ -124,7 +124,7 @@ export default {
 		},
 		saveExcel(name) {
 			const content = this.fileRes.data;
-			console.log(content);
+			 (content);
 			const blob = new Blob([content]); //构造一个blob对象来处理数据
 			let fileName = "绑定码.xlsx";
 			if (name) {

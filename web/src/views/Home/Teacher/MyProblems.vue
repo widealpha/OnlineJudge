@@ -131,7 +131,7 @@ export default {
 			this.problems.splice(index, 1);
 		},
 		update(problemId) {
-			console.log(problemId);
+			 (problemId);
 			this.$router.push({
 				name: "newProblem",
 				query: { problemId: problemId },

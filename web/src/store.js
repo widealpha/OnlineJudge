@@ -18,7 +18,7 @@ export default new Vuex.Store({
         },
         problemSetInfo: {
             problems: [],
-            // 是否公开
+            // 是否公开 0:私有 1:公开
             open: 0,
             // 题目
             title: "",
@@ -27,10 +27,10 @@ export default new Vuex.Store({
             creatorId: 0,
             beginTime: "2000-01-01 00:00:00",
             endTime: "2000-01-01 00:00:00",
-            // 竞赛，作业还是测试
+            // 1 练习，2 作业，3 竞赛
             type: 0,
             isMyProblemSet: false,
-       
+
             problemSetId: 0,
         }
     },
