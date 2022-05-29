@@ -126,9 +126,9 @@ public class ProblemController {
     @PostMapping("/uploadCheckpoints")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<Boolean> uploadCheckpoints(
-            @ApiParam("题目id") @RequestParam Integer problemId,
-            @ApiParam("测试点sha256校验码") @RequestParam String sha256,
-            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestParam MultipartFile file,
+            @ApiParam("题目id") @RequestPart Integer problemId,
+            @ApiParam("测试点sha256校验码") @RequestPart String sha256,
+            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             return problemService.uploadCheckpoints(problemId, user.getId(), file, sha256);

@@ -8,9 +8,11 @@ import cn.sdu.oj.domain.dto.UserInfoDto;
 import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
+import cn.sdu.oj.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,7 +41,7 @@ public class UserInfoService {
         }
     }
 
-    public ResultEntity<MinorUserInfoDto> minorUserInfo(int userId){
+    public ResultEntity<MinorUserInfoDto> minorUserInfo(int userId) {
         UserInfo userInfo = userInfoMapper.selectByUserId(userId);
         if (userInfo == null) {
             return ResultEntity.error(StatusCode.USER_ACCOUNT_NOT_EXIST);
@@ -48,6 +50,7 @@ public class UserInfoService {
             userInfoDto.setUserId(userId);
             userInfoDto.setAvatar(userInfo.getAvatar());
             userInfoDto.setUsername(userMapper.selectUsernameById(userId));
+            userInfoDto.setNickname(userInfo.getNickname());
             return ResultEntity.data(userInfoDto);
         }
     }
@@ -63,5 +66,23 @@ public class UserInfoService {
             return ResultEntity.data(userInfoMapper.updateUserInfo(info));
 
         }
+    }
+
+    public ResultEntity<List<MinorUserInfoDto>> searchUserByUsername(String username) {
+        List<Integer> userIds = userMapper.selectUsernameLike(username);
+        List<MinorUserInfoDto> infos = new ArrayList<>();
+        for (Integer userId : userIds) {
+            infos.add(minorUserInfo(userId).getData());
+        }
+        return ResultEntity.data(infos);
+    }
+
+    public ResultEntity<List<MinorUserInfoDto>> searchUserByNickname(String nickname) {
+        List<UserInfo> allInfos = userInfoMapper.selectUserByNickname(nickname);
+        List<MinorUserInfoDto> infos = new ArrayList<>();
+        for (UserInfo info : allInfos) {
+            infos.add(new MinorUserInfoDto(info, userMapper.selectUsernameById(info.getUserId())));
+        }
+        return ResultEntity.data(infos);
     }
 }

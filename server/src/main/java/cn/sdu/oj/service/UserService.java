@@ -120,7 +120,7 @@ public class UserService {
         }
         if (passwordEncoder.matches(oldPassword, user.getPassword())) {
             User newUser = new User(user.getUsername(), passwordEncoder.encode(newPassword));
-            return ResultEntity.data(userMapper.updateByPrimaryKey(user));
+            return ResultEntity.data(userMapper.updateByPrimaryKey(newUser));
         } else {
             return ResultEntity.data(StatusCode.USER_CREDENTIALS_ERROR, false);
         }

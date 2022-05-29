@@ -4,9 +4,11 @@ import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.dto.SolveResultDto;
 import cn.sdu.oj.domain.po.AnswerRecord;
+import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
+import cn.sdu.oj.service.ProblemSetService;
 import cn.sdu.oj.service.SolveService;
 import com.alibaba.fastjson.JSONException;
 import com.fasterxml.jackson.core.io.JsonEOFException;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 
 @RestController
@@ -27,6 +30,8 @@ import javax.annotation.Resource;
 public class SolveController {
     @Resource
     private SolveService solveService;
+    @Resource
+    private ProblemSetService problemSetService;
 
     @ApiOperation("提交判题代码")
     @PostMapping("trySolveProblem")
@@ -36,6 +41,13 @@ public class SolveController {
                                          @ApiParam("题目集编号") @RequestParam int problemSetId,
                                          @ApiParam("判题题目代码") @RequestParam String code,
                                          @ApiParam("判题语言") @RequestParam String language) {
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
+        } else if (problemSet.getEndTime().getTime() < new Date().getTime()
+                || problemSet.getBeginTime().getTime() > new Date().getTime())  {
+            return ResultEntity.error("已过题目集截止时间", null);
+        }
         JudgeTask judgeTask = new JudgeTask();
         judgeTask.setProblemId(problemId);
         judgeTask.setCode(code);
@@ -55,6 +67,13 @@ public class SolveController {
                                      @ApiParam("题目代码") @RequestParam String code,
                                      @ApiParam("判题语言") @RequestParam String language,
                                      @ApiParam("自定义的测试点") @RequestParam String customInput) {
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
+        } else if (problemSet.getEndTime().getTime() < new Date().getTime()
+                || problemSet.getBeginTime().getTime() > new Date().getTime()) {
+            return ResultEntity.error("禁止在非作答时间提交测试", null);
+        }
         JudgeTask judgeTask = new JudgeTask();
         judgeTask.setProblemId(problemId);
         judgeTask.setCode(code);
@@ -68,13 +87,20 @@ public class SolveController {
     }
 
 
-    @ApiOperation("提交判题代码")
+    @ApiOperation("提交非编程题判题")
     @PostMapping("trySolveSyncProblem")
     @PreAuthorize("hasRole('COMMON')")
     ResultEntity<AnswerRecord> trySolveSyncProblem(@ApiIgnore @AuthenticationPrincipal User user,
                                                    @ApiParam("题目Id") @RequestParam int problemId,
                                                    @ApiParam("题目集编号") @RequestParam int problemSetId,
                                                    @ApiParam(value = "答案内容(JSON格式)", example = "[\"A\"]") @RequestParam String answer) {
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
+        }  else if (problemSet.getEndTime().getTime() < new Date().getTime()
+                || problemSet.getBeginTime().getTime() > new Date().getTime()) {
+            return ResultEntity.error("答卷已经截至", null);
+        }
         try {
             return solveService.trySolveSyncProblem(problemId, user.getId(), problemSetId, answer);
         } catch (JSONException e) {
