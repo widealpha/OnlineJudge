@@ -269,7 +269,7 @@ export default {
         }
       );
       let data = res.data.data;
-      // console.log(data);
+      //  (data);
       if (res.data.code === 0) {
         this.info = data;
       } else {
@@ -323,7 +323,7 @@ export default {
           },
         }
       );
-      // console.log(res);
+      //  (res);
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.$message.success("删除学生成功!");
@@ -344,7 +344,7 @@ export default {
     },
     getId() {
       this.id = parseInt(this.$route.query.userid || "0");
-      // console.log(this.id);
+      //  (this.id);
     },
   },
 };

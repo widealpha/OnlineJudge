@@ -23,7 +23,7 @@
                 if (typeof callback === 'function') {
                     callback(blob)
                 } else {
-                    console.log("我是 blob:", blob);
+                     ("我是 blob:", blob);
                 }
             };
             reader.readAsDataURL(file);
@@ -33,7 +33,7 @@
             // 获取文件对象
             const _file = $("#file")[0].files[0];
             fileToBlob(_file, blob => {
-                console.log('我是 blob:', blob);
+                 ('我是 blob:', blob);
             });
         });
 

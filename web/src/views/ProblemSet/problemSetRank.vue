@@ -38,7 +38,7 @@ export default {
 		};
 	},
 	mounted() {
-		console.log(this.$store.state.problemSetInfo.problemSetId);
+		 (this.$store.state.problemSetInfo.problemSetId);
 		this.getRank();
 	},
 	methods: {
@@ -63,7 +63,7 @@ export default {
 					"成绩排行榜.xlsx"
 				);
 			} catch (e) {
-				if (typeof console !== "undefined") console.log(e, wbout);
+				if (typeof console !== "undefined")  (e, wbout);
 			}
 
 			return wbout;
@@ -81,7 +81,7 @@ export default {
 					},
 				}
 			);
-			console.log(res);
+			 (res);
 			this.tableData = res.data.data.rankList;
 			this.total_num = this.tableData.length;
 		},

@@ -18,15 +18,15 @@ export default {
 	},
 	methods: {
 		onChange(file) {
-			console.log(file);
+			 (file);
 			let spark = new SparkMD5();
 			spark;
 			let fileReader = new FileReader();
 			fileReader.onload = (e) => {
-				console.log(e);
+				 (e);
 				spark.appendBinary(e.target.result);
 				let md5 = spark.end();
-				console.log(md5);
+				 (md5);
 			};
 			fileReader.readAsBinaryString(file.raw);
 		},

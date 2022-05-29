@@ -32,7 +32,7 @@ export default {
 				}
 			);
 			if (res.data.code == 0) {
-				console.log(res);
+				 (res);
 				this.problemSets = res.data.data;
 			}
 		},

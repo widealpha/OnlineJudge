@@ -169,7 +169,7 @@ export default {
           },
         }
       );
-      console.log(res);
+       (res);
       await this.getUserList();
     },
     async addUserList() {
@@ -192,7 +192,7 @@ export default {
             },
           }
         );
-        console.log(res);
+         (res);
         if (res.data.code === 0) {
           this.showAddUserList = false;
           this.$message.success("创建用户组成功!");
@@ -260,7 +260,7 @@ export default {
           },
         }
       );
-      console.log(res);
+       (res);
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.userList = res.data.data;
@@ -282,7 +282,7 @@ export default {
           },
         }
       );
-      console.log(res);
+       (res);
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.userList = res.data.data;

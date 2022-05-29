@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 题目集详情 -->
     <el-container v-loading="initing">
       <el-aside
         style="width: 15%; height: 100vh; position: fixed; overflow-y: overlay"
@@ -124,7 +125,7 @@ export default {
           },
         }
       );
-      console.log(res);
+       (res);
       if (res.data.code == 0) {
         const data = res.data.data;
         const title = data.name;
@@ -135,8 +136,8 @@ export default {
         const beginTime = data.beginTime;
         const problems = data.problems;
         const type = data.type;
+        const isMyProblemSet = creatorId == this.$store.state.myInfo.userId;
 
-        let isMyProblemSet = creatorId == this.$store.state.myInfo.userId;
         await this.$store.commit("setProblemSetInfo", {
           title,
           introduction,
@@ -157,7 +158,7 @@ export default {
       this.menuIndex = index;
     },
     backToProblemsetList() {
-      this.$router.push({ path: "/" });
+      this.$router.push({ path: "/teacher/myproblemsets" });
     },
     goToDetails() {
       this.$router.push({

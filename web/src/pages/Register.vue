@@ -235,7 +235,7 @@ export default {
           }
           this.loading = false;
         } else {
-          console.log("error submit!!");
+           ("error submit!!");
           return false;
         }
       });
@@ -256,7 +256,7 @@ export default {
           let res = await this.$ajax.post("/user/send_validate_code", {
             email: this.formData.email,
           });
-          console.log(res);
+           (res);
           if (res.data.code == 0) {
             this.$notify({
               title: "发送成功",

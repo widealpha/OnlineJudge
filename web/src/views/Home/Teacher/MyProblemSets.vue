@@ -126,7 +126,7 @@ export default {
           },
         }
       );
-      console.log(res.data.data);
+       (res.data.data);
       if (res.data.code == 0) {
         this.problemSets = res.data.data;
       }
