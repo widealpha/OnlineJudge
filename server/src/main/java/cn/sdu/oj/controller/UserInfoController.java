@@ -68,7 +68,7 @@ public class UserInfoController {
 
     @ApiOperation("通过用户昵称查找用户")
     @PreAuthorize("hasRole('COMMON')")
-    @PostMapping("searchUserByUsername")
+    @PostMapping("searchUserByNickname")
     ResultEntity<List<MinorUserInfoDto>> searchUserByNickname(
             @ApiParam("昵称") @RequestParam String nickname) {
         return userInfoService.searchUserByNickname(nickname);
