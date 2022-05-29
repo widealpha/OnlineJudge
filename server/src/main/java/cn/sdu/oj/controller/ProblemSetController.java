@@ -249,70 +249,66 @@ public class ProblemSetController {
         }
     }
 
-    //获取我做过的某一题目集的完成情况
-    @ApiOperation("获取我做过的某题目集的完成情况|COMMON+") //获取我做过的某一题目集的完成情况   所有人可用
+    //获取某题目集某题的完成情况  学生看自己 老师看学生
+    @ApiOperation("获取某题目集某题的完成情况|COMMON+") //获取我做过的某题目集某题的完成情况   所有人可用
     @PostMapping("/getSelfCompletion")
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getSelfCompletion(
-            @ApiParam(value = "ID", required = true) @RequestParam Integer id, //题目集id
+            @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
+            @ApiParam(value = "题目id", required = true) @RequestParam Integer problemId, //题目id
+            @ApiParam(value = "用户ID", required = false) @RequestParam Integer userId, //用户id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            int i = 0;
-            List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(user.getId());
+            if (userId != null) {  //老师想看
+                ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problemId, userId);
+                return ResultEntity.success("完成情况", problemSetProblemVo);
 
-            for (ProblemSet p : problemSets) {
-                if (p.getId().equals(id)) {
-                    i++;
-                    List<ProblemSetProblem> problemSetProblems = problemSetService.getProblemSetProblems(id);
-                    List<ProblemSetProblemVo> problemSetProblemVos = problemSetService.getSelfCompletion(problemSetProblems, user.getId());
-                    return ResultEntity.success("完成情况", problemSetProblemVos);
-                }
+            } else //学生想看
+            {
+                ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problemId, user.getId());
+                return ResultEntity.success("完成情况", problemSetProblemVo);
             }
-            if (i == 0) {
-                return ResultEntity.error("没有做过该题目集");
-            }
-            return ResultEntity.error(StatusCode.COMMON_FAIL);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
     }
 
-    //题目集创建者获取用户组成员的完成情况
-    @ApiOperation("题目集创建者获取所有人的完成情况") //题目集创建者获取所有人的完成情况   创建人可用  TODO
-    @PostMapping("/getALLCompletion")
-    public ResultEntity getALLCompletion(
-            @ApiParam(value = "ID", required = true) @RequestParam Integer problemSetId, //题目集id
-            @ApiParam(value = "用户组ID", required = true) @RequestParam Integer userGroupId, //用户组id
-            @ApiIgnore @AuthenticationPrincipal User user) {
-        try {
-            if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())){
-                //获取用户组所有人的id
-               List<Integer> members =  userGroupService.getUserGroupMembers(userGroupId);
-                //对于每个人进行操作
-                int i = 0;
-                List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(members.get(i));
-
-                for (ProblemSet p : problemSets) {
-                    if (p.getId().equals(problemSetId)) {
-                        i++;
-                        List<ProblemSetProblem> problemSetProblems = problemSetService.getProblemSetProblems(problemSetId);
-                        List<ProblemSetProblemVo> problemSetProblemVos = problemSetService.getSelfCompletion(problemSetProblems, user.getId());
-                        return ResultEntity.success("完成情况", problemSetProblemVos);
-                    }
-                }
-                if (i == 0) {
-                    return ResultEntity.error("没有做过该题目集");
-                }
-
-            } else return  ResultEntity.error(StatusCode.NO_PERMISSION);
-
-            return ResultEntity.error(StatusCode.COMMON_FAIL);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResultEntity.error(StatusCode.COMMON_FAIL);
-        }
-    }
+//    //题目集创建者获取用户组成员的完成情况
+//    @ApiOperation("题目集创建者获取所有人的完成情况") //题目集创建者获取所有人的完成情况   创建人可用  TODO
+//    @PostMapping("/getALLCompletion")
+//    public ResultEntity getALLCompletion(
+//            @ApiParam(value = "ID", required = true) @RequestParam Integer problemSetId, //题目集id
+//            @ApiParam(value = "用户组ID", required = true) @RequestParam Integer userGroupId, //用户组id
+//            @ApiIgnore @AuthenticationPrincipal User user) {
+//        try {
+//            if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
+//                //获取用户组所有人的id
+//                List<Integer> members = userGroupService.getUserGroupMembers(userGroupId);
+//                //对于每个人进行操作
+//                int i = 0;
+//                List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(members.get(i));
+//
+//                for (ProblemSet p : problemSets) {
+//                    if (p.getId().equals(problemSetId)) {
+//                        i++;
+//                        List<ProblemSetProblem> problemSetProblems = problemSetService.getProblemSetProblems(problemSetId);
+//                        List<ProblemSetProblemVo> problemSetProblemVos = problemSetService.getSelfCompletion(problemSetProblems, user.getId());
+//                        return ResultEntity.success("完成情况", problemSetProblemVos);
+//                    }
+//                }
+//                if (i == 0) {
+//                    return ResultEntity.error("没有做过该题目集");
+//                }
+//
+//            } else return ResultEntity.error(StatusCode.NO_PERMISSION);
+//
+//            return ResultEntity.error(StatusCode.COMMON_FAIL);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResultEntity.error(StatusCode.COMMON_FAIL);
+//        }
+//    }
 
     @ApiOperation("用户为一个题目集保存答案|COMMON+") //用户为一个题目集保存答案   答题人可用
     @PostMapping("/saveProblemAnswer")
@@ -475,7 +471,7 @@ public class ProblemSetController {
                         validDay = day;
                     }
                     redisUtil.setEx(key, value, validDay, TimeUnit.DAYS);
-                    return ResultEntity.success("设置成功",value);
+                    return ResultEntity.success("设置成功", value);
                 }
             } else return ResultEntity.error(StatusCode.NO_PERMISSION);
         } catch (Exception e) {

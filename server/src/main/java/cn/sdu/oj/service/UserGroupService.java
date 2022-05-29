@@ -55,13 +55,13 @@ public class UserGroupService {
 
     //向用户组里加人(只能向我创建的用户组里加人)
 
-    public StatusCode addMemberToUserGroup(Integer creator, Integer id, JSONArray members) {
-        if (UserGroupMapper.getUserGroupInfoById(id).getCreatorId().equals(creator)) {
+    public StatusCode addMemberToUserGroup(Integer creator, Integer user_group_id, JSONArray members) {
+        if (UserGroupMapper.getUserGroupInfoById(user_group_id).getCreatorId().equals(creator)) {
             for (int i = 0; i < members.size(); i++) {
                 int onePersonId = members.getInteger(i);
 
-               if( !judgeUserGroupContainUser(onePersonId,id)){
-                   if (!UserGroupMapper.addMemberToUserGroup(id, onePersonId)) {
+               if( !judgeUserGroupContainUser(onePersonId,user_group_id)){
+                   if (!UserGroupMapper.addMemberToUserGroup(user_group_id, onePersonId)) {
                        return StatusCode.COMMON_FAIL;
                    }
                } else continue;

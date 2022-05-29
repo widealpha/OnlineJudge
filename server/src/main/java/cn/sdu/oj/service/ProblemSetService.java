@@ -27,6 +27,9 @@ public class ProblemSetService {
     private UserGroupService userGroupService;
 
     @Autowired
+    private GeneralProblemMapper generalProblemMapper;
+
+    @Autowired
     private ProblemSetUserGroupMapper problemSetUserGroupMapper;
 
 
@@ -89,21 +92,30 @@ public class ProblemSetService {
         return problemSetProblemMapper.getProblemSetProblem(id);
     }
 
-    public List<ProblemSetProblemVo> getSelfCompletion(List<ProblemSetProblem> problemSetProblems, Integer user_id) {
-        List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
-        for (ProblemSetProblem p : problemSetProblems) {
-            if (p.getScore() == 0) // 编程题
-            {
-                Integer c = solveRecordMapper.getSelfCompletion(p.getProblemId(), p.getProblemSetId(), user_id);
+    public ProblemSetProblemVo getSelfCompletion(Integer problemSetId, Integer problemId, Integer userId) {
 
-                problemSetProblemVos.add(new ProblemSetProblemVo(p, c));
-            } else if (p.getScore() != 1)//非编程题
-            {
-                Integer is_correct = answerRecordMapper.getSelfCompletion(p.getProblemId(), p.getProblemSetId(), p, user_id);
-                problemSetProblemVos.add(new ProblemSetProblemVo(p, is_correct));
-            }
+        ProblemSetProblemVo problemSetProblemVo = new ProblemSetProblemVo();
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        problemSetProblemVo.setType(generalProblem.getType());
+        //这个题的总分
+        Integer total_score = problemSetProblemMapper.getProblemSetProblemScore(problemSetId, problemId).getScore();
+
+        if (generalProblem.getType() == 0) // 编程题
+        {
+            //拿到解题记录（最后一次）
+            SolveRecord solveRecord = solveRecordMapper.getSelfCompletion(problemId, problemSetId, userId);
+            problemSetProblemVo.setScore(total_score);
+            problemSetProblemVo.setSolveRecord(solveRecord);
+
+        } else if (generalProblem.getType() != 1)//非编程题 默认只有是否正确
+        {
+            //拿到解题记录（最后一次）
+            AnswerRecord answerRecord = answerRecordMapper.getSelfCompletion(problemId, problemSetId, userId);
+            problemSetProblemVo.setScore(total_score);
+            problemSetProblemVo.setAnswerRecord(answerRecord);
         }
-        return problemSetProblemVos;
+
+        return problemSetProblemVo;
     }
 
     //判断 一个用户是否能做这个题
