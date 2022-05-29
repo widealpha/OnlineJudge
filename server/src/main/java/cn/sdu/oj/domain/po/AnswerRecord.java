@@ -10,6 +10,8 @@ public class AnswerRecord {
     private int problemSetId;
     private int type;
     private Boolean isCorrect;
+
+    private Integer score;
     private int status;
     private Date createTime;
     private Date modifiedTime;
@@ -60,6 +62,14 @@ public class AnswerRecord {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public Integer getScore() {
+        return score;
+    }
+
+    public void setScore(Integer score) {
+        this.score = score;
     }
 
     public Boolean getCorrect() {

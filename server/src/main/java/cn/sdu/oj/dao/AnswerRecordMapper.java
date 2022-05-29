@@ -13,8 +13,8 @@ import java.util.List;
 public interface AnswerRecordMapper {
 
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    @Insert("INSERT INTO answer_record (problem_id, user_id, user_answer, problem_set_id, type, is_correct) VALUES " +
-            "(#{problemId}, #{userId}, #{userAnswer}, #{problemSetId}, #{type}, #{isCorrect})")
+    @Insert("INSERT INTO answer_record (problem_id, user_id, user_answer, problem_set_id, type, is_correct, score) VALUES " +
+            "(#{problemId}, #{userId}, #{userAnswer}, #{problemSetId}, #{type}, #{isCorrect}, #{score})")
     boolean insertAnswerRecord(AnswerRecord answerRecord);
 
     @Select("SELECT id FROM answer_record WHERE problem_id = #{problemId} AND problem_set_id = #{problemSetId} AND user_id = #{userId} AND `status` >= 0 LIMIT 1")

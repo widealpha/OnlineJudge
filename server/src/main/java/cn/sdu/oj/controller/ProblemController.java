@@ -289,7 +289,7 @@ public class ProblemController {
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam("题目内容") @RequestParam String name,
             @ApiParam("题目描述") @RequestParam(required = false) String description,
-            @ApiParam(value = "题目答案", required = false) @RequestParam String answer,
+            @ApiParam(value = "题目答案") @RequestParam(required = false) String answer,
             @ApiParam("难度") @RequestParam Integer difficulty,
             @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         try {
