@@ -61,8 +61,8 @@ public interface SolveRecordMapper {
             "WHERE user_id = #{userId}  AND `status` >= 0")
     List<Integer> selectSelfDoneProblemSetByUserId(Integer userId);
 
-    @Select("SELECT status " +
+    @Select("SELECT *" +
             "FROM solve_record " +
-            "WHERE problem_id = #{problem_id} AND problem_set_id = #{problem_set_id} AND user_id = #{user_id}")
-    Integer getSelfCompletion(Integer problem_id, Integer problem_set_id,  Integer user_id);
+            "WHERE problem_id = #{problem_id} AND problem_set_id = #{problem_set_id} AND user_id = #{user_id} ORDER BY create_time DESC LIMIT 1")
+    SolveRecord getSelfCompletion(Integer problem_id, Integer problem_set_id,  Integer user_id);
 }

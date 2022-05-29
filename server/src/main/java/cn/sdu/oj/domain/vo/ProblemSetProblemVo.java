@@ -1,54 +1,34 @@
 package cn.sdu.oj.domain.vo;
 
 
+import cn.sdu.oj.domain.po.AnswerRecord;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
+import cn.sdu.oj.domain.po.SolveRecord;
 
 public class ProblemSetProblemVo {
-    private Integer id;
-    private Integer problem_id;
-    private Integer problem_set_id;
+
     private Integer type;
-    private Integer complement;
+    private Integer score;
 
-    public ProblemSetProblemVo(ProblemSetProblem problemSetProblem, Integer complement) {
-        this.complement = complement;
+    private SolveRecord solveRecord;
+    private AnswerRecord answerRecord;
 
-        this.id = problemSetProblem.getId();
-        this.problem_id =problemSetProblem.getProblemId();
-        this.problem_set_id =problemSetProblem.getProblemSetId();
-        this.type = problemSetProblem.getScore();
+
+
+    public Integer getScore() {
+        return score;
     }
 
-    public Integer getComplement() {
-        return complement;
+    public void setScore(Integer score) {
+        this.score = score;
     }
 
-    public void setComplement(Integer complement) {
-        this.complement = complement;
+    public AnswerRecord getAnswerRecord() {
+        return answerRecord;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getProblem_id() {
-        return problem_id;
-    }
-
-    public void setProblem_id(Integer problem_id) {
-        this.problem_id = problem_id;
-    }
-
-    public Integer getProblem_set_id() {
-        return problem_set_id;
-    }
-
-    public void setProblem_set_id(Integer problem_set_id) {
-        this.problem_set_id = problem_set_id;
+    public void setAnswerRecord(AnswerRecord answerRecord) {
+        this.answerRecord = answerRecord;
     }
 
     public Integer getType() {
@@ -57,6 +37,14 @@ public class ProblemSetProblemVo {
 
     public void setType(Integer type) {
         this.type = type;
+    }
+
+    public SolveRecord getSolveRecord() {
+        return solveRecord;
+    }
+
+    public void setSolveRecord(SolveRecord solveRecord) {
+        this.solveRecord = solveRecord;
     }
 }
 

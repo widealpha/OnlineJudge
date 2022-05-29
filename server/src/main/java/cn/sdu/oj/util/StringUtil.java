@@ -1,11 +1,14 @@
 package cn.sdu.oj.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 
 /**
  * String工具类
  * @author kmh
  */
+@Component
 public class StringUtil {
     /**
      * 生成指定长度的随机字符串(只包含大写)

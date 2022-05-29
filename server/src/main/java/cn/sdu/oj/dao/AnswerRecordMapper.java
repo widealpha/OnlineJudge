@@ -28,9 +28,10 @@ public interface AnswerRecordMapper {
             "WHERE user_id = #{userId}  AND `status` >= 0")
     List<Integer> selectSelfDoneProblemSetByUserId(Integer userId);
 
-    @Select("SELECT is_correct FROM answer_record WHERE user_id = #{userId} AND problem_id = #{problem_id} AND problem_set_id = #{problem_set_id}  AND `status` >= 0")
-    Integer getSelfCompletion(Integer problem_id, Integer problem_set_id, ProblemSetProblem p, Integer user_id);
+    @Select("SELECT * FROM answer_record WHERE user_id = #{user_id} AND problem_id = #{problem_id} AND problem_set_id = #{problem_set_id}  AND `status` >= 0 ORDER BY create_time DESC LIMIT 1")
+    AnswerRecord getSelfCompletion(Integer problem_id, Integer problem_set_id, Integer user_id);
 
     @Update("UPDATE answer_record SET score=#{score} WHERE id = #{id}")
     boolean updateScoreByPrimaryKey(int id, int score);
+
 }

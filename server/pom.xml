@@ -135,6 +135,11 @@
             <version>1.4.1</version>
         </dependency>
 
+        <!--整合springboot与junit测试依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
 
     </dependencies>
 

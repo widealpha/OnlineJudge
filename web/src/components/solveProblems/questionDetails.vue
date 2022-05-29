@@ -153,7 +153,7 @@ export default {
 		async getDetails(problemId) {
 			this.loading = true;
 			let res = await this.$ajax.post(
-				"/problem/getProblemById",
+				"/problem/info",
 				{
 					id: problemId,
 				},

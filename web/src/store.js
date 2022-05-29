@@ -12,24 +12,25 @@ export default new Vuex.Store({
             avatar: null,
             nickname: null,
             name: null,
-           
             email: null,
             userId: undefined,
             studentId: null,
         },
         problemSetInfo: {
             problems: [],
+            // 是否公开
+            open: 0,
+            // 题目
             title: "",
-            announcement: "",
-            author: "",
-            open: undefined,
-            beginTime: "1970-01-01",
-            endTime: "1970-01-01",
-            status: 0,
-            canUseOnlineJudge: true,
-            canViewTestPoint: true,
+            // 介绍
+            introduction: "",
+            creatorId: 0,
+            beginTime: "2000-01-01 00:00:00",
+            endTime: "2000-01-01 00:00:00",
+            // 竞赛，作业还是测试
+            type: 0,
             isMyProblemSet: false,
-            problemIds: [],
+       
             problemSetId: 0,
         }
     },
@@ -41,7 +42,7 @@ export default new Vuex.Store({
         setNoToken(state, noToken) {
             state.noToken = noToken;
         },
-  
+
         setMyInfo(state, myInfo) {
             for (const key in myInfo) {
                 Vue.set(state.myInfo, key, myInfo[key])
@@ -53,34 +54,7 @@ export default new Vuex.Store({
             }
         },
     },
-    // //异步操作
-    // actions: {
 
-    //     setToken(context, token) {
-    //         context.commit('setToken', token);
-    //     },
-    //     setNoToken(context, noToken) {
-    //         context.commit('setNoToken', noToken);
-    //     },
-    //     setIsTeacher(context, isTeacher) {
-    //         context.commit('setIsTeacher', isTeacher);
-    //     },
-    //     setIsAdmin(context, isAdmin) {
-    //         context.commit('setIsAdmin', isAdmin);
-    //     },
-    //     setIsStudent(context, isStudent) {
-    //         context.commit('setIsStudent', isStudent);
-    //     },
-    //     setIsCommon(context, isCommon) {
-    //         context.commit('setIsCommon', isCommon);
-    //     },
-    //     setMyInfo(context, myInfo) {
-    //         context.commit('setMyInfo', myInfo);
-    //     },
-    //     setProblemSetInfo(context, newInfo) {
-    //         context.commit('setProblemSetInfo', newInfo);
-    //     },
-    // },
     getters: {
         usernameToShow: (state) => {
             return state.myInfo.nickname ? state.myInfo.nickname : (state.myInfo.realName ? state.myInfo.realName : state.myInfo.username)
