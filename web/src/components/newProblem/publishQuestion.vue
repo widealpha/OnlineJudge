@@ -109,6 +109,7 @@ export default {
   name: "publishQuestion",
   data() {
     return {
+      tagStr: "",
       problemId: 0,
       BasicInfo: {
         title: "",
@@ -224,12 +225,12 @@ export default {
     };
   },
   methods: {
-    //根据问题id获取问题信息
+    //上一步返回后，根据问题id获取问题信息
     async getProblemInfoById() {
       let res = await this.$ajax.post(
-        "/problem/Info",
+        "/problem/info",
         {
-          id: this.problemId,
+          problemId: this.problemId,
         },
         {
           headers: {
@@ -237,94 +238,99 @@ export default {
           },
         }
       );
+
       if (res.data.code === 0) {
         let data = res.data.data;
-        this.BasicInfo.title = data.title;
+        
+        this.BasicInfo.title = data.name;
         this.BasicInfo.difficulty = data.difficulty;
         this.BasicInfo.description = data.description;
         this.BasicInfo.myTags = [];
-        data.tagList.forEach((tag) => {
+        data.tags.forEach((tag) => {
           this.BasicInfo.myTags.push({
             value: tag.name,
             id: tag.id,
           });
-          const node = this.$refs.tagCascader.getNodeByValue(
-            tag.name.split("/")
-          );
+          const node = this.$refs["tagCascader"].getNodeByValue(tag.name);
           node;
         });
       }
     },
-    // 验证表单
-    onSubmit() {
+    // 添加一个问题
+    async addAProblem() {
+      let res = await this.$ajax.post(
+        "/problem/addProgramingProblem",
+        {
+          name: this.BasicInfo.title,
+          difficulty: this.BasicInfo.difficulty,
+          tags: this.tagStr,
+          description: this.BasicInfo.description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.state.token}`,
+          },
+        }
+      );
+
+      if (res.data.code == 0) {
+        this.$message({
+          message: "提交成功",
+          type: "success",
+        });
+
+        this.$router.push({
+          name: "newProblem",
+          query: { problemId: res.data.data },
+          params: { step: 2 },
+        });
+      } else {
+        this.$message({
+          message: "提交失败",
+          type: "error",
+        });
+      }
+    },
+    // 更新一个问题
+    async updateAProblem() {
+      let res = await this.$ajax.post(
+        "/problem/updateProgramingProblem",
+        {
+          problemId: this.problemId,
+          name: this.BasicInfo.title,
+          difficulty: this.BasicInfo.difficulty,
+          tags: this.tagStr,
+          description: this.BasicInfo.description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.state.token}`,
+          },
+        }
+      );
+      if (res.data.code == 0) {
+        this.$message({
+          message: "提交成功",
+          type: "success",
+        });
+      } else {
+        this.$message({
+          message: "提交失败",
+          type: "error",
+        });
+      }
+    },
+    // 验证表单并判断是更新还是上传
+    async onSubmit() {
       this.$refs.BasicInfo.validate(async (valid) => {
+        this.tagStr = JSON.stringify(
+          this.BasicInfo.myTags.map((item) => item.id)
+        );
         if (valid) {
           if (this.problemId === 0) {
-            let res = await this.$ajax.post(
-              "/problem/addAProblem",
-              {
-                title: this.BasicInfo.title,
-                difficulty: this.BasicInfo.difficulty,
-                tagString: this.BasicInfo.myTags
-                  .map((tag) => {
-                    return tag.id;
-                  })
-                  .join("_"),
-                description: this.BasicInfo.description,
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${this.$store.state.token}`,
-                },
-              }
-            );
-            if (res.data.code == 0) {
-              this.$message({
-                message: "提交成功",
-                type: "success",
-              });
-              this.$router.push({
-                name: "newProblem",
-                query: { problemId: res.data.data },
-                params: { step: 2 },
-              });
-            } else {
-              this.$message({
-                message: "提交失败",
-                type: "error",
-              });
-            }
+            this.addAProblem();
           } else {
-            let res = await this.$ajax.post(
-              "/problem/updateAProblem",
-              {
-                id: this.problemId,
-                title: this.BasicInfo.title,
-                difficulty: this.BasicInfo.difficulty,
-                tagString: this.BasicInfo.myTags
-                  .map((tag) => {
-                    return tag.id;
-                  })
-                  .join("_"),
-                description: this.BasicInfo.description,
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${this.$store.state.token}`,
-                },
-              }
-            );
-            if (res.data.code == 0) {
-              this.$message({
-                message: "提交成功",
-                type: "success",
-              });
-            } else {
-              this.$message({
-                message: "提交失败",
-                type: "error",
-              });
-            }
+            this.updateAProblem();
           }
         }
       });
@@ -336,7 +342,6 @@ export default {
     },
     // 获取可选标签
     async getTags(node) {
-
       let res;
       if (node.root) {
         res = await this.$ajax.post(
@@ -361,14 +366,15 @@ export default {
           }
         );
       }
-console.log(res.data);
+
       const nodes = res.data.data.map((item) => ({
         value: item.name,
         label: item.name,
         id: item.id,
-        leaf:item.level>=3,
+        leaf: item.level >= 3,
         disabled: this.BasicInfo.myTags.some((tag) => tag.id === item.id),
       }));
+
       return nodes;
     },
     // 选中标签
@@ -380,10 +386,9 @@ console.log(res.data);
         id: node.data.id,
       });
 
-  
-        this.$refs.tagDrop.hide(); // el-dropdown 源码中的方法，手动关闭下拉列表
-    
+      this.$refs.tagDrop.hide(); // el-dropdown 源码中的方法，手动关闭下拉列表
     },
+    // 删除标签
     deleteTag(item) {
       const node = this.$refs.tagCascader.getNodeByValue(item.value.split("/"));
       if (node) {
@@ -394,8 +399,10 @@ console.log(res.data);
   },
   async created() {
     let problemId = this.$route.query.problemId;
+
     if (problemId) {
       this.problemId = Number(problemId);
+
       await this.getProblemInfoById();
     }
   },
@@ -404,6 +411,7 @@ console.log(res.data);
       let problemId = newVal.query.problemId;
       if (problemId) {
         this.problemId = Number(problemId);
+
         this.getProblemInfoById();
       } else {
         this.problemId = 0;
