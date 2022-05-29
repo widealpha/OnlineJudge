@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum ProblemTypeEnum {
     PROGRAMING(0, "编程题"),
     SELECTION(1, "单选题"),
+
     MULTIPLE_SELECTION(2, "多选题"),
     COMPLETION(3, "填空题"),
     JUDGEMENT(4, "判断题"),

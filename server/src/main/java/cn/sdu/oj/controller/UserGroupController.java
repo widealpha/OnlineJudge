@@ -5,8 +5,11 @@ import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.service.UserGroupService;
+import cn.sdu.oj.util.RedisUtil;
+import cn.sdu.oj.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,7 +17,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.IllegalFormatCodePointException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @RestController
@@ -24,6 +29,9 @@ public class UserGroupController {
     @Autowired
     private UserGroupService userGroupService;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     @ApiOperation("用户组创建|TEACHER+") //创建用户组，父用户组id为可选   //老师或者管理员可以使用
     @PostMapping("/createUserGroup")
     @PreAuthorize("hasRole('TEACHER')")
@@ -31,24 +39,94 @@ public class UserGroupController {
             @ApiParam(value = "姓名") @RequestParam(required = true) String name,
             @ApiParam(value = "类型") @RequestParam(required = true) String type,
             @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
-            @ApiParam(value = "父用户组") @RequestParam(required = false) Integer fatherId,
+            @ApiParam(value = "父用户组（可选）有则创建子用户组") @RequestParam(required = false) Integer fatherId,
+            @ApiParam(value = "是否需要生成邀请码（可选）,有请填1") @RequestParam(required = false) Integer isNeedInviteCode,
+            @ApiParam(value = "题目集id（可选），有则为用户组添加这个题目集") @RequestParam(required = false) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            if (fatherId == null) {  //创建新用户组
-                String a = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId()).toString();
-                return ResultEntity.success("创建新用户组成功", a);
-            } else {  //为一个用户组创建子用户组
-                //要求：该 用户组目前不含人 ，且是我创建
-                if (userGroupService.getUserGroupInfoById(fatherId).getCreatorId() != user.getId()) {
-                    return ResultEntity.error(StatusCode.NO_PERMISSION);
-                } else if (userGroupService.getUserGroupMembers(fatherId).size() != 0) {
-                    return ResultEntity.error("无法为已有成员的用户组添加子用户组");
-                }
-                Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
 
-                userGroupService.updateChildrenUserGroup(fatherId, id);
-                return ResultEntity.success();
+            if (isNeedInviteCode != null && isNeedInviteCode == 1) {  //需要生成邀请码
+
+                if (fatherId == null) {  //创建新用户组
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+
+                    //生成邀请码在redis，10分钟内可通过邀请码加入用户组
+                    String inviteCode = StringUtil.getRandomString(6);
+                    String key = "inviteCode:" + inviteCode;
+                    redisUtil.setEx(key, id.toString(), 10, TimeUnit.MINUTES);
+
+                    if (problemSetId != null) {
+                        userGroupService.linkUserGroupProblemSet(id, problemSetId);
+                    }
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userGroupId", id);
+                    jsonObject.put("inviteCode", inviteCode);
+                    return ResultEntity.success("创建根用户组成功", jsonObject);
+                } else {  //为一个用户组创建子用户组
+
+                    //要求：该 用户组目前不含人 ，且是我创建
+                    if (userGroupService.getUserGroupInfoById(fatherId).getCreatorId() != user.getId()) {
+                        return ResultEntity.error(StatusCode.NO_PERMISSION);
+                    } else if (userGroupService.getUserGroupMembers(fatherId).size() != 0) {
+                        return ResultEntity.error("无法为已有成员的用户组添加子用户组");
+                    }
+
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+
+                    userGroupService.updateChildrenUserGroup(fatherId, id);  //更新父用户组的子用户组
+
+                    //生成邀请码在redis，10分钟内可通过邀请码加入用户组
+                    String inviteCode = StringUtil.getRandomString(6);
+                    String key = "inviteCode:" + inviteCode;
+                    redisUtil.setEx(key, id.toString(), 10, TimeUnit.MINUTES);
+
+                    if (problemSetId != null) {
+                        userGroupService.linkUserGroupProblemSet(id, problemSetId);
+                    }
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userGroupId", id);
+                    jsonObject.put("inviteCode", inviteCode);
+                    return ResultEntity.success("创建子用户组成功", jsonObject);
+                }
+
+
+            } else {
+                if (fatherId == null) {  //创建新用户组
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+                    if (problemSetId != null) {
+                        userGroupService.linkUserGroupProblemSet(id, problemSetId);
+                    }
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userGroupId", id);
+                    jsonObject.put("inviteCode", null);
+                    return ResultEntity.success("创建根用户组成功", jsonObject);
+                } else {  //为一个用户组创建子用户组
+
+                    //要求：该 用户组目前不含人 ，且是我创建
+                    if (userGroupService.getUserGroupInfoById(fatherId).getCreatorId() != user.getId()) {
+                        return ResultEntity.error(StatusCode.NO_PERMISSION);
+                    } else if (userGroupService.getUserGroupMembers(fatherId).size() != 0) {
+                        return ResultEntity.error("无法为已有成员的用户组添加子用户组");
+                    }
+
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+
+                    userGroupService.updateChildrenUserGroup(fatherId, id);  //更新父用户组的子用户组
+
+                    if (problemSetId != null) {
+                        userGroupService.linkUserGroupProblemSet(id, problemSetId);
+                    }
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userGroupId", id);
+                    jsonObject.put("inviteCode", null);
+                    return ResultEntity.success("创建子用户组成功", jsonObject);
+                }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -135,6 +213,24 @@ public class UserGroupController {
             JSONArray jsonArray = JSON.parseArray(member);
             return ResultEntity.data(userGroupService.deleteUserGroupMember(user.getId(), id, jsonArray));
         } else return ResultEntity.error(StatusCode.NO_PERMISSION);
+    }
+
+    @ApiOperation("用户通过邀请码加入用户组|COMMON+")  //  所有人都可使用
+    @PostMapping("/joinUserGroupByInviteCode")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity joinUserGroupByInviteCode(
+            @ApiParam(value = "邀请码") @RequestParam(required = true) Integer inviteCode,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        if (redisUtil.hasKey("inviteCode:" + inviteCode)) {
+            Integer user_group_id = Integer.valueOf(redisUtil.get("inviteCode:" + inviteCode));
+            UserGroup userGroup = userGroupService.getUserGroupInfoById(user_group_id);
+            JSONArray members = new JSONArray();
+            members.add(user.getId());
+            userGroupService.addMemberToUserGroup(userGroup.getCreatorId(), user_group_id, members);
+            return ResultEntity.success();
+        } else {
+            return ResultEntity.error("邀请码不存在");
+        }
     }
 
     @ApiOperation("查询我加入的用户组|COMMON+")  //我是用户组成员   所有人都可使用
