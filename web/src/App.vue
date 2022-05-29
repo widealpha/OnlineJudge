@@ -25,9 +25,9 @@ export default {
       );
 
       if (info.data.code === 0) {
-        this.$store.commit("setMyInfo", info.data.data);
-        this.$store.commit("setToken", _token);
-        this.$store.commit("setNoToken", false);
+        await this.$store.commit("setMyInfo", info.data.data);
+        await this.$store.commit("setToken", _token);
+        await this.$store.commit("setNoToken", false);
       }
     },
   },

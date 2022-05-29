@@ -49,9 +49,11 @@ export default {
 				path: `/problem-set/${this.$route.params.problemSetId}/problems`,
 			});
 		},
+		// 更新通过率
 		updatePassRadio() {
 			this.$refs.questionDetails.updatePassRadio();
 		},
+		
 		judgeProblemExists() {
 			if (this.problemIds.indexOf(this.problemDetail.problemId) !== -1) {
 				this.shouldShow = true;

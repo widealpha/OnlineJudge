@@ -141,6 +141,9 @@
 </template>
 
 <script>
+import Hex from "crypto-js/enc-hex";
+import WordArray from "crypto-js/lib-typedarrays";
+import sha256 from "crypto-js/sha256";
 export default {
   data() {
     return {
@@ -228,78 +231,40 @@ export default {
       }
       this.loading = false;
     },
-    // file转blob
-    fileToBlob(file, callback) {
-      const type = file.type;
 
+    async analyzeZip(file) {
       const reader = new FileReader();
-      reader.onload = (evt) => {
-        const blob = new Blob([evt.target.result], { type });
-        if (typeof callback === "function") {
-          callback(blob);
-        } else {
-          console.log("我是 blob:", blob);
+
+      reader.onloadend = async (evt) => {
+        if (evt.target.readyState === FileReader.DONE) {
+          // DONE == 2
+          const hash = sha256(WordArray.create(evt.target.result)).toString(
+            Hex
+          );
+          let formData = new FormData();
+          formData.append("problemId", this.problemId);
+          formData.append("sha256", hash);
+          formData.append("file", file.raw, "file");
+          let res = await this.$ajax.post(
+            "/problem/uploadCheckpoints",
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${this.$store.state.token}`,
+                contentType: "multipart/form-data",
+              },
+            }
+          );
+          console.log(res);
+          if (res.data.code === 0) {
+            this.$message.success("上传成功！");
+          } else {
+            this.$message.error(res.data.message);
+          }
         }
       };
-      reader.readAsDataURL(file);
-    },
-    // analyzeZip(file) {
-    //   console.log(file.raw);
-    // },
-    analyzeZip(file) {
-      const _file = file.raw;
 
-      this.fileToBlob(_file, async (blob) => {
-        let formData = new FormData();
-        formData.append("file", blob);
-        formData.append("problemId", this.problemId);
-        formData.append("sha256", "");
-
-        let res = await this.$ajax.post(
-          "/problem/uploadCheckpoints",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        console.log(res);
-        if (res.data.code === 0) {
-          this.$message.success("上传成功！");
-        } else {
-          this.$message.error(res.data.message);
-        }
-      });
-      // //file转base64
-      // var reader = new FileReader();
-      // reader.readAsDataURL(file);
-      // reader.onload = function () {
-      //   console.log(reader.result); //获取到base64格式图片
-      // };
-
-      //base64转blob
-
-      //  //file文件转blob
-      //     let formData = new FormData();
-      //     let blob = new Blob([file], { type: file.type });
-      //     console.log(blob);
-      //     formData.append("file", blob);
-      //     formData.append("problemId", this.problemId);
-
-      //     let res = await this.$ajax.post("/problem/uploadCheckpoints", formData, {
-      //       headers: {
-      //         Authorization: `Bearer ${this.$store.state.token}`,
-      //         "Content-Type": "multipart/form-data",
-      //       },
-      //     });
-      //     console.log(res);
-      //     if (res.data.code === 0) {
-      //       this.$message.success("上传成功！");
-      //     } else {
-      //       this.$message.error(res.data.message);
-      //     }
+      reader.readAsArrayBuffer(file.raw);
     },
     async remove(index) {
       let point = this.points[index];

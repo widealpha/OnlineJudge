@@ -132,7 +132,7 @@ export default {
 			);
 			if (res.data.code == 0) {
 				res = await this.$ajax.post(
-					"/problemset/getProblemset",
+					"/problemSet/getProblemSetInfo",
 					{
 						id: this.$route.params.problemSetId,
 					},
@@ -181,7 +181,7 @@ export default {
 			);
 			if (res.data.code == 0) {
 				res = await this.$ajax.post(
-					"/problemset/getProblemset",
+					"/problemSet/getProblemSetInfo",
 					{
 						id: this.$route.params.problemSetId,
 					},

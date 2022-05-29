@@ -18,7 +18,7 @@
 				</el-row>
 			</div>
 			<el-row style="margin-top: 20px" :gutter="20">
-				<el-col :span="$store.state.problemSetInfo.canUseOnlineJudge?16:24">
+				<el-col :span="16">
 					<div class="text">
 						<codemirror style="border: 0.5px solid black" v-model="code" :options="cmOption" class="code-mirror" />
 					</div>
@@ -27,7 +27,7 @@
 						<el-button :disabled="solveId==0" @click="showRes">查看结果</el-button>
 					</div>
 				</el-col>
-				<el-col :span="8" v-if="$store.state.problemSetInfo.canUseOnlineJudge">
+				<el-col :span="8" >
 					<el-card v-loading="testing" element-loading-text="拼命计算中..." element-loading-spinner="el-icon-loading" element-loading-background="rgba(256, 256, 256, 0.5)">
 						<div class="testArea" style="display: flex; flex-direction: column;">
 							<el-input id="testInput" :readonly="testing" type="textarea" resize="none" v-model="testInput" placeholder="请输入测试用例" />
