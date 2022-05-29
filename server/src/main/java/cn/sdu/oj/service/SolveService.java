@@ -1,10 +1,9 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
-import cn.sdu.oj.domain.bo.JudgeLimit;
-import cn.sdu.oj.domain.bo.JudgeResult;
-import cn.sdu.oj.domain.bo.JudgeStatus;
-import cn.sdu.oj.domain.bo.JudgeTask;
+import cn.sdu.oj.domain.bo.*;
+import cn.sdu.oj.domain.dto.MinorUserInfoDto;
+import cn.sdu.oj.domain.dto.ShortQuestionAnswerDto;
 import cn.sdu.oj.domain.dto.SolveResultDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.ProblemTypeEnum;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +46,9 @@ public class SolveService {
 
     @Resource
     ProblemSetProblemMapper problemSetProblemMapper;
+
+    @Resource
+    UserInfoService userInfoService;
 
     @Resource
     ProblemSetService problemSetService;
@@ -300,5 +303,57 @@ public class SolveService {
         }
         solveRecordMapper.updateSolveRecordByPrimaryKey(record);
         return true;
+    }
+
+    public ResultEntity<List<ShortQuestionAnswerDto>> shortQuestionAnswers(int userId, int problemId, int problemSetId) {
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null || problemSet.getCreatorId() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+        if (syncProblem == null || syncProblem.getType() != ProblemTypeEnum.SHORT.id) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        List<AnswerRecord> answers = answerRecordMapper.selectRecordByTypeAndRelationIds(
+                ProblemTypeEnum.SHORT.id,
+                problemId,
+                problemSetId
+        );
+
+        List<ShortQuestionAnswerDto> userAnswers = new ArrayList<>();
+        for (AnswerRecord answer : answers) {
+            ShortQuestionAnswerDto answerDto = new ShortQuestionAnswerDto();
+            answerDto.setRecordId(answer.getId());
+            answerDto.setAnswer(answer.getUserAnswer());
+            answerDto.setUserId(answer.getUserId());
+            MinorUserInfoDto userInfo = userInfoService.minorUserInfo(answer.getUserId()).getData();
+            answerDto.setUsername(userInfo.getUsername());
+            answerDto.setAvatar(userInfo.getAvatar());
+            answerDto.setProblemId(problemId);
+            answerDto.setSubmitTime(answer.getCreateTime().toLocalDateTime());
+            userAnswers.add(answerDto);
+        }
+        return ResultEntity.data(userAnswers);
+    }
+
+    public ResultEntity<Boolean> gradeQuestionAnswerRecord(int creator, int problemId, int problemSetId, int recordId, int score) {
+        AnswerRecord answerRecord = answerRecordMapper.selectAnswerRecord(recordId);
+        if (answerRecord.getProblemId() != problemId || answerRecord.getProblemSetId() != problemSetId) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null || problemSet.getCreatorId() != creator) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+        answerRecord.setScore(score);
+        if (answerRecordMapper.updateScoreByPrimaryKey(answerRecord.getId(), score)) {
+            return ResultEntity.data(true);
+        } else {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
     }
 }
