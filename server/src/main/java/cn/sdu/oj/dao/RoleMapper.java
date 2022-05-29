@@ -19,4 +19,9 @@ public interface RoleMapper {
 
     @Update("UPDATE user_role SET `status` = -1 WHERE user_id = #{userId} AND `role` = #{role}")
     boolean removeUserRole(UserRole userRole);
+
+    @Select("SELECT * FROM user_role WHERE `role` = #{role} limit #{offset}, #{size}")
+    List<UserRole> selectAllUserWithRole(String role, int offset, int size);
+    @Select("SELECT COUNT(*) FROM user_role WHERE `role` = #{role}")
+    Integer countAllUserWithRole(String role);
 }

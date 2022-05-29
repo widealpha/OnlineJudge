@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 @RequestMapping("user")
@@ -54,5 +55,22 @@ public class UserInfoController {
         userInfo.setAvatar(avatar);
         userInfo.setName(name);
         return userInfoService.updateUserInfo(userInfo);
+    }
+
+
+    @ApiOperation("通过用户名查找用户")
+    @PreAuthorize("hasRole('COMMON')")
+    @PostMapping("searchUserByUsername")
+    ResultEntity<List<MinorUserInfoDto>> searchUserByUsername(
+            @ApiParam("用户名") @RequestParam String username) {
+        return userInfoService.searchUserByUsername(username);
+    }
+
+    @ApiOperation("通过用户昵称查找用户")
+    @PreAuthorize("hasRole('COMMON')")
+    @PostMapping("searchUserByNickname")
+    ResultEntity<List<MinorUserInfoDto>> searchUserByNickname(
+            @ApiParam("昵称") @RequestParam String nickname) {
+        return userInfoService.searchUserByNickname(nickname);
     }
 }

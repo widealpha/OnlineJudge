@@ -4,10 +4,7 @@ import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
-import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
-import cn.sdu.oj.domain.vo.ProblemSetTypeEnum;
-import cn.sdu.oj.domain.vo.ProblemSetVo;
-import cn.sdu.oj.domain.vo.User;
+import cn.sdu.oj.domain.vo.*;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.service.ProblemService;
@@ -60,6 +57,12 @@ public class ProblemSetController {
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity<ProblemSetTypeEnum[]> allProblemSetTypes() {
         return ResultEntity.data(ProblemSetTypeEnum.values());
+    }
+    @ApiOperation("所有竞赛题目集的竞赛类型")
+    @GetMapping("/allCompetitionTypes")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity<CompetitionType[]> allCompetitionTypes() {
+        return ResultEntity.data(CompetitionType.values());
     }
 
     @ApiOperation("题目集创建|TEACHER+") //创建题目集   //老师或者管理员可以使用  //创建分开 TODO

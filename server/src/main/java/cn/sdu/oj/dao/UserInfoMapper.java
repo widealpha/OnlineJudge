@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface UserInfoMapper {
     @Select("SELECT * FROM user_info WHERE user_id = #{userId} AND `status` = 0")
@@ -22,4 +24,12 @@ public interface UserInfoMapper {
             "SET `name` = #{name}, avatar = #{avatar}, nickname = #{nickname}, student_id = #{studentId} " +
             "WHERE user_id = #{userId}")
     boolean updateUserInfo(UserInfo userInfo);
+
+    @Select("SELECT user_id FROM user_info WHERE name LIKE '%'#{name}'%' AND `status` >= 0")
+    List<UserInfo> selectUserByName(String name);
+
+    @Select("SELECT user_id FROM user_info WHERE nickname LIKE '%'#{nickname}'%' AND `status` >= 0")
+    List<UserInfo> selectUserByNickname(String nickname);
+    @Select("SELECT user_id FROM user_info WHERE email LIKE '%'#{email}'%' AND `status` >= 0")
+    List<UserInfo> selectUserByEmail(String email);
 }

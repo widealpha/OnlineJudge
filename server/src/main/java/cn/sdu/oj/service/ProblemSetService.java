@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class ProblemSetService {
@@ -108,28 +108,23 @@ public class ProblemSetService {
 
     //判断 一个用户是否能做这个题
     public ResultEntity<Boolean> getUserCanTrySolveProblem(Integer user_id, Integer problem_id, Integer problem_set_id) {
-
-        List<ProblemSetProblem> problemSetProblem = problemSetProblemMapper.getProblemSetProblem(problem_set_id);
-        for (ProblemSetProblem p : problemSetProblem
-        ) {
-            if (Objects.equals(p.getProblemId(), problem_id)) { //题目在题目集中
-                ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
-                if (problemSet.getIsPublic() == 1) {  //public
-                    return ResultEntity.success("公开题目集", true);
-                } else { // not public
-                    List<ProblemSetUserGroup> problemSetUserGroups = problemSetUserGroupMapper.getUserGroupByProblemSet(problem_set_id);
-                    for (ProblemSetUserGroup problemSetUserGroup : problemSetUserGroups
-                    ) {
-                        Integer user_group_id = problemSetUserGroup.getUser_group_id();
-                        if (userGroupService.judgeUserGroupContainUser(user_id, user_group_id)) {
-                            return ResultEntity.success("可以判题", true);
-                        }
+        if (!problemSetProblemMapper.existProblemSetProblem(problem_set_id, problem_id)) {
+            return ResultEntity.error("题目不在题目集中", false);
+        } else {
+            ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problem_set_id);
+            if (problemSet.getIsPublic() == 1) {  //public
+                return ResultEntity.success("公开题目集", true);
+            } else { // not public
+                List<ProblemSetUserGroup> problemSetUserGroups = problemSetUserGroupMapper.getUserGroupByProblemSet(problem_set_id);
+                for (ProblemSetUserGroup problemSetUserGroup : problemSetUserGroups) {
+                    Integer user_group_id = problemSetUserGroup.getUserGroupId();
+                    if (userGroupService.judgeUserGroupContainUser(user_id, user_group_id)) {
+                        return ResultEntity.success("可以判题", true);
                     }
-                    return ResultEntity.error("不可判题", false);
                 }
+                return ResultEntity.error("不可判题", false);
             }
         }
-        return ResultEntity.error("题目不在题目集中", false);
     }
 
     //判断 一个用户是否能做这个题目集
@@ -142,7 +137,7 @@ public class ProblemSetService {
             List<ProblemSetUserGroup> problemSetUserGroups = problemSetUserGroupMapper.getUserGroupByProblemSet(problem_set_id);
             for (ProblemSetUserGroup problemSetUserGroup : problemSetUserGroups
             ) {
-                Integer user_group_id = problemSetUserGroup.getUser_group_id();
+                Integer user_group_id = problemSetUserGroup.getUserGroupId();
                 if (userGroupService.judgeUserGroupContainUser(user_id, user_group_id)) {
                     return false;
                 }

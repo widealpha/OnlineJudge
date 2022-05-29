@@ -51,8 +51,8 @@ public interface SolveRecordMapper {
             "WHERE id = #{id}")
     boolean updateSolveRecordByPrimaryKey(SolveRecord record);
 
-    @Insert("INSERT INTO solve_record(user_id, problem_id, `language`, `code`) " +
-            "VALUES(#{userId}, #{problemId}, #{language}, #{code})")
+    @Insert("INSERT INTO solve_record(user_id, problem_id, `language`, `code`, problem_set_id) " +
+            "VALUES(#{userId}, #{problemId}, #{language}, #{code}, #{problemSetId})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     boolean insertRecord(SolveRecord record);
 

@@ -10,7 +10,6 @@ import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
-import javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -228,9 +225,9 @@ public class ProblemService {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null || generalProblem.getCreator() != userId || file.isEmpty()) {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
-        }
-        // 校验内部文件的正确性
-        if (!FileUtil.verifyZipFormat(file.getBytes())){
+        } else if (generalProblem.getType() != ProblemTypeEnum.PROGRAMING.id) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "非编程题不可添加测试点");
+        } else if (!FileUtil.verifyZipFormat(file.getBytes())) {  // 校验zip文件的格式正确性
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID);
         }
         // 初始化目标目标文件夹
@@ -240,9 +237,8 @@ public class ProblemService {
         SFTPUtil sftpUtil = new SFTPUtil();
         // 1、写入压缩包
         sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
-        sha256 = FileUtil.sha256(file.getBytes());
-        if (sha256 == null) {
-            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        if (!sha256.equals(FileUtil.sha256(file.getBytes()))){
+            return ResultEntity.error(StatusCode.VALIDATE_ERROR, "文件校验失败,请重新上传");
         }
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");

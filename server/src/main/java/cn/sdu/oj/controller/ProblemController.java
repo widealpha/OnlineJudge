@@ -12,6 +12,7 @@ import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.service.ProblemService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -128,7 +130,7 @@ public class ProblemController {
     public ResultEntity<Boolean> uploadCheckpoints(
             @ApiParam("题目id") @RequestParam Integer problemId,
             @ApiParam("测试点sha256校验码") @RequestParam String sha256,
-            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestParam MultipartFile file,
+            @ApiParam("测试点压缩包,格式按照之前拟定") @RequestPart MultipartFile file,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             return problemService.uploadCheckpoints(problemId, user.getId(), file, sha256);
@@ -147,105 +149,328 @@ public class ProblemController {
         problemService.downloadCheckpoints(problemId, user.getId(), response);
     }
 
-    @ApiOperation("添加选择/判断/填空/简答|TEACHER+")
-    @PostMapping("/addTypeProblem")
+    @ApiOperation("添加单项选择题|TEACHER+")
+    @PostMapping("/addSelectionProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Integer> addTypeProblem(
+    public ResultEntity<Integer> addSelectionProblem(
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam("题目内容") @RequestParam String name,
             @ApiParam("题目描述") @RequestParam(required = false) String description,
-            @ApiParam(value = "题目答案(简答题需提供参考答案,需要均以jsonArray形式给出)", example = "[\"A\"]") @RequestParam String answer,
-            @ApiParam(value = "选项(选择题必须有)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam(required = false) String options,
+            @ApiParam(value = "题目答案 jsonMap的key", example = "A") @RequestParam String answer,
+            @ApiParam(value = "选项(jsonMap形式)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam String options,
             @ApiParam("难度") @RequestParam Integer difficulty,
-            @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type,
             @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         try {
-            List<String> answerList = JSON.parseArray(answer, String.class);
-            if (type == ProblemTypeEnum.PROGRAMING.id) {
-                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "编程题请通过专有添加");
-            } else if (type == ProblemTypeEnum.SELECTION.id) {
-                if (options == null || answerList.isEmpty()) {
-                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
-                }
-            } else if (type == ProblemTypeEnum.MULTIPLE_SELECTION.id) {
-                if (options == null || answerList.isEmpty()) {
-                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
-                }
-            } else if (type == ProblemTypeEnum.JUDGEMENT.id) {
-                if (answerList.size() != 1) {
-                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "判断题必须有且仅有一份答案");
-                }
+            JSONObject object = JSONObject.parseObject(options);
+            if (object.size() < 2) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能少于2个");
+            } else if (object.size() > 10) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能超过10个");
+            } else if (!object.containsKey(answer)) {
+                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案必须在选项中");
             }
-            if (JSON.parseArray(answer).size() == 0) {
-                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选项格式不合法");
-            }
-        } catch (Exception e) {
-            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案格式错误或选项格式不合法");
-        }
-
-        SyncProblem syncProblem = new SyncProblem();
-        syncProblem.setName(name);
-        syncProblem.setType(type);
-        syncProblem.setDescription(description);
-        syncProblem.setDifficulty(difficulty);
-        syncProblem.setCreator(user.getId());
-        syncProblem.setAnswer(answer);
-        syncProblem.setOptions(options);
-        try {
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.SELECTION.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(answer);
+            syncProblem.setOptions(options);
             return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
         } catch (TagNotExistException e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
         } catch (JSONException e) {
-            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不是JSON数组");
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
         }
     }
 
-    @ApiOperation("更新非编程题目|TEACHER+")
-    @PostMapping("/updateTypeProblem")
+    @ApiOperation("添加多项选择题|TEACHER+")
+    @PostMapping("/addMultiSelectionProblem")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResultEntity<Boolean> updateOtherProblem(
+    public ResultEntity<Integer> addMultiSelectionProblem(
             @ApiIgnore @AuthenticationPrincipal User user,
-            @ApiParam("题目Id") @RequestParam Integer problemId,
             @ApiParam("题目内容") @RequestParam String name,
             @ApiParam("题目描述") @RequestParam(required = false) String description,
-            @ApiParam(value = "题目答案(简答题需提供参考答案,需要均以jsonArray形式给出)", example = "[\"A\"]") @RequestParam String answer,
-            @ApiParam(value = "选项(选择题必须有)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam(required = false) String options,
+            @ApiParam(value = "题目答案(jsonArray形式,需满足单选条件)", example = "[\"A\",\"B\"]") @RequestParam String answer,
+            @ApiParam(value = "选项(jsonMap形式)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam String options,
             @ApiParam("难度") @RequestParam Integer difficulty,
-            @ApiParam("种类(单选/多选/判断/填空/简答)") @RequestParam int type,
             @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         try {
-            List<String> answerList = JSON.parseArray(answer, String.class);
-            if (type == ProblemTypeEnum.PROGRAMING.id) {
-                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "编程题请通过专有添加");
-            } else if (type == ProblemTypeEnum.SELECTION.id) {
-                if (options == null || answerList.isEmpty()) {
-                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
-                }
-            } else if (type == ProblemTypeEnum.MULTIPLE_SELECTION.id) {
-                if (options == null || answerList.isEmpty()) {
-                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "选择题选项与答案不准为空");
-                }
-            } else if (type == ProblemTypeEnum.JUDGEMENT.id) {
-                if (answerList.size() != 1) {
-                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "判断题必须有且仅有一份答案");
+            JSONObject object = JSONObject.parseObject(options);
+            if (object.size() < 2) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能少于2个");
+            } else if (object.size() > 10) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能超过10个");
+            }
+            List<String> answers = JSON.parseArray(answer, String.class);
+            for (String ans : answers) {
+                if (!object.containsKey(ans)) {
+                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案必须在选项中");
                 }
             }
-        } catch (Exception e) {
-            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案格式错误");
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.MULTIPLE_SELECTION.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(answer);
+            syncProblem.setOptions(options);
+            return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
         }
-        SyncProblem syncProblem = new SyncProblem();
-        syncProblem.setName(name);
-        syncProblem.setDescription(description);
-        syncProblem.setDifficulty(difficulty);
-        syncProblem.setCreator(user.getId());
-        syncProblem.setType(type);
-        syncProblem.setOptions(options);
+    }
+
+
+    @ApiOperation("添加填空题|TEACHER+")
+    @PostMapping("/addCompletionProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Integer> addCompletionProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案(jsonArray形式,每个空一个答案[\"1\",\"KB\"])") @RequestParam String answer,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
         try {
+            JSONObject object = JSONObject.parseObject(answer);
+            if (object.isEmpty()) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "答案不能为空");
+            }
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.COMPLETION.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(answer);
+            return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+    @ApiOperation("添加判断题|TEACHER+")
+    @PostMapping("/addJudgementProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Integer> addJudgementProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam("题目答案(true/false)") @RequestParam boolean answer,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.JUDGEMENT.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(String.valueOf(answer));
+            return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+    @ApiOperation("添加简答题|TEACHER+")
+    @PostMapping("/addShortAnswerProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Integer> addShortAnswerProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案", required = false) @RequestParam String answer,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.SHORT.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(Objects.requireNonNullElse(answer, ""));
+            return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+    @ApiOperation("更新选择题|TEACHER+")
+    @PostMapping("/updateSelectionProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> updateSelectionProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目id") @RequestParam int problemId,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案 jsonMap的key", example = "A") @RequestParam String answer,
+            @ApiParam(value = "选项(jsonMap形式)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam String options,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            JSONObject object = JSONObject.parseObject(options);
+            if (object.size() < 2) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能少于2个");
+            } else if (object.size() > 10) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能超过10个");
+            } else if (!object.containsKey(answer)) {
+                return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案必须在选项中");
+            }
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.SELECTION.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(answer);
+            syncProblem.setOptions(options);
             return problemService.updateOtherProblem(problemId, syncProblem, JSON.parseArray(tags, Integer.class));
         } catch (TagNotExistException e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
         } catch (JSONException e) {
-            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不是JSON数组");
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+    @ApiOperation("更新多项选择题|TEACHER+")
+    @PostMapping("/updateMultiSelectionProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Integer> updateMultiSelectionProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目id") @RequestParam int problemId,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案(jsonArray形式,每个都要在options里)", example = "[\"A\",\"B\"]") @RequestParam String answer,
+            @ApiParam(value = "选项(jsonMap形式)", example = "{\"A\":\"1\",\"B\": \"未知\"}") @RequestParam String options,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            JSONObject object = JSONObject.parseObject(options);
+            if (object.size() < 2) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能少于2个");
+            } else if (object.size() > 10) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "选项不能超过10个");
+            }
+            List<String> answers = JSON.parseArray(answer, String.class);
+            for (String ans : answers) {
+                if (!object.containsKey(ans)) {
+                    return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "答案必须在选项中");
+                }
+            }
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.MULTIPLE_SELECTION.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(answer);
+            syncProblem.setOptions(options);
+            return problemService.addOtherProblem(syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+
+    @ApiOperation("更新填空题|TEACHER+")
+    @PostMapping("/updateCompletionProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> updateCompletionProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目id") @RequestParam int problemId,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam(value = "题目答案(jsonArray形式,每个空一个答案[\"1\",\"KB\"])") @RequestParam String answer,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            JSONObject object = JSONObject.parseObject(answer);
+            if (object.isEmpty()) {
+                return ResultEntity.error(StatusCode.PARAM_EMPTY, "答案不能为空");
+            }
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.COMPLETION.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(answer);
+            return problemService.updateOtherProblem(problemId, syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+
+    @ApiOperation("更新判断题|TEACHER+")
+    @PostMapping("/updateJudgementProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> updateJudgementProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目id") @RequestParam int problemId,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam("题目答案(true/false)") @RequestParam boolean answer,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.JUDGEMENT.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(String.valueOf(answer));
+            return problemService.updateOtherProblem(problemId, syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
+        }
+    }
+
+
+    @ApiOperation("更新简答题|TEACHER+")
+    @PostMapping("/updateShortAnswerProblem")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> updateShortAnswerProblem(
+            @ApiIgnore @AuthenticationPrincipal User user,
+            @ApiParam("题目id") @RequestParam int problemId,
+            @ApiParam("题目内容") @RequestParam String name,
+            @ApiParam("题目描述") @RequestParam(required = false) String description,
+            @ApiParam("难度") @RequestParam Integer difficulty,
+            @ApiParam(value = "题目答案") @RequestParam(required = false) String answer,
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+        try {
+            SyncProblem syncProblem = new SyncProblem();
+            syncProblem.setName(name);
+            syncProblem.setType(ProblemTypeEnum.SHORT.id);
+            syncProblem.setDescription(description);
+            syncProblem.setDifficulty(difficulty);
+            syncProblem.setCreator(user.getId());
+            syncProblem.setAnswer(Objects.requireNonNullElse(answer, ""));
+            return problemService.updateOtherProblem(problemId, syncProblem, JSON.parseArray(tags, Integer.class));
+        } catch (TagNotExistException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不存在");
+        } catch (JSONException e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "参数非合法JSON格式");
         }
     }
 

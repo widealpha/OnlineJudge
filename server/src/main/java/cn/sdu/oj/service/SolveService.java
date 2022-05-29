@@ -25,6 +25,7 @@ import java.util.Objects;
 
 @Service
 public class SolveService {
+    private static final int SAME_TIME_SOLVE_LIMIT = 10;
     @Resource
     RabbitTemplate rabbitTemplate;
 
@@ -50,19 +51,16 @@ public class SolveService {
     @Transactional
     public ResultEntity<String> trySolveProblem(JudgeTask task, int userId, int problemSetId) {
         //查看是否可以判题
-        ResultEntity<Boolean> result = problemSetService.getUserCanTrySolveProblem(userId, problemSetId, task.getProblemId());
+        ResultEntity<Boolean> result = problemSetService.getUserCanTrySolveProblem(userId, task.getProblemId(), problemSetId);
         if (!result.getData()) {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY, result.getMessage());
         }
         Integer typeProblemId = generalProblemMapper.selectTypeProblemIdById(task.getProblemId());
         if (typeProblemId == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
-
         }
         AsyncProblem problem = asyncProblemMapper.selectProblem(typeProblemId);
-
         //todo 判断用户能否提交
-
         if (problem == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }
@@ -78,7 +76,7 @@ public class SolveService {
         judgeLimit.setMemory(problemLimit.getMemory());
         try {
             //如果还没有判完的题目超出判题限制，拒绝判题
-            if (solveRecordMapper.unfinishedSolveCount(userId) >= 3) {
+            if (solveRecordMapper.unfinishedSolveCount(userId) >= SAME_TIME_SOLVE_LIMIT) {
                 return ResultEntity.data(StatusCode.OVER_SOLVE_LIMIT, null);
             }
             SolveRecord solveRecord = new SolveRecord();
@@ -107,7 +105,7 @@ public class SolveService {
     @Transactional
     public ResultEntity<AnswerRecord> trySolveSyncProblem(int problemId, int userId, int problemSetId, String userAnswer) {
         //查看是否可以判题
-        ResultEntity<Boolean> result = problemSetService.getUserCanTrySolveProblem(userId, problemSetId, problemId);
+        ResultEntity<Boolean> result = problemSetService.getUserCanTrySolveProblem(userId, problemId, problemSetId);
         if (!result.getData()) {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY, result.getMessage());
         }
@@ -125,6 +123,8 @@ public class SolveService {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        } else if (generalProblem.getType() == ProblemTypeEnum.PROGRAMING.id){
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "不可提交编程题");
         }
         SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
 
