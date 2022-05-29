@@ -237,9 +237,8 @@ public class ProblemService {
         SFTPUtil sftpUtil = new SFTPUtil();
         // 1、写入压缩包
         sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
-        sha256 = FileUtil.sha256(file.getBytes());
-        if (sha256 == null) {
-            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        if (!sha256.equals(FileUtil.sha256(file.getBytes()))){
+            return ResultEntity.error(StatusCode.VALIDATE_ERROR, "文件校验失败,请重新上传");
         }
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
