@@ -2,7 +2,6 @@ package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
 import cn.sdu.oj.domain.dto.ProblemDto;
-import cn.sdu.oj.domain.dto.ShortQuestionAnswerDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.DifficultyEnum;
 import cn.sdu.oj.domain.vo.ProblemTypeEnum;
