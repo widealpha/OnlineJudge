@@ -1,5 +1,6 @@
 package cn.sdu.oj.domain.po;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class AnswerRecord {
@@ -10,9 +11,11 @@ public class AnswerRecord {
     private int problemSetId;
     private int type;
     private Boolean isCorrect;
+
+    private Integer score;
     private int status;
-    private Date createTime;
-    private Date modifiedTime;
+    private Timestamp createTime;
+    private Timestamp modifiedTime;
 
     public int getId() {
         return id;
@@ -62,6 +65,14 @@ public class AnswerRecord {
         this.type = type;
     }
 
+    public Integer getScore() {
+        return score;
+    }
+
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+
     public Boolean getCorrect() {
         return isCorrect;
     }
@@ -78,19 +89,19 @@ public class AnswerRecord {
         this.status = status;
     }
 
-    public Date getCreateTime() {
+    public Timestamp getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(Timestamp createTime) {
         this.createTime = createTime;
     }
 
-    public Date getModifiedTime() {
+    public Timestamp getModifiedTime() {
         return modifiedTime;
     }
 
-    public void setModifiedTime(Date modifiedTime) {
+    public void setModifiedTime(Timestamp modifiedTime) {
         this.modifiedTime = modifiedTime;
     }
 }

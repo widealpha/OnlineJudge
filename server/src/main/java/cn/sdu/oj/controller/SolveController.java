@@ -2,6 +2,7 @@ package cn.sdu.oj.controller;
 
 import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.bo.LanguageEnum;
+import cn.sdu.oj.domain.dto.ShortQuestionAnswerDto;
 import cn.sdu.oj.domain.dto.SolveResultDto;
 import cn.sdu.oj.domain.po.AnswerRecord;
 import cn.sdu.oj.domain.po.ProblemSet;
@@ -22,6 +23,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 
 @RestController
@@ -45,7 +47,7 @@ public class SolveController {
         if (problemSet == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
         } else if (problemSet.getEndTime().getTime() < new Date().getTime()
-                || problemSet.getBeginTime().getTime() > new Date().getTime())  {
+                || problemSet.getBeginTime().getTime() > new Date().getTime()) {
             return ResultEntity.error("已过题目集截止时间", null);
         }
         JudgeTask judgeTask = new JudgeTask();
@@ -97,7 +99,7 @@ public class SolveController {
         ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
         if (problemSet == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
-        }  else if (problemSet.getEndTime().getTime() < new Date().getTime()
+        } else if (problemSet.getEndTime().getTime() < new Date().getTime()
                 || problemSet.getBeginTime().getTime() > new Date().getTime()) {
             return ResultEntity.error("答卷已经截至", null);
         }
@@ -124,5 +126,25 @@ public class SolveController {
         return solveService.solveResult(taskId, user.getId());
     }
 
+    @ApiOperation("简答题题目的作答情况")
+    @PostMapping("shortQuestionAnswers")
+    @PreAuthorize("hasRole('TEACHER')")
+    ResultEntity<List<ShortQuestionAnswerDto>> shortQuestionAnswers(
+            @ApiParam("题目Id") @RequestParam int problemId,
+            @ApiParam("题目集Id") @RequestParam int problemSetId,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        return solveService.shortQuestionAnswers(user.getId(), problemId, problemSetId);
+    }
 
+    @ApiOperation("为简答题评分")
+    @PostMapping("gradeQuestionAnswer")
+    @PreAuthorize("hasRole('TEACHER')")
+    ResultEntity<Boolean> gradeQuestionAnswerRecord(
+            @ApiParam("题目Id") @RequestParam int problemId,
+            @ApiParam("题目集Id") @RequestParam int problemSetId,
+            @ApiParam("记录Id") @RequestParam int recordId,
+            @ApiParam("分数") @RequestParam int score,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        return solveService.gradeQuestionAnswerRecord(user.getId(), problemId, problemSetId, recordId, score);
+    }
 }

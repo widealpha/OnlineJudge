@@ -1,23 +1,25 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
-import cn.sdu.oj.domain.bo.JudgeLimit;
-import cn.sdu.oj.domain.bo.JudgeResult;
-import cn.sdu.oj.domain.bo.JudgeStatus;
-import cn.sdu.oj.domain.bo.JudgeTask;
+import cn.sdu.oj.domain.bo.*;
+import cn.sdu.oj.domain.dto.MinorUserInfoDto;
+import cn.sdu.oj.domain.dto.ShortQuestionAnswerDto;
 import cn.sdu.oj.domain.dto.SolveResultDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.ProblemTypeEnum;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.Feature;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +44,11 @@ public class SolveService {
     @Resource
     AnswerRecordMapper answerRecordMapper;
 
+    @Resource
+    ProblemSetProblemMapper problemSetProblemMapper;
+
+    @Resource
+    UserInfoService userInfoService;
 
     @Resource
     ProblemSetService problemSetService;
@@ -119,44 +126,105 @@ public class SolveService {
             answerRecord.setId(recordId);
             return ResultEntity.data(answerRecordMapper.selectAnswerRecord(recordId));
         }
-
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
-        } else if (generalProblem.getType() == ProblemTypeEnum.PROGRAMING.id){
+        } else if (generalProblem.getType() == ProblemTypeEnum.PROGRAMING.id) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "不可提交编程题");
         }
         SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
 
         answerRecord.setUserAnswer(userAnswer);
         answerRecord.setType(syncProblem.getType());
-        //是选择题的情况
-        if (answerRecord.getType() == ProblemTypeEnum.SELECTION.id) {
-            //单选多选一致
-            HashSet<String> userAnswerSet = new HashSet<>(JSON.parseArray(userAnswer, String.class));
-            HashSet<String> answerSet = new HashSet<>(JSON.parseArray(syncProblem.getAnswer(), String.class));
-            answerRecord.setCorrect(userAnswerSet.equals(answerSet));
-        } else if (answerRecord.getType() == ProblemTypeEnum.COMPLETION.id) {
-            //填空题
-            List<String> userAnswerList = JSON.parseArray(userAnswer, String.class);
-            List<String> answerList = JSON.parseArray(syncProblem.getAnswer(), String.class);
-            answerRecord.setCorrect(userAnswerList.equals(answerList));
-        } else if (answerRecord.getType() == ProblemTypeEnum.JUDGEMENT.id) {
-            //判断题
-            HashSet<String> userAnswerSet = new HashSet<>(JSON.parseArray(userAnswer, String.class));
-            HashSet<String> answerSet = new HashSet<>(JSON.parseArray(syncProblem.getAnswer(), String.class));
-            answerRecord.setCorrect(userAnswerSet.equals(answerSet));
-        } else if (answerRecord.getType() == ProblemTypeEnum.SHORT.id) {
-            answerRecord.setCorrect(null);
-        } else {
-            return ResultEntity.error(StatusCode.COMMON_FAIL, "题目类型错误");
+        Integer totalScore = problemSetProblemMapper.selectScoreByProblemSetAndProblemId(problemSetId, problemId);
+        if (totalScore == null) {
+            totalScore = 0;
         }
-        answerRecord.setCorrect(Objects.equals(userAnswer, syncProblem.getAnswer()));
+        if (!judge(answerRecord, syncProblem.getAnswer(), totalScore)) {
+            return ResultEntity.error(StatusCode.COMMON_FAIL, "不支持此次判题");
+        }
         if (answerRecordMapper.insertAnswerRecord(answerRecord)) {
             return ResultEntity.data(answerRecord);
         } else {
             return ResultEntity.data(StatusCode.DATA_ALREADY_EXIST, null);
         }
+    }
+
+    /**
+     * 同步判题
+     *
+     * @param answerRecord 用户提交记录
+     * @param standAnswer  标准答案
+     * @param totalScore   题目总分数
+     * @return 是否支持判题
+     */
+    private boolean judge(AnswerRecord answerRecord, String standAnswer, int totalScore) {
+        int problemType = answerRecord.getType();
+        try {
+            if (problemType == ProblemTypeEnum.SELECTION.id || problemType == ProblemTypeEnum.JUDGEMENT.id) {
+                if (standAnswer.equals(answerRecord.getUserAnswer())) {
+                    answerRecord.setCorrect(true);
+                    answerRecord.setScore(totalScore);
+                } else {
+                    answerRecord.setScore(0);
+                }
+                return true;
+            } else if (problemType == ProblemTypeEnum.MULTIPLE_SELECTION.id) {
+                int count = 0;
+                HashSet<String> standAns = new HashSet<>(JSON.parseArray(standAnswer, String.class));
+                for (String userAns : JSON.parseArray(answerRecord.getUserAnswer(), String.class)) {
+                    if (standAns.contains(userAns)) {
+                        count++;
+                    } else {
+                        //任何一个用户作答的答案不再其中判为错误
+                        answerRecord.setCorrect(false);
+                        answerRecord.setScore(0);
+                        return true;
+                    }
+                }
+                //没有少选判定正确
+                if (count == standAns.size()) {
+                    answerRecord.setCorrect(true);
+                    answerRecord.setScore(totalScore);
+                } else {
+                    //少选得1/2向下取整的分数
+                    answerRecord.setCorrect(false);
+                    answerRecord.setScore(totalScore / 2);
+                }
+                return true;
+            } else if (problemType == ProblemTypeEnum.COMPLETION.id) {
+                List<String> standAnswerList = JSON.parseArray(standAnswer, String.class);
+                List<String> userAnswerList = JSON.parseArray(answerRecord.getUserAnswer(), String.class);
+                int count = 0;
+                if (standAnswerList.size() != userAnswerList.size()) {
+                    answerRecord.setCorrect(false);
+                    answerRecord.setScore(0);
+                    return true;
+                }
+                for (int i = 0; i < standAnswerList.size(); i++) {
+                    if (standAnswerList.get(i).equals(userAnswerList.get(i))) {
+                        count++;
+                    }
+                }
+                //按照正确填空的数量定分
+                if (count == standAnswerList.size()) {
+                    answerRecord.setCorrect(true);
+                    answerRecord.setScore(totalScore);
+                } else {
+                    answerRecord.setCorrect(false);
+                    answerRecord.setScore(totalScore * count / standAnswerList.size());
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            //如果错误是格式有问题,视为尝试攻击系统,做判错处理
+            answerRecord.setCorrect(false);
+            answerRecord.setScore(0);
+            return false;
+        }
+
     }
 
     public ResultEntity<String> runTestCode(JudgeTask task, int userId, int problemSetId) {
@@ -235,5 +303,57 @@ public class SolveService {
         }
         solveRecordMapper.updateSolveRecordByPrimaryKey(record);
         return true;
+    }
+
+    public ResultEntity<List<ShortQuestionAnswerDto>> shortQuestionAnswers(int userId, int problemId, int problemSetId) {
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null || problemSet.getCreatorId() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
+        if (syncProblem == null || syncProblem.getType() != ProblemTypeEnum.SHORT.id) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        List<AnswerRecord> answers = answerRecordMapper.selectRecordByTypeAndRelationIds(
+                ProblemTypeEnum.SHORT.id,
+                problemId,
+                problemSetId
+        );
+
+        List<ShortQuestionAnswerDto> userAnswers = new ArrayList<>();
+        for (AnswerRecord answer : answers) {
+            ShortQuestionAnswerDto answerDto = new ShortQuestionAnswerDto();
+            answerDto.setRecordId(answer.getId());
+            answerDto.setAnswer(answer.getUserAnswer());
+            answerDto.setUserId(answer.getUserId());
+            MinorUserInfoDto userInfo = userInfoService.minorUserInfo(answer.getUserId()).getData();
+            answerDto.setUsername(userInfo.getUsername());
+            answerDto.setAvatar(userInfo.getAvatar());
+            answerDto.setProblemId(problemId);
+            answerDto.setSubmitTime(answer.getCreateTime().toLocalDateTime());
+            userAnswers.add(answerDto);
+        }
+        return ResultEntity.data(userAnswers);
+    }
+
+    public ResultEntity<Boolean> gradeQuestionAnswerRecord(int creator, int problemId, int problemSetId, int recordId, int score) {
+        AnswerRecord answerRecord = answerRecordMapper.selectAnswerRecord(recordId);
+        if (answerRecord.getProblemId() != problemId || answerRecord.getProblemSetId() != problemSetId) {
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
+        ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+        if (problemSet == null || problemSet.getCreatorId() != creator) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+        answerRecord.setScore(score);
+        if (answerRecordMapper.updateScoreByPrimaryKey(answerRecord.getId(), score)) {
+            return ResultEntity.data(true);
+        } else {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
     }
 }

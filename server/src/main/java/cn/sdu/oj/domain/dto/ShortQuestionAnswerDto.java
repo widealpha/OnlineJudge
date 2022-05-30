@@ -1,14 +1,27 @@
 package cn.sdu.oj.domain.dto;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 public class ShortQuestionAnswerDto {
+    private int recordId;
     private int userId;
     private int problemId;
     private String answer;
-    private String example;
     private String username;
     private String studentId;
     private String avatar;
     private Integer score;
+
+    private LocalDateTime submitTime;
+
+    public int getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(int recordId) {
+        this.recordId = recordId;
+    }
 
     public int getUserId() {
         return userId;
@@ -32,14 +45,6 @@ public class ShortQuestionAnswerDto {
 
     public void setAnswer(String answer) {
         this.answer = answer;
-    }
-
-    public String getExample() {
-        return example;
-    }
-
-    public void setExample(String example) {
-        this.example = example;
     }
 
     public String getUsername() {
@@ -72,5 +77,13 @@ public class ShortQuestionAnswerDto {
 
     public void setScore(Integer score) {
         this.score = score;
+    }
+
+    public LocalDateTime getSubmitTime() {
+        return submitTime;
+    }
+
+    public void setSubmitTime(LocalDateTime submitTime) {
+        this.submitTime = submitTime;
     }
 }
