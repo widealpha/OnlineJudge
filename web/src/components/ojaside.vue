@@ -24,7 +24,7 @@
           <span>教师相关</span>
         </template>
         <el-menu-item index="/teacher/newProblem">出题</el-menu-item>
-        <el-menu-item index="/teacher/myProblems">教师查题</el-menu-item>
+        <el-menu-item index="/teacher/myProblems">查找我的题目</el-menu-item>
         <el-menu-item index="/teacher/myProblemSets">查看题目集</el-menu-item>
         <el-menu-item index="/teacher/userList">用户组列表</el-menu-item>
       </el-submenu>
