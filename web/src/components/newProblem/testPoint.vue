@@ -15,8 +15,6 @@
       </div>
       <div>
         <div style="margin-bottom: 20px">
-          <!-- <input type="file" name="file" id="file" />
-          <button id="fileToBlob" @click="analyzeZip1">File 转 Blob</button> -->
           <el-upload
             action=""
             ref="upload"
@@ -47,96 +45,12 @@
           border
           stripe
         >
-          <el-table-column prop="testName" label="名称" width="180">
-          </el-table-column>
-          <el-table-column prop="score" label="分数" width="50">
-          </el-table-column>
+          <el-table-column prop="testName" label="名称"> </el-table-column>
+          <el-table-column prop="score" label="分数"> </el-table-column>
           <el-table-column prop="tip" label="提示"> </el-table-column>
-          <el-table-column label="操作" width="305">
-            <template slot-scope="scope">
-              <el-button
-                type="danger"
-                @click="remove(scope.$index)"
-                size="small"
-              >
-                <i class="el-icon-delete"></i>
-                移除
-              </el-button>
-              <el-button
-                type="primary"
-                @click="
-                  isUpdating = true;
-                  updateIndex = scope.$index;
-                "
-                size="small"
-              >
-                <i class="el-icon-edit"></i>
-                更新
-              </el-button>
-            </template>
-          </el-table-column>
-          <template slot="append">
-            <el-button
-              plain
-              style="width: calc(100% - 1px); margin-bottom: 1px"
-              @click="isAdding = true"
-            >
-              <i class="el-icon-circle-plus-outline"></i>增加测试点
-            </el-button>
-          </template>
         </el-table>
       </div>
     </el-card>
-
-    <el-dialog
-      title="更新测试点"
-      :visible.sync="isUpdating"
-      @open="initForm"
-      :append-to-body="true"
-    >
-      <el-form :model="updateForm" ref="updateForm" :rules="updateRules">
-        <el-form-item prop="testName" label="名称">
-          <el-input v-model="updateForm.testName"></el-input>
-        </el-form-item>
-        <el-form-item prop="score" label="分数">
-          <el-input v-model="updateForm.score"></el-input>
-        </el-form-item>
-        <el-form-item prop="tip" label="提示">
-          <el-input v-model="updateForm.tip"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="update">确 定</el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog
-      title="增加测试点"
-      :visible.sync="isAdding"
-      @open="$refs.addForm ? $refs.addForm.resetFields() : ''"
-      :append-to-body="true"
-    >
-      <el-form :model="addForm" ref="addForm" :rules="addRules">
-        <el-form-item prop="testName" label="名称">
-          <el-input v-model="addForm.testName"></el-input>
-        </el-form-item>
-        <el-form-item prop="score" label="分数">
-          <el-input v-model="addForm.score"></el-input>
-        </el-form-item>
-        <el-form-item prop="in" label="测试点输入">
-          <el-input v-model="addForm.in" type="textarea"></el-input>
-        </el-form-item>
-        <el-form-item prop="out" label="测试点输出">
-          <el-input v-model="addForm.out" type="textarea"></el-input>
-        </el-form-item>
-        <el-form-item prop="tip" label="提示">
-          <el-input v-model="addForm.tip"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="addPoint">确 定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -150,65 +64,19 @@ export default {
       problemId: 0,
       points: [],
       sha256: "",
-      isUpdating: false,
-      isAdding: false,
-      updateIndex: 0,
-      updateForm: {
-        testName: "",
-        score: "",
-        tip: "",
-        time: "",
-      },
-      updateRules: {
-        testName: [
-          {
-            required: true,
-            message: "请输入测试点名称",
-            trigger: ["change", "blur"],
-          },
-        ],
-        score: [
-          {
-            required: true,
-            pattern: /^[0-9]+$/,
-            message: "仅允许输入数字",
-            trigger: ["change", "blur"],
-          },
-        ],
-      },
-      addForm: {
-        testName: "",
-        score: "",
-        in: "",
-        out: "",
-        tip: "",
-        time: "",
-      },
-      addRules: {
-        testName: [
-          {
-            required: true,
-            message: "请输入测试点名称",
-            trigger: ["change", "blur"],
-          },
-        ],
-        score: [
-          {
-            required: true,
-            pattern: /^[0-9]+$/,
-            message: "仅允许输入数字",
-            trigger: ["change", "blur"],
-          },
-        ],
-      },
+
+
+  
+
       loading: false,
     };
   },
   methods: {
+    // 测试点预览
     async getMyTestPoints() {
       this.loading = true;
-      let res = await this.$ajax.post(
-        "/problem/info",
+      let res = await this.$ajax.get(
+        "/problem/downloadCheckpoints",
         {
           problemId: this.problemId,
         },
@@ -218,17 +86,17 @@ export default {
           },
         }
       );
-
-      if (res.data.code == 0) {
-        this.points = res.data.data;
-      } else {
-        this.$message({
-          message: res.data.message,
-          type: "error",
-          showClose: false,
-          duration: 1000,
-        });
-      }
+       (res);
+      // if (res.data.code == 0) {
+      //   this.points = res.data.data;
+      // } else {
+      //   this.$message({
+      //     message: res.data.message,
+      //     type: "error",
+      //     showClose: false,
+      //     duration: 1000,
+      //   });
+      // }
       this.loading = false;
     },
 
@@ -255,7 +123,7 @@ export default {
               },
             }
           );
-           (res);
+          res;
           if (res.data.code === 0) {
             this.$message.success("上传成功！");
           } else {
@@ -290,37 +158,7 @@ export default {
         this.points.splice(index, 1);
       }
     },
-    update() {
-      this.$refs.updateForm.validate((valid) => {
-        if (valid) {
-          let point = this.points[this.updateIndex];
-          point.testName = this.updateForm.testName;
-          point.score = this.updateForm.score;
-          point.tip = this.updateForm.tip;
-          point.time = new Date().toLocaleString();
-          this.isUpdating = false;
-        }
-      });
-    },
-    initForm() {
-      let point = this.points[this.updateIndex];
-      this.updateForm.testName = point.testName;
-      this.updateForm.score = point.score;
-      this.updateForm.tip = point.tip;
-    },
-    // 单个添加测试点
-    async addPoint() {
-      let formData = new FormData();
-      formData.append("problemId", this.problemId);
 
-      let res = await this.$ajax.post("/problem/uploadCheckpoints", formData, {
-        headers: {
-          Authorization: `Bearer ${this.$store.state.token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-       (res);
-    },
     async downloadTestPoints() {
       let res = await this.$ajax.get(
         "/problem/downloadCheckpoints",
@@ -334,10 +172,10 @@ export default {
           // responseType: "blob", // 以 blob 类型接收后端发回的响应数据
         }
       );
-       (res);
+      res;
       const content = res.data; // 接收响应内容
       const blob = new Blob([content]); // 构造一个blob对象来处理数据
-      let fileName = `测试点${this.problemId}.zip`;
+      let fileName = `测试点${this.problemId}`;
       // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
       // IE10以上支持blob但是依然不支持download
       if ("download" in document.createElement("a")) {
@@ -358,6 +196,7 @@ export default {
   },
   created() {
     let problemId = this.$route.query.problemId;
+     (problemId);
     if (problemId) {
       this.problemId = Number(problemId);
       this.getMyTestPoints();

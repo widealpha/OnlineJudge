@@ -293,7 +293,7 @@ export default {
   },
   computed: {
     problemSetInfo() {
-      console.log(this.$store.state.problemSetInfo);
+       (this.$store.state.problemSetInfo);
       return this.$store.state.problemSetInfo;
     },
     isMyProblemSet() {
