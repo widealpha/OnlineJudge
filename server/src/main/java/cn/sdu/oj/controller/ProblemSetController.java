@@ -2,6 +2,7 @@ package cn.sdu.oj.controller;
 
 import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.bo.LanguageEnum;
+import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
 import cn.sdu.oj.domain.vo.*;
@@ -26,6 +27,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -162,7 +164,12 @@ public class ProblemSetController {
 
                 ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                 List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
-                ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problems);
+                List<ProblemDto>  problemDtos= new ArrayList<>();
+                for (ProblemSetProblem p:problems
+                     ) { ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(),user.getId());
+                      problemDtos.add(problemDtoResultEntity.getData());
+                }
+                ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
                 return ResultEntity.success("查看一个题目集的信息和题号", problemSetVo);
 
             } else if (cloneCode != null) {
@@ -172,7 +179,12 @@ public class ProblemSetController {
                     if (code.equals(cloneCode)) {
                         ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                         List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
-                        ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problems);
+                        List<ProblemDto>  problemDtos= new ArrayList<>();
+                        for (ProblemSetProblem p:problems
+                        ) { ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(),user.getId());
+                            problemDtos.add(problemDtoResultEntity.getData());
+                        }
+                        ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
                         return ResultEntity.success("查看一个题目集的信息和题号", problemSetVo);
                     } else return ResultEntity.error("无效的克隆码");
                 } else return ResultEntity.error("题目集未被分享");
@@ -180,7 +192,12 @@ public class ProblemSetController {
                 if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
                     ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
-                    ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problems);
+                    List<ProblemDto>  problemDtos= new ArrayList<>();
+                    for (ProblemSetProblem p:problems
+                    ) { ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(),user.getId());
+                        problemDtos.add(problemDtoResultEntity.getData());
+                    }
+                    ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
                     return ResultEntity.success("查看一个题目集的信息和题号", problemSetVo);
                 }
             }
