@@ -50,6 +50,7 @@ public class ProblemService {
             problemDto.setCreator(generalProblem.getCreator());
             problemDto.setDifficulty(generalProblem.getDifficulty());
             problemDto.setDifficultyName(DifficultyEnum.difficultyName(generalProblem.getDifficulty()));
+
             if (generalProblem.getType() == ProblemTypeEnum.PROGRAMING.id) {
                 AsyncProblem asyncProblem = asyncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
                 problemDto.setName(asyncProblem.getName());
@@ -58,12 +59,14 @@ public class ProblemService {
                 problemDto.setMemoryLimit(asyncProblem.getMemoryLimit());
                 problemDto.setTimeLimit(asyncProblem.getTimeLimit());
                 problemDto.setCodeLengthLimit(asyncProblem.getCodeLengthLimit());
+                problemDto.setModifiedTime(asyncProblem.getModifiedTime());
             } else {
                 SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
                 problemDto.setName(syncProblem.getName());
                 problemDto.setDescription(syncProblem.getDescription());
                 problemDto.setAnswer(syncProblem.getAnswer());
                 problemDto.setOptions(syncProblem.getOptions());
+                problemDto.setModifiedTime(syncProblem.getModifiedTime());
             }
             //非创建者无法看到答案
             if (problemDto.getCreator() != userId) {
