@@ -48,8 +48,8 @@ export default {
   props: {
     // 创建者id
     creatorId: {
-      type: Number || null,
-      default: null,
+      type: Number ,
+      default: 0,
     },
     title: {
       type: String,

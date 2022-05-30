@@ -1,5 +1,6 @@
 package cn.sdu.oj.domain.vo;
 
+import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
 
@@ -15,10 +16,10 @@ public class ProblemSetVo {
     private Date beginTime;
     private Date endTime;
     private Integer creatorId;
-    private List<ProblemSetProblem> problems;
+    private List<ProblemDto> problemDtos;
 
-    public ProblemSetVo(ProblemSet problemSet, List<ProblemSetProblem> problems) {
-        this.problems =problems;
+    public ProblemSetVo(ProblemSet problemSet, List<ProblemDto> problemDtos) {
+        this.problemDtos =problemDtos;
         this.id = problemSet.getId();
         this.name = problemSet.getName();
         this.type = problemSet.getType();
@@ -95,12 +96,12 @@ public class ProblemSetVo {
     }
 
 
-    public List<ProblemSetProblem> getProblems() {
-        return problems;
+    public List<ProblemDto> getProblemDtos() {
+        return problemDtos;
     }
 
-    public void setProblems(List<ProblemSetProblem> problems) {
-        this.problems = problems;
+    public void setProblemDtos(List<ProblemDto> problemDtos) {
+        this.problemDtos = problemDtos;
     }
 }
 

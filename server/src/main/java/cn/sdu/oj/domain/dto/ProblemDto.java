@@ -8,6 +8,7 @@ import cn.sdu.oj.domain.po.Tag;
 import cn.sdu.oj.domain.vo.DifficultyEnum;
 import cn.sdu.oj.domain.vo.ProblemTypeEnum;
 
+import java.util.Date;
 import java.util.List;
 
 public class ProblemDto {
@@ -24,6 +25,8 @@ public class ProblemDto {
     private Integer creator;
     private Integer difficulty;
     private String difficultyName;
+
+    private Date modifiedTime;
 
     private List<Tag> tags;
 
@@ -158,5 +161,13 @@ public class ProblemDto {
 
     public void setOptions(String options) {
         this.options = options;
+    }
+
+    public Date getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(Date modifiedTime) {
+        this.modifiedTime = modifiedTime;
     }
 }
