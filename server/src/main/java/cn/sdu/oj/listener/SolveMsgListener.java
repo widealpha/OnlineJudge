@@ -36,8 +36,10 @@ public class SolveMsgListener {
     @RabbitHandler
     public void process(String result, Channel channel, Message message) throws IOException {
         logger.info("receive: " + result);
-        ResultEntity<String> entity = JSONObject.parseObject(result, ResultEntity.class);
-        if (solveService.solveResultReceive(entity)){
+        ResultEntity entity = JSONObject.parseObject(result, ResultEntity.class);
+        //确保转化成的对象是string,这一行必不可少
+        entity.setData(entity.getData().toString());
+        if (solveService.solveResultReceive(entity)) {
             //进行业务逻辑处理
             //手工ack
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), true);

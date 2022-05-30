@@ -27,6 +27,9 @@ public interface GeneralProblemMapper {
     @Select("SELECT * FROM general_problem WHERE id = #{id} AND status > 0")
     GeneralProblem selectGeneralProblem(int id);
 
+    @Select("SELECT * FROM general_problem WHERE creator = #{creator} AND status > 0")
+    List<GeneralProblem> selectGeneralProblemIdByCreator(int creator);
+
     @Select("SELECT type_problem_id FROM general_problem WHERE id = #{id} AND status > 0")
     Integer selectTypeProblemIdById(int problemId);
 

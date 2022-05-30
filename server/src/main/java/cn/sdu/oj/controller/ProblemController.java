@@ -483,6 +483,15 @@ public class ProblemController {
         return problemService.deleteProblem(problemId, user.getId());
     }
 
+    @ApiOperation("用户出的所有题目|TEACHER+")
+    @PostMapping("/allMyCreateProblems")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<List<ProblemDto>> allMyCreateProblems(
+            @ApiIgnore @AuthenticationPrincipal User user
+    ) {
+        return problemService.allMyCreateProblems(user.getId());
+    }
+
     @ApiOperation("所有的标签")
     @GetMapping("/allTags")
     @PreAuthorize("hasRole('COMMON')")

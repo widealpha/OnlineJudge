@@ -18,7 +18,10 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProblemService {
@@ -237,7 +240,7 @@ public class ProblemService {
         SFTPUtil sftpUtil = new SFTPUtil();
         // 1、写入压缩包
         sftpUtil.uploadSingleFile(file.getBytes(), destinationDir.toString(), "checkpoints.zip");
-        if (!sha256.equals(FileUtil.sha256(file.getBytes()))){
+        if (!sha256.equals(FileUtil.sha256(file.getBytes()))) {
             return ResultEntity.error(StatusCode.VALIDATE_ERROR, "文件校验失败,请重新上传");
         }
         // 2、写入SHA256
@@ -266,4 +269,24 @@ public class ProblemService {
         }
     }
 
+    public ResultEntity<Map<String, String>> previewCheckpoints(int problemId, int userId){
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
+        if (generalProblem == null || generalProblem.getCreator() != userId) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+        return ResultEntity.data(new HashMap<>());
+    }
+
+
+    public ResultEntity<List<ProblemDto>> allMyCreateProblems(int userId) {
+        List<ProblemDto> res = new ArrayList<>();
+        List<GeneralProblem> generalProblems = generalProblemMapper.selectGeneralProblemIdByCreator(userId);
+        for (GeneralProblem generalProblem : generalProblems) {
+            ProblemDto problemDto = findProblemInfo(generalProblem.getId(), userId).getData();
+            if (problemDto != null){
+                res.add(problemDto);
+            }
+        }
+        return ResultEntity.data(res);
+    }
 }
