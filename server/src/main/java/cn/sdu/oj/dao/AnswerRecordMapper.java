@@ -40,11 +40,11 @@ public interface AnswerRecordMapper {
     @Update("UPDATE answer_record SET score=#{score} WHERE id = #{id}")
     boolean updateScoreByPrimaryKey(int id, int score);
 
-    @Select("SELECT COUNT(*) " +
-            "FROM  answer_record " +
-            "WHERE problem_id = #{problem_id} " +
-            "AND `status` >= 0")
-    Integer getProblemRecordNum(int problem_id);
+//    @Select("SELECT COUNT(*) " +
+//            "FROM  answer_record " +
+//            "WHERE problem_id = #{problem_id} " +
+//            "AND `status` >= 0")
+//    Integer getProblemRecordNum(int problem_id);
 
     @Select("SELECT COUNT(*) " +
             "FROM  answer_record " +
@@ -53,12 +53,12 @@ public interface AnswerRecordMapper {
             "AND problem_set_id = #{problem_set_id}")
     Integer getProblemRecordNum(int problem_id,int problem_set_id);
 
-    @Select("SELECT COUNT(*) " +
-            "FROM  answer_record " +
-            "WHERE problem_id = #{problem_id} " +
-            "AND `status` >= 0 " +
-            "AND is_correct=1")
-    Integer getProblemRecordCorrectNum(int problem_id);
+//    @Select("SELECT COUNT(*) " +
+//            "FROM  answer_record " +
+//            "WHERE problem_id = #{problem_id} " +
+//            "AND `status` >= 0 " +
+//            "AND is_correct=1")
+//    Integer getProblemRecordCorrectNum(int problem_id);
 
     @Select("SELECT COUNT(*) " +
             "FROM  answer_record " +
