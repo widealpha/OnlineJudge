@@ -21,6 +21,7 @@ public class ProblemDto {
     private String difficultyName;
 
     private Date modifiedTime;
+    private double passRate;
 
     private List<Tag> tags;
 
@@ -165,6 +166,14 @@ public class ProblemDto {
 
     public void setModifiedTime(Date modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public double getPassRate() {
+        return passRate;
+    }
+
+    public void setPassRate(double passRate) {
+        this.passRate = passRate;
     }
 
     public boolean isExistCheckpoints() {
