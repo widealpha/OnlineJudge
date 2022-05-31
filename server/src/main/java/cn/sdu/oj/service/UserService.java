@@ -68,6 +68,9 @@ public class UserService {
         if (email.isEmpty() || password.isEmpty()) {
             return ResultEntity.data(StatusCode.PARAM_EMPTY, false);
         }
+        if (userInfoMapper.selectUserIdByEmail(email) != null) {
+            return ResultEntity.data(StatusCode.USER_ACCOUNT_ALREADY_EXIST, false);
+        }
         if (!validateRegisterCode(email, code)) {
             return ResultEntity.data(StatusCode.VALIDATE_ERROR, false);
         } else {

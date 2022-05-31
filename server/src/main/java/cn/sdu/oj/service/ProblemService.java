@@ -62,6 +62,7 @@ public class ProblemService {
                 problemDto.setMemoryLimit(asyncProblem.getMemoryLimit());
                 problemDto.setTimeLimit(asyncProblem.getTimeLimit());
                 problemDto.setCodeLengthLimit(asyncProblem.getCodeLengthLimit());
+                problemDto.setExistCheckpoints(asyncProblem.isExistCheckpoints());
                 problemDto.setModifiedTime(asyncProblem.getModifiedTime());
             } else {
                 SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
@@ -248,7 +249,7 @@ public class ProblemService {
         }
         // 2、写入SHA256
         sftpUtil.uploadSingleFile(sha256.getBytes(StandardCharsets.UTF_8), destinationDir.toString(), "checkpoints.sha256");
-        return ResultEntity.data(true);
+        return ResultEntity.data(asyncProblemMapper.updateExistCheckpoints(generalProblem.getTypeProblemId(), true));
     }
 
     public void downloadCheckpoints(int problemId, int userId, HttpServletResponse response) {
@@ -272,7 +273,7 @@ public class ProblemService {
         }
     }
 
-    public ResultEntity<Map<String, String>> previewCheckpoints(int problemId, int userId){
+    public ResultEntity<Map<String, String>> previewCheckpoints(int problemId, int userId) {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problemId);
         if (generalProblem == null || generalProblem.getCreator() != userId) {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
@@ -286,7 +287,8 @@ public class ProblemService {
         List<GeneralProblem> generalProblems = generalProblemMapper.selectGeneralProblemIdByCreator(userId);
         for (GeneralProblem generalProblem : generalProblems) {
             ProblemDto problemDto = findProblemInfo(generalProblem.getId(), userId).getData();
-            if (problemDto != null){
+            if (problemDto != null) {
+                problemDto.setDescription(null);
                 res.add(problemDto);
             }
         }
