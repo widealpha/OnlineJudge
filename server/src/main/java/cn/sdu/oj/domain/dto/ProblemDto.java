@@ -1,12 +1,6 @@
 package cn.sdu.oj.domain.dto;
 
-import cn.sdu.oj.domain.bo.Problem;
-import cn.sdu.oj.domain.po.AsyncProblem;
-import cn.sdu.oj.domain.po.GeneralProblem;
-import cn.sdu.oj.domain.po.ProblemLimit;
 import cn.sdu.oj.domain.po.Tag;
-import cn.sdu.oj.domain.vo.DifficultyEnum;
-import cn.sdu.oj.domain.vo.ProblemTypeEnum;
 
 import java.util.Date;
 import java.util.List;
@@ -27,6 +21,7 @@ public class ProblemDto {
     private String difficultyName;
 
     private Date modifiedTime;
+    private double passRate;
 
     private List<Tag> tags;
 
@@ -42,6 +37,8 @@ public class ProblemDto {
      * 代码文本长度,单位为Byte
      */
     private int codeLengthLimit;
+
+    private boolean existCheckpoints;
 
     public Integer getId() {
         return id;
@@ -169,5 +166,21 @@ public class ProblemDto {
 
     public void setModifiedTime(Date modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public double getPassRate() {
+        return passRate;
+    }
+
+    public void setPassRate(double passRate) {
+        this.passRate = passRate;
+    }
+
+    public boolean isExistCheckpoints() {
+        return existCheckpoints;
+    }
+
+    public void setExistCheckpoints(boolean existCheckpoints) {
+        this.existCheckpoints = existCheckpoints;
     }
 }

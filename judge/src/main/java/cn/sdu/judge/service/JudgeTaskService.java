@@ -60,8 +60,8 @@ public class JudgeTaskService {
             CompileInfo compileInfo = judge.compile(task.getCode());
             taskRecord.setCompileInfo(JSON.toJSONString(compileInfo));
             if (compileInfo.isSuccess()) {
-                for (int i = 0; i < checkpointList.size(); i++) {
-                    Checkpoint checkpoint = checkpointList.get(i);
+                for (int i = 1; i <= checkpointList.size(); i++) {
+                    Checkpoint checkpoint = checkpointList.get(i - 1);
                     RunInfo runInfo = judge.run(checkpoint);
                     if (!runInfo.isSuccess()) {
                         StatusCode statusCode;

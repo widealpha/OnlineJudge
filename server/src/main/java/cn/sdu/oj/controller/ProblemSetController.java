@@ -60,6 +60,7 @@ public class ProblemSetController {
     public ResultEntity<ProblemSetTypeEnum[]> allProblemSetTypes() {
         return ResultEntity.data(ProblemSetTypeEnum.values());
     }
+
     @ApiOperation("所有竞赛题目集的竞赛类型")
     @GetMapping("/allCompetitionTypes")
     @PreAuthorize("hasRole('COMMON')")
@@ -164,10 +165,11 @@ public class ProblemSetController {
 
                 ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                 List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
-                List<ProblemDto>  problemDtos= new ArrayList<>();
-                for (ProblemSetProblem p:problems
-                     ) { ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(),user.getId());
-                      problemDtos.add(problemDtoResultEntity.getData());
+                List<ProblemDto> problemDtos = new ArrayList<>();
+                for (ProblemSetProblem p : problems
+                ) {
+                    ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(), user.getId());
+                    problemDtos.add(problemDtoResultEntity.getData());
                 }
                 ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
                 return ResultEntity.success("查看一个题目集的信息和题号", problemSetVo);
@@ -179,9 +181,10 @@ public class ProblemSetController {
                     if (code.equals(cloneCode)) {
                         ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                         List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
-                        List<ProblemDto>  problemDtos= new ArrayList<>();
-                        for (ProblemSetProblem p:problems
-                        ) { ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(),user.getId());
+                        List<ProblemDto> problemDtos = new ArrayList<>();
+                        for (ProblemSetProblem p : problems
+                        ) {
+                            ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(), user.getId());
                             problemDtos.add(problemDtoResultEntity.getData());
                         }
                         ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
@@ -192,9 +195,10 @@ public class ProblemSetController {
                 if (problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
                     ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
-                    List<ProblemDto>  problemDtos= new ArrayList<>();
-                    for (ProblemSetProblem p:problems
-                    ) { ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(),user.getId());
+                    List<ProblemDto> problemDtos = new ArrayList<>();
+                    for (ProblemSetProblem p : problems
+                    ) {
+                        ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(), user.getId());
                         problemDtos.add(problemDtoResultEntity.getData());
                     }
                     ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
@@ -202,6 +206,28 @@ public class ProblemSetController {
                 }
             }
             return ResultEntity.error(StatusCode.NO_PERMISSION);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    @ApiOperation("查看一个题在题目集中的正确率|COMMON+") //查看一个题的正确率   管理员，题目集创建者和题目集参与者可用
+    @PostMapping("/getProblemPassRate")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getProblemPassRate(
+            @ApiParam(value = "题目ID") @RequestParam(required = true) Integer problemId,
+            @ApiParam(value = "题目集ID") @RequestParam(required = false) Integer problemSetId,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            double rate = 0;
+            if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId()) ||
+                    problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)
+            ) {
+                rate = problemSetService.getProblemPassRate(problemId, problemSetId);
+                return ResultEntity.success("查询成功", rate);
+            } else
+                return ResultEntity.error(StatusCode.NO_PERMISSION);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);

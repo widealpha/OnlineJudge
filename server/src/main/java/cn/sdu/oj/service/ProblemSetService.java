@@ -201,4 +201,43 @@ public class ProblemSetService {
     public List<ProblemSetUserAnswer> getUncommittedProblemSetUserAnswer() {
         return problemSetUserAnswerMapper.getUncommittedProblemSetUserAnswer();
     }
+
+    public double getProblemPassRate(Integer problem_id, Integer problem_set_id) {
+        GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problem_id);
+    //    if (problem_set_id == null) {
+
+//            if (generalProblem.getType() == 0) // 编程题
+//            {
+//                Integer answer_num = solveRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId());
+//                Integer correct_num = solveRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId());
+//                double rate = (double) correct_num / answer_num;
+//                return rate;
+//
+//            } else  //非编程题 默认只有是否正确
+//            {
+//                Integer answer_num = answerRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId());
+//                Integer correct_num = answerRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId());
+//                double rate = (double) correct_num / answer_num;
+//                return rate;
+//            }
+//        } else {
+            //指定在题目集中查找
+
+            if (generalProblem.getType() == 0) // 编程题
+            {
+                Integer answer_num = solveRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId(),problem_set_id);
+                Integer correct_num = solveRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId(),problem_set_id);
+                double rate = (double) correct_num / answer_num;
+                return rate;
+
+            } else //非编程题 默认只有是否正确
+            {
+                Integer answer_num = answerRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId(),problem_set_id);
+                Integer correct_num = answerRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId(),problem_set_id);
+                double rate = (double) correct_num / answer_num;
+                return rate;
+            }
+
+   //     }
+    }
 }

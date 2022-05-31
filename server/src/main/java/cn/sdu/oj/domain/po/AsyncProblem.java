@@ -27,6 +27,9 @@ public class AsyncProblem {
      * 代码文本长度,单位为Byte
      */
     private int codeLengthLimit;
+
+    private boolean existCheckpoints;
+
     private Date createTime;
     private Date modifiedTime;
 
@@ -124,5 +127,13 @@ public class AsyncProblem {
 
     public void setModifiedTime(Date modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public boolean isExistCheckpoints() {
+        return existCheckpoints;
+    }
+
+    public void setExistCheckpoints(boolean existCheckpoints) {
+        this.existCheckpoints = existCheckpoints;
     }
 }

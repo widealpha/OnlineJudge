@@ -23,6 +23,9 @@ public interface AsyncProblemMapper {
             "WHERE id = #{id}")
     boolean updateProblemLimit(AsyncProblem problem);
 
+    @Update("UPDATE async_problem SET exist_checkpoints = #{existCheckpoints} WHERE id = #{id}")
+    boolean updateExistCheckpoints(int id, boolean existCheckpoints);
+
     @Update("UPDATE async_problem SET status = #{status} WHERE id = #{id}")
     boolean updateProblemStatus(int problemId, int status);
 
