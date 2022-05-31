@@ -30,7 +30,7 @@ export default new Vuex.Store({
             // 1 练习，2 作业，3 竞赛
             type: 0,
             isMyProblemSet: false,
-
+            typeName: "",
             problemSetId: 0,
         }
     },
@@ -51,6 +51,19 @@ export default new Vuex.Store({
         setProblemSetInfo(state, newInfo) {
             for (const key in newInfo) {
                 Vue.set(state.problemSetInfo, key, newInfo[key])
+            }
+        },
+        getType(state, type) {
+            switch (type) {
+                case 1:
+                    state.problemSetInfo.typeName = "练习";
+                    return "练习";
+                case 2:
+                    state.problemSetInfo.typeName = "测验";
+                    return "测验";
+                case 3:
+                    state.problemSetInfo.typeName = "竞赛";
+                    return "竞赛";
             }
         },
     },

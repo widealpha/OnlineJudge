@@ -38,17 +38,6 @@
             ></el-button>
           </el-upload>
         </div>
-        <el-table
-          v-loading="loading"
-          :data="points"
-          style="width: 100%"
-          border
-          stripe
-        >
-          <el-table-column prop="testName" label="名称"> </el-table-column>
-          <el-table-column prop="score" label="分数"> </el-table-column>
-          <el-table-column prop="tip" label="提示"> </el-table-column>
-        </el-table>
       </div>
     </el-card>
   </div>
@@ -64,45 +53,12 @@ export default {
       problemId: 0,
       points: [],
       sha256: "",
-
-
-  
-
       loading: false,
     };
   },
   methods: {
-    // 测试点预览
-    async getMyTestPoints() {
-      this.loading = true;
-      let res = await this.$ajax.get(
-        "/problem/downloadCheckpoints",
-        {
-          problemId: this.problemId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
-          },
-        }
-      );
-       (res);
-      // if (res.data.code == 0) {
-      //   this.points = res.data.data;
-      // } else {
-      //   this.$message({
-      //     message: res.data.message,
-      //     type: "error",
-      //     showClose: false,
-      //     duration: 1000,
-      //   });
-      // }
-      this.loading = false;
-    },
-
     async analyzeZip(file) {
       const reader = new FileReader();
-
       reader.onloadend = async (evt) => {
         if (evt.target.readyState === FileReader.DONE) {
           // DONE == 2
@@ -134,30 +90,6 @@ export default {
 
       reader.readAsArrayBuffer(file.raw);
     },
-    async remove(index) {
-      let point = this.points[index];
-      let res = await this.$ajax.post(
-        "/testPoint/deleteTestPoint",
-        {
-          problemId: this.problemId,
-          testName: point.testName,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
-          },
-        }
-      );
-      if (res.data.code == 0) {
-        this.$message({
-          message: "成功删除测试点",
-          type: "success",
-          showClose: false,
-          duration: 1000,
-        });
-        this.points.splice(index, 1);
-      }
-    },
 
     async downloadTestPoints() {
       let res = await this.$ajax.get(
@@ -172,34 +104,34 @@ export default {
           // responseType: "blob", // 以 blob 类型接收后端发回的响应数据
         }
       );
-      res;
-      const content = res.data; // 接收响应内容
-      const blob = new Blob([content]); // 构造一个blob对象来处理数据
-      let fileName = `测试点${this.problemId}`;
-      // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
-      // IE10以上支持blob但是依然不支持download
-      if ("download" in document.createElement("a")) {
-        //支持a标签download的浏览器
-        const link = document.createElement("a"); // 创建a标签
-        link.download = fileName; // a标签添加属性
-        link.style.display = "none";
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click(); // 执行下载
-        URL.revokeObjectURL(link.href); // 释放url
-        document.body.removeChild(link); // 释放标签
-      } else {
-        // 其他浏览器
-        navigator.msSaveBlob(blob, fileName);
-      }
+      console.log(res);
+      // res;
+      // const content = res.data; // 接收响应内容
+      // const blob = new Blob([content]); // 构造一个blob对象来处理数据
+      // let fileName = `测试点${this.problemId}`;
+      // // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+      // // IE10以上支持blob但是依然不支持download
+      // if ("download" in document.createElement("a")) {
+      //   //支持a标签download的浏览器
+      //   const link = document.createElement("a"); // 创建a标签
+      //   link.download = fileName; // a标签添加属性
+      //   link.style.display = "none";
+      //   link.href = URL.createObjectURL(blob);
+      //   document.body.appendChild(link);
+      //   link.click(); // 执行下载
+      //   URL.revokeObjectURL(link.href); // 释放url
+      //   document.body.removeChild(link); // 释放标签
+      // } else {
+      //   // 其他浏览器
+      //   navigator.msSaveBlob(blob, fileName);
+      // }
     },
   },
   created() {
     let problemId = this.$route.query.problemId;
-     (problemId);
+    problemId;
     if (problemId) {
       this.problemId = Number(problemId);
-      this.getMyTestPoints();
     }
   },
 
@@ -208,7 +140,6 @@ export default {
       let problemId = newVal.query.problemId;
       if (problemId) {
         this.problemId = Number(problemId);
-        this.getMyTestPoints();
       } else {
         this.$emit("update:step", 1);
       }

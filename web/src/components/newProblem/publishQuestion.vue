@@ -241,7 +241,7 @@ export default {
 
       if (res.data.code === 0) {
         let data = res.data.data;
-        
+
         this.BasicInfo.title = data.name;
         this.BasicInfo.difficulty = data.difficulty;
         this.BasicInfo.description = data.description;
@@ -313,6 +313,7 @@ export default {
           message: "提交成功",
           type: "success",
         });
+        this.$emit('update:step', 2)
       } else {
         this.$message({
           message: "提交失败",
