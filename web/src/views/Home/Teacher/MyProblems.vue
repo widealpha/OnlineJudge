@@ -18,50 +18,62 @@
     <el-table
       v-loading="loading"
       :data="problemsList"
+      :header-cell-style="{ 'text-align': 'center' }"
       style="width: 100%"
-      border
       stripe
     >
-      <el-table-column type="expand" width="50">
-        <template slot-scope="props">
-          <el-card>
-            <div slot="header">题目描述</div>
-            <mavon-editor
-              :value="props.row.description"
-              :toolbarsFlag="false"
-              :editable="false"
-              :subfield="false"
-              :defaultOpen="'preview'"
-              fontSize="16px"
-            />
-          </el-card>
+      <el-table-column prop="id" label="题目ID" width="70" align="center"> </el-table-column>
+      <el-table-column prop="name" label="标题" :show-overflow-tooltip="true" align="center">
+      </el-table-column>
+      <el-table-column prop="creator" label="作者ID" width="70" align="center">
+      </el-table-column>
+      <el-table-column prop="difficulty" label="难度" width="70" align="center">
+      </el-table-column>
+      <el-table-column prop="modifiedTime" label="最后修改时间" align="center">
+        <template slot-scope="scope">
+          <i class="el-icon-time"></i>
+          <span style="margin-left: 10px">{{ scope.row.modifiedTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="id" label="题目ID"> </el-table-column>
-      <el-table-column prop="name" label="标题" :show-overflow-tooltip="true">
-      </el-table-column>
-      <el-table-column prop="creator" label="作者ID"> </el-table-column>
-      <el-table-column prop="difficulty" label="难度"> </el-table-column>
-      <el-table-column prop="modifiedTime" label="最后修改时间">
-      </el-table-column>
-      <el-table-column prop="typeName" label="类别"> </el-table-column>
-      <el-table-column prop="passRadio" label="通过率">
-        <template slot-scope="props">
-          {{ Number(props.row.passRadio * 100).toFixed(1) + "%" }}
+      <el-table-column prop="typeName" label="类别" width="100" align="center">
+        <template slot-scope="scope">
+          <div slot="reference">
+            <el-tag
+              size="medium"
+              effect="dark"
+              :type="
+                scope.row.typeName == '编程题'
+                  ? 'success'
+                  : scope.row.typeName == '选择题'
+                  ? ''
+                  : 'warning'
+              "
+              >{{ scope.row.typeName }}</el-tag
+            >
+          </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作">
+      <el-table-column prop="passRate" label="通过率" width="70" align="center">
+        <template slot-scope="props">
+          {{ Number(props.row.passRate * 100).toFixed(1) + "%" }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="right"
+     
+      >
         <template slot-scope="scope">
           <el-button
-            type="text"
-            size="small"
-            style="color: red"
-            @click="remove(scope.$index)"
+            size="mini"
+            type="primary"
+            plain
+            @click="update(scope.row.id)"
           >
-            移除
-          </el-button>
-          <el-button type="text" size="small" @click="update(scope.row.id)">
             更新
+          </el-button>
+          <el-button size="mini" type="danger" @click="remove(scope.$index)" style="margin-right:20px">
+            移除
           </el-button>
         </template>
       </el-table-column>
@@ -71,10 +83,6 @@
 </template>
 
 <script>
-import Vue from "vue";
-import mavonEditor from "mavon-editor";
-import "mavon-editor/dist/css/index.css";
-Vue.use(mavonEditor);
 export default {
   data() {
     return {
@@ -120,9 +128,9 @@ export default {
         },
       }).then(async ({ value }) => {
         let res = await this.$ajax.post(
-          "/problem/getProblemById",
+          "/problem/info",
           {
-            id: value,
+            problemId: value,
           },
           {
             headers: {
@@ -130,17 +138,17 @@ export default {
             },
           }
         );
-        if (res.data.code === 0 && res.data.message === "ok") {
-          this.isUpdating = true;
-          this.initForm(res.data.data);
+        console.log(res);
+        if (res.data.code === 0) {
+          this.problemsList = [res.data.data];
         }
       });
     },
     async remove(index) {
       let res = await this.$ajax.post(
-        "/problem/deleteAProblem",
+        "/problem/deleteProblem",
         {
-          problemId: this.problems[index].id,
+          problemId: this.problemsList[index].id,
         },
         {
           headers: {
@@ -149,37 +157,22 @@ export default {
         }
       );
       if (res.data.message == "success") {
+        await this.getAllMyCreateProblems();
         this.$message({
           message: "成功移除",
           type: "success",
           duration: 1000,
         });
       }
-      this.problems.splice(index, 1);
     },
     update(problemId) {
-      problemId;
       this.$router.push({
         name: "newProblem",
         query: { problemId: problemId },
         params: { step: 1 },
       });
     },
-  },
-  // 身份校验
-  beforeCreate() {
-    if (
-      this.$store.state.token === null ||
-      !this.$store.state.myInfo.roles.includes("ROLE_TEACHER")
-    ) {
-      this.$router.replace("/");
-    }
-  },
-  //获取所有我创建的题目
-  async created() {
-    if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
-      this.$router.replace("/");
-    } else {
+    async getAllMyCreateProblems() {
       this.loading = true;
       let res = await this.$ajax.post(
         "/problem/allMyCreateProblems",
@@ -195,6 +188,24 @@ export default {
       this.total = res.data.data.length;
       this.pageList();
       this.loading = false;
+    },
+  },
+  // 身份校验
+  beforeCreate() {
+    if (
+      this.$store.state.token === null ||
+      !this.$store.state.myInfo.roles.includes("ROLE_TEACHER")
+    ) {
+      this.$router.replace("/");
+    }
+  },
+
+  //获取所有我创建的题目
+  async created() {
+    if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
+      this.$router.replace("/");
+    } else {
+      await this.getAllMyCreateProblems();
     }
   },
 };

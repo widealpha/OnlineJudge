@@ -5,7 +5,7 @@
         <div style="text-align: left">
           <el-button @click="$emit('update:step', 1)" plain>上一步</el-button>
           <el-button
-            :disabled="points.length === 0"
+            :disabled="!existCheckpoints"
             style="float: right; margin-right: 20px"
             @click="$emit('update:step', 3)"
             plain
@@ -51,12 +51,13 @@ export default {
   data() {
     return {
       problemId: 0,
-      points: [],
+
       sha256: "",
       loading: false,
     };
   },
   methods: {
+    // 上传并加密文件
     async analyzeZip(file) {
       const reader = new FileReader();
       reader.onloadend = async (evt) => {
@@ -82,6 +83,7 @@ export default {
           res;
           if (res.data.code === 0) {
             this.$message.success("上传成功！");
+            await this.getProblemInfoById();
           } else {
             this.$message.error(res.data.message);
           }
@@ -90,7 +92,25 @@ export default {
 
       reader.readAsArrayBuffer(file.raw);
     },
+    // 通过id获取更新题目信息（是否存在测试点）
+    async getProblemInfoById() {
+      let res = await this.$ajax.post(
+        "/problem/info",
+        {
+          problemId: this.problemId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.state.token}`,
+          },
+        }
+      );
 
+      if (res.data.code === 0) {
+        let data = res.data.data;
+        this.$store.commit("setProblemInfo", data);
+      }
+    },
     async downloadTestPoints() {
       let res = await this.$ajax.get(
         "/problem/downloadCheckpoints",
@@ -127,22 +147,24 @@ export default {
       // }
     },
   },
-  created() {
-    let problemId = this.$route.query.problemId;
-    problemId;
+  async created() {
+    const { problemId } = this.$route.query;
     if (problemId) {
       this.problemId = Number(problemId);
+      this.getProblemInfoById();
     }
   },
-
+  computed: {
+    existCheckpoints() {
+      return this.$store.state.problemInfo.existCheckpoints;
+    },
+  },
   watch: {
     $route(newVal) {
       let problemId = newVal.query.problemId;
-      if (problemId) {
-        this.problemId = Number(problemId);
-      } else {
-        this.$emit("update:step", 1);
-      }
+      problemId
+        ? (this.problemId = Number(problemId))
+        : this.$emit("update:step", 1);
     },
   },
 };

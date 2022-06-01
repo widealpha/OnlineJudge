@@ -21,7 +21,7 @@
         <ul style="list-style: none" class="ul" v-loading="loading">
           <li v-for="(item, index) in problemSets" :key="index">
             <problem-set
-              :title="item.name"
+              :name="item.name"
               :problemSetId="item.id"
               :type="item.type"
               :open="item.isPublic"
@@ -220,7 +220,7 @@ export default {
               },
             }
           );
-          console.log(res);
+     
           if (res.data.code == 0) {
             this.$notify({
               title: "成功",

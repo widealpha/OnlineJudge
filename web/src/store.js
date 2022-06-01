@@ -7,12 +7,32 @@ export default new Vuex.Store({
     state: {
         token: null,
         noToken: true,
-
+        problemInfo: {
+            answer: "",
+            codeLengthLimit: 0,
+            creator: 0,
+            description: "",
+            difficulty: 0,
+            difficultyName: "",
+            example: "",
+            existCheckpoints: false,
+            id: 0,
+            memoryLimit: 0,
+            modifiedTime: "",
+            name: "",
+            options: "",
+            passRate: 0,
+            tags: [],
+            timeLimit: 0,
+            type: 0,
+            typeName: "",
+        },
         myInfo: {
             avatar: null,
             nickname: null,
             name: null,
             email: null,
+            roles: [],
             userId: undefined,
             studentId: null,
         },
@@ -21,10 +41,12 @@ export default new Vuex.Store({
             // 是否公开 0:私有 1:公开
             open: 0,
             // 题目
-            title: "",
+           name: "",
+            //是否存在测试点
             // 介绍
             introduction: "",
             creatorId: 0,
+            id:0,
             beginTime: "2000-01-01 00:00:00",
             endTime: "2000-01-01 00:00:00",
             // 1 练习，2 作业，3 竞赛
@@ -51,6 +73,11 @@ export default new Vuex.Store({
         setProblemSetInfo(state, newInfo) {
             for (const key in newInfo) {
                 Vue.set(state.problemSetInfo, key, newInfo[key])
+            }
+        },
+        setProblemInfo(state, newInfo) {
+            for (const key in newInfo) {
+                Vue.set(state.problemInfo, key, newInfo[key])
             }
         },
         getType(state, type) {
