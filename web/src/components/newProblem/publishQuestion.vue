@@ -1,6 +1,6 @@
 <template>
   <div class="input">
-    <el-card style="border: 0">
+    <el-card style="border: 0; box-sizing: border-box; padding: 20px">
       <div slot="header" class="text">
         <span>编辑题目</span>
       </div>
@@ -16,13 +16,13 @@
           <div class="text">
             <h3>基本信息</h3>
           </div>
-          <el-form-item label="标题" prop="title">
+          <el-form-item label="标题：" prop="title">
             <el-input
               v-model="BasicInfo.title"
               placeholder="请输入1-80个字符作为标题"
             ></el-input>
           </el-form-item>
-          <el-form-item label="难度" prop="difficulty">
+          <el-form-item label="难度：" prop="difficulty">
             <el-rate
               v-model="BasicInfo.difficulty"
               style="text-align: left; margin-top: 0.75em"
@@ -80,7 +80,7 @@
             </div>
           </el-form-item>
           <el-divider />
-          <el-form-item label="题面" prop="description">
+          <el-form-item label="题面：" prop="description">
             <mavon-editor
               v-model="BasicInfo.description"
               :toolbars="markdownOption"
@@ -462,7 +462,7 @@ export default {
 
 .text {
   text-align: left;
-  margin-left: 20px;
+
 }
 
 .el-row {
