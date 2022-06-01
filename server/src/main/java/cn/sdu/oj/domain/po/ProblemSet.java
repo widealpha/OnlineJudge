@@ -6,11 +6,20 @@ public class ProblemSet {
     private Integer id;
     private String name;
     private Integer type;
+    private Integer competitionType;
     private String introduction;
     private Integer isPublic;
     private Date beginTime;
     private Date endTime;
     private Integer creatorId;
+
+    public Integer getCompetitionType() {
+        return competitionType;
+    }
+
+    public void setCompetitionType(Integer competitionType) {
+        this.competitionType = competitionType;
+    }
 
     public Integer getId() {
         return id;

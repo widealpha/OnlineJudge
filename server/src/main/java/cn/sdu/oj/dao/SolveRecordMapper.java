@@ -82,4 +82,14 @@ public interface SolveRecordMapper {
     @Select("SELECT COUNT(*) " +
             "FROM  solve_record WHERE problem_id = #{problem_id} AND `status` = 1 AND problem_set_id = #{problem_set_id}")
     Integer getProblemRecordCorrectNum(int problem_id,int problem_set_id);
+
+    @Select("SELECT count(*)" +
+            "FROM solve_record " +
+            "WHERE  problem_set_id = #{problem_set_id} AND user_id = #{user_id} AND status=0")
+    Integer getPunishRecord(Integer problem_set_id, Integer user_id);
+
+    @Select("SELECT *" +
+            "FROM solve_record " +
+            "WHERE  problem_set_id = #{problem_set_id} AND user_id = #{user_id} ORDER BY create_time DESC LIMIT 1")
+    SolveRecord getLastCommit(Integer problem_set_id, Integer user_id);
 }
