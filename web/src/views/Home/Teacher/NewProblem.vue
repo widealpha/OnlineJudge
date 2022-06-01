@@ -1,6 +1,6 @@
 <template>
 	<div class="newProblem">
-		<!-- 教师添加b编程题 -->
+		<!-- 教师添加编程题 -->
 		<el-steps :active="step" simple process-status>
 			<el-step title="编辑题目" icon="el-icon-edit" />
 			<el-step title="测试数据" icon="el-icon-upload" />

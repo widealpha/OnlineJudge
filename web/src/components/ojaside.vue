@@ -28,7 +28,7 @@
           <i class="el-icon-location" />
           <span>教师相关</span>
         </template>
-        <el-submenu>
+        <el-submenu index="1">
           <template #title>
             <span>出题</span>
           </template>
