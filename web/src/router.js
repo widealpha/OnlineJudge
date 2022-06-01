@@ -71,7 +71,47 @@ const routes = [
             path: 'newProblem',
             component: resolve => require(['./views/Home/Teacher/NewProblem'], resolve),
             meta: {
-              title: '教师出题'
+              title: '出编程题'
+            }
+          },
+          {
+            name: "newCompletion",
+            path: "newCompletion",
+            component: resolve => require(['./views/Home/Teacher/NewCompletion'], resolve),
+            meta: {
+              title: "出填空题"
+            }
+          },
+          {
+            name: "newShortAnswerQuestion",
+            path: "newShortAnswerQuestion",
+            component: resolve => require(['./views/Home/Teacher/NewShortAnswerQuestion'], resolve),
+            meta: {
+              title: "出简答题"
+            }
+          },
+          {
+            name: "newJudgementQuestion",
+            path: "newJudgementQuestion",
+            component: resolve => require(['./views/Home/Teacher/NewJudgementQuestion'], resolve),
+            meta: {
+              title: "出判断题"
+            }
+          },
+          {
+            name: "newSingleChioceQuestion",
+            path: "newSingleChioceQuestion",
+            component: resolve => require(['./views/Home/Teacher/NewSingleChioceQuestion'], resolve),
+            meta: {
+              title: "出单选题"
+            }
+          },
+          {
+            name: "newMuitiChoiceQuestion",
+            path: "newMuitiChoiceQuestion",
+            component: resolve => require(['./views/Home/Teacher/NewMuitiChoiceQuestion'], resolve),
+            meta: {
+              title: "出多选题"
             }
           },
           {

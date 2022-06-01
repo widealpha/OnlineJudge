@@ -1,7 +1,7 @@
 <template>
 	<div class="newProblem">
-		<!-- 教师添加题目 -->
-		<el-steps :active="step" simple>
+		<!-- 教师添加b编程题 -->
+		<el-steps :active="step" simple process-status>
 			<el-step title="编辑题目" icon="el-icon-edit" />
 			<el-step title="测试数据" icon="el-icon-upload" />
 			<el-step title="设置限制" icon="el-icon-cpu" />

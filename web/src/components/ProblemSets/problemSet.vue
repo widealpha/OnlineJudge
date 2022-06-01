@@ -47,6 +47,16 @@
     <div>
       <span>结束时间：{{ endTime }}</span>
       <span style="float: right; margin-left: 20px; vertical-align: middle"
+        ><el-button
+          :v-if="isMyProblemSet"
+          type="danger"
+          size="mini"
+          @click="deleteProblemSet()"
+        >
+          删除
+        </el-button></span
+      >
+      <span style="float: right; margin-left: 20px; vertical-align: middle"
         ><i
           class="el-icon-user"
           style="margin-right: 3px; vertical-align: middle; color: #409eff"
@@ -102,6 +112,11 @@ export default {
     open: Number,
   },
   methods: {
+
+    // 这个地方需要完善，后端接口没给
+    deleteProblemSet(){
+      console.log(this.problemSetId);
+    },
     getStatus() {
       let beginTime = new Date(this.beginTime);
       let endTime = new Date(this.endTime);
@@ -132,6 +147,11 @@ export default {
       this.$router.push({
         path: `/problem-set/${this.problemSetId}`,
       });
+    },
+  },
+  computed: {
+    isMyProblemSet() {
+      return this.creatorId == this.$store.state.myInfo.userId;
     },
   },
 };
