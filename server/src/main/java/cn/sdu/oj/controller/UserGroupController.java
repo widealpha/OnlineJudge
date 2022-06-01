@@ -4,6 +4,7 @@ import cn.sdu.oj.domain.po.UserGroup;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
+import cn.sdu.oj.service.ProblemSetService;
 import cn.sdu.oj.service.UserGroupService;
 import cn.sdu.oj.util.RedisUtil;
 import cn.sdu.oj.util.StringUtil;
@@ -28,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 public class UserGroupController {
     @Autowired
     private UserGroupService userGroupService;
+
+    @Autowired
+    private ProblemSetService problemSetService;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -265,15 +269,16 @@ public class UserGroupController {
     }
 
 
-    //为一个用户组添加题目集
-    @ApiOperation("为一个用户组添加题目集|TEACHER+")  // 创建者（老师）可以使用
-    @PostMapping("/linkUserGroupProblemSet")    //为一个用户组添加题目集
+    //联系题目集和用户组
+    @ApiOperation("联系题目集和用户组|TEACHER+")  // 创建者（老师）可以使用
+    @PostMapping("/linkUserGroupProblemSet")    //联系题目集和用户组
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity linkUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer userGroupId,
             @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
+        if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())
+        && problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
             List<Integer> list = userGroupService.getUserGroupProblemSet(userGroupId);
             for (Integer i : list
             ) {

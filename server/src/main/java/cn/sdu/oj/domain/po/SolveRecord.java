@@ -1,5 +1,7 @@
 package cn.sdu.oj.domain.po;
 
+import java.util.Date;
+
 public class SolveRecord {
     private int id;
     private int userId;
@@ -27,6 +29,8 @@ public class SolveRecord {
     private int checkpointSize = 0;
 
     private int totalCorrect = 0;
+
+    private Date createTime;
 
     private int status;
 
@@ -132,5 +136,13 @@ public class SolveRecord {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 }

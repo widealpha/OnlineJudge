@@ -29,6 +29,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -68,32 +69,83 @@ public class ProblemSetController {
         return ResultEntity.data(CompetitionType.values());
     }
 
-    @ApiOperation("题目集创建|TEACHER+") //创建题目集   //老师或者管理员可以使用  //创建分开 TODO
+    @ApiOperation("练习题目集创建|TEACHER+") //创建练习题目集   //老师或者管理员可以使用
     @PreAuthorize("hasRole('TEACHER')")
-    @PostMapping("/createProblemSet")
-    public ResultEntity<Integer> createProblemSet(
+    @PostMapping("/createExerciseProblemSet")
+    public ResultEntity<Integer> createExerciseProblemSet(
             @ApiParam(value = "名称") @RequestParam(required = true) String name,
-            @ApiParam(value = "类型") @RequestParam(required = true) Integer type,
+            // @ApiParam(value = "类型") @RequestParam(required = true) Integer type,
             @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
             @ApiParam(value = "是否公开") @RequestParam(required = true) Integer isPublic,
             @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
             @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            int[] types = {1, 2, 3};
-            boolean type_valid = false;
-            for (int a : types) {
-                if (type == a) {
-                    type_valid = true;
-                    break;
-                }
-            }
-            if (type_valid) {
-                Integer id = problemSetService.createProblemSet(name, type, introduction, isPublic, beginTime, endTime, user.getId());
-                if (id != null) {
-                    return ResultEntity.data(id);
+
+            Integer id = problemSetService.createProblemSet(name, 1, introduction, isPublic, beginTime, endTime, user.getId(), null);
+            if (id != null) {
+                return ResultEntity.data(id);
+            } else return ResultEntity.error(StatusCode.COMMON_FAIL);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    @ApiOperation("测验题目集创建|TEACHER+") //创建题目集   //老师或者管理员可以使用
+    @PreAuthorize("hasRole('TEACHER')")
+    @PostMapping("/createTestProblemSet")
+    public ResultEntity<Integer> createTestProblemSet(
+            @ApiParam(value = "名称") @RequestParam(required = true) String name,
+
+            @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
+
+            @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
+            @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            Integer id = problemSetService.createProblemSet(name, 2, introduction, -1, beginTime, endTime, user.getId(), null);
+            if (id != null) {
+                return ResultEntity.data(id);
+            } else return ResultEntity.error(StatusCode.COMMON_FAIL);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    @ApiOperation("竞赛题目集创建|TEACHER+") //创建题目集   //老师或者管理员可以使用
+    @PreAuthorize("hasRole('TEACHER')")
+    @PostMapping("/createCompetitionProblemSet")
+    public ResultEntity createCompetitionProblemSet(
+            @ApiParam(value = "名称") @RequestParam(required = true) String name,
+
+            @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
+            @ApiParam(value = "参赛队伍数") @RequestParam(required = true) Integer teamNum,
+
+            @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
+            @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
+            @ApiParam(value = "竞赛类型，0 ACM,1 IO,3 IOI") @RequestParam Integer competitionType,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            Integer problem_set_id = problemSetService.createProblemSet(name, 3, introduction, -1, beginTime, endTime, user.getId(), competitionType);
+            if (problem_set_id != null) {
+                Integer user_group_id =
+                        userGroupService.createUserGroup
+                                (name + "参赛人员", "3", introduction, null, user.getId());
+                if (user_group_id != null) {
+                    userGroupService.linkUserGroupProblemSet(user_group_id, problem_set_id);
+                    List<String> users = new ArrayList<>();  //返回n个账号 TODO
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("userGroupId", user_group_id);
+                    jsonObject.put("problemSetId", problem_set_id);
+                    jsonObject.put("users", users);
+                    return ResultEntity.data(jsonObject);
                 } else return ResultEntity.error(StatusCode.COMMON_FAIL);
-            } else return ResultEntity.error(StatusCode.PARAM_NOT_VALID);
+
+            } else return ResultEntity.error(StatusCode.COMMON_FAIL);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -299,12 +351,14 @@ public class ProblemSetController {
     public ResultEntity getSelfCompletion(
             @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
             @ApiParam(value = "题目id", required = true) @RequestParam Integer problemId, //题目id
-            @ApiParam(value = "用户ID", required = false) @RequestParam Integer userId, //用户id
+            @ApiParam(value = "用户ID,若指定则是老师想看这个人的", required = false) @RequestParam Integer userId, //用户id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
             if (userId != null) {  //老师想看
-                ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problemId, userId);
-                return ResultEntity.success("完成情况", problemSetProblemVo);
+                if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
+                    ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problemId, userId);
+                    return ResultEntity.success("完成情况", problemSetProblemVo);
+                } else return ResultEntity.error(StatusCode.NO_PERMISSION);
 
             } else //学生想看
             {
@@ -317,41 +371,234 @@ public class ProblemSetController {
         }
     }
 
-//    //题目集创建者获取用户组成员的完成情况
-//    @ApiOperation("题目集创建者获取所有人的完成情况") //题目集创建者获取所有人的完成情况   创建人可用  TODO
-//    @PostMapping("/getALLCompletion")
-//    public ResultEntity getALLCompletion(
-//            @ApiParam(value = "ID", required = true) @RequestParam Integer problemSetId, //题目集id
-//            @ApiParam(value = "用户组ID", required = true) @RequestParam Integer userGroupId, //用户组id
-//            @ApiIgnore @AuthenticationPrincipal User user) {
-//        try {
-//            if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())) {
-//                //获取用户组所有人的id
-//                List<Integer> members = userGroupService.getUserGroupMembers(userGroupId);
-//                //对于每个人进行操作
-//                int i = 0;
-//                List<ProblemSet> problemSets = problemSetService.getSelfDoneProblemSet(members.get(i));
-//
-//                for (ProblemSet p : problemSets) {
-//                    if (p.getId().equals(problemSetId)) {
-//                        i++;
-//                        List<ProblemSetProblem> problemSetProblems = problemSetService.getProblemSetProblems(problemSetId);
-//                        List<ProblemSetProblemVo> problemSetProblemVos = problemSetService.getSelfCompletion(problemSetProblems, user.getId());
-//                        return ResultEntity.success("完成情况", problemSetProblemVos);
-//                    }
-//                }
-//                if (i == 0) {
-//                    return ResultEntity.error("没有做过该题目集");
-//                }
-//
-//            } else return ResultEntity.error(StatusCode.NO_PERMISSION);
-//
-//            return ResultEntity.error(StatusCode.COMMON_FAIL);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResultEntity.error(StatusCode.COMMON_FAIL);
-//        }
-//    }
+    //获取某题目集的完成情况  学生看自己 老师看学生
+    @ApiOperation("获取某题目集的完成情况|COMMON+") //获取我做过的某题目集某题的完成情况   所有人可用
+    @PostMapping("/getSelfCompletionForProbelmSet")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getSelfCompletionForProbelmSet(
+            @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
+
+            @ApiParam(value = "用户ID,若指定则是老师想看这个人的", required = false) @RequestParam Integer userId, //用户id
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+            if (problemSet.getType() == 3) {
+                return ResultEntity.error("无法查看竞赛题目集");
+            }
+            if (userId != null) {  //老师想看
+
+                if (problemSet.getCreatorId().equals(user.getId())) {
+
+                    List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
+                    List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
+                    for (ProblemSetProblem p : problems
+                    ) {
+                        Integer problem_id = p.getProblemId();
+                        ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, userId);
+                        problemSetProblemVos.add(problemSetProblemVo);
+                    }
+                    return ResultEntity.success("完成情况", problemSetProblemVos);
+                } else return ResultEntity.error(StatusCode.NO_PERMISSION);
+
+            } else //学生想看
+            {
+
+                List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
+                List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
+                for (ProblemSetProblem p : problems
+                ) {
+                    Integer problem_id = p.getProblemId();
+                    ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, user.getId());
+                    problemSetProblemVos.add(problemSetProblemVo);
+                }
+                return ResultEntity.success("完成情况", problemSetProblemVos);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    //竞赛查看自己的作答
+    @ApiOperation("获取某题目集的完成情况|COMMON+") //获取我做过的某题目集某题的完成情况   所有人可用
+    @PostMapping("/getSelfCompletionForCompetition")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getSelfCompletionForCompetition(
+            @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            //TODO 判断是否是参赛者
+            ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+            if (problemSet.getType() == 3) {
+
+                Integer type = problemSet.getCompetitionType();
+                if (type == 1) {  //OI 赛制不允许比赛中看到
+                    if (problemSet.getEndTime().getTime() > new Date().getTime()) {
+                        return ResultEntity.error("比赛还未结束");
+                    } else {
+                        List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
+                        List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
+                        for (ProblemSetProblem p : problems
+                        ) {
+                            Integer problem_id = p.getProblemId();
+                            ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, user.getId());
+                            problemSetProblemVos.add(problemSetProblemVo);
+                        }
+                        return ResultEntity.success("完成情况", problemSetProblemVos);
+                    }
+
+                } else {  //其它 赛制允许比赛中看到
+                    List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
+                    List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
+                    for (ProblemSetProblem p : problems
+                    ) {
+                        Integer problem_id = p.getProblemId();
+                        ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, user.getId());
+                        problemSetProblemVos.add(problemSetProblemVo);
+                    }
+                    return ResultEntity.success("完成情况", problemSetProblemVos);
+
+                }
+
+            } else return ResultEntity.error("非竞赛题目集");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    //
+    //竞赛查看排名
+    @ApiOperation("竞赛查看排名|COMMON+") //竞赛查看排名   所有人可用
+    @PostMapping("/getCompetitionRank")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity getCompetitionRank(
+            @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        try {
+            ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+            if (problemSet.getType() == 3) {
+
+                //TODO 判断是否是参赛者
+                if (!problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
+                    return ResultEntity.error(StatusCode.NO_PERMISSION);
+                } else {
+                    //获取用户组列表
+                    List<Integer> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
+                    List<Integer> members = userGroupService.getUserGroupMembers(user_group_id_list.get(0));
+                    //获取题目列表
+                    List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
+                    //存放id和分数
+                    int[] users = new int[members.size()];
+                    double[] scores = new double[members.size()];
+                    int i = 0;
+                    //对于每一个用户 区分竞赛类型计算排名
+                    for (Integer a_member : members
+                    ) {
+                        //设置一个初始分数
+                        double score = 0;
+                        Integer type = problemSet.getCompetitionType();
+                        List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
+                        for (ProblemSetProblem p : problems   //获取每一题的解答情况
+                        ) {
+                            Integer problem_id = p.getProblemId();
+                            //解答情况
+                            ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, a_member);
+                            problemSetProblemVos.add(problemSetProblemVo);
+                            //累计分数，不同比赛类型有不同的累计规则
+                            if (type == 0) {  //ACM
+                                Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
+                                Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
+
+                                if (total_correct > 0 && total_correct == check_point_size) {  //全有
+                                    score += problemSetProblemVo.getScore(); //记分
+                                }
+
+                            } else if (type == 1) {  //OI 赛制不允许比赛中看到排名
+                                if (problemSet.getEndTime().getTime() > new Date().getTime()) {
+                                    return ResultEntity.error("比赛还未结束");
+                                } else {
+                                    //按点给分
+                                    Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
+                                    Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
+                                    if (total_correct > 0) {
+                                        score += problemSetProblemVo.getScore() * total_correct / check_point_size;
+                                    }
+                                }
+
+                            } else   //IOI
+                            {   //按点给分
+                                Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
+                                Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
+                                if (total_correct > 0) {
+                                    score += problemSetProblemVo.getScore() * total_correct / check_point_size;
+                                }
+                            }
+                        }
+                        //获取答题时间
+                        long last_commit_time =
+                                problemSetService.getLastCommit(problemSetId, user.getId()).getCreateTime().getTime();
+                        //对于ACM的分数进行特殊处理,加上罚时
+                        if (type == 0) {
+                            Integer punishRecord = problemSetService.getPunishRecord(problemSetId, user.getId());
+                            last_commit_time += punishRecord * 1000 * 60;
+                        }
+                        long rest_time = problemSet.getEndTime().getTime() - last_commit_time;
+                        //剩一分钟算一分
+                        score += (double) (rest_time / 60000);
+                        //将用户，分数放到数据结构里
+                        users[i] = user.getId();
+                        scores[i] = score;
+                        i++;
+                    }
+                    //进行排序返回
+                    QuickSort(users,scores,0,members.size()-1);
+                    JSONArray jsonArray = new JSONArray();
+                    for (int j = 0; j < members.size()-1; j++) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("userId",users[i]);
+                        jsonObject.put("rank",i);
+                        jsonObject.put("score",scores[i]);
+                        jsonArray.add(jsonObject);
+                    }
+
+                    return ResultEntity.success("排名情况", jsonArray);
+
+                }
+            } else return ResultEntity.error("非竞赛题目集");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    //重写快速排序：同时将键值进行排序
+    public static void QuickSort(int arr[],double arr1[],int _left,int _right){
+
+        int right=_right;
+        int left=_left;
+        int temp=0;double temp1=0;
+        if(left<=right){
+            temp1=arr1[left];
+            temp=arr[left];
+            while(left!=right){
+                while(right>left&&arr[right]>temp)
+                    right--;
+                arr1[left]=arr1[right];
+                arr[left]=arr[right];
+                while(left<right&&temp>arr[left])
+                    left++;
+                arr1[right]=arr1[left];
+                arr[right]=arr[left];
+            }
+            arr1[right]=temp1;
+            arr[right]=temp;
+            QuickSort(arr,arr1,_left,left-1);
+            QuickSort(arr,arr1,right+1,_right);
+        }
+
+    }
+
 
     @ApiOperation("用户为一个题目集保存答案|COMMON+") //用户为一个题目集保存答案   答题人可用
     @PostMapping("/saveProblemAnswer")
@@ -467,7 +714,7 @@ public class ProblemSetController {
                         Integer new_problem_set_id = problemSetService.createProblemSet(problemSet.getName(),
                                 problemSet.getType(), problemSet.getIntroduction(), problemSet.getIsPublic(),
                                 TimeUtil.dateToStringLong(problemSet.getBeginTime()),
-                                TimeUtil.dateToStringLong(problemSet.getEndTime()), user.getId());
+                                TimeUtil.dateToStringLong(problemSet.getEndTime()), user.getId(), null);
 
                         List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
                         for (ProblemSetProblem p : problems
