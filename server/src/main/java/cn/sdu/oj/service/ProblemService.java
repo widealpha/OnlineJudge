@@ -1,6 +1,7 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
+import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.DifficultyEnum;
@@ -10,6 +11,8 @@ import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.util.FileUtil;
 import cn.sdu.oj.util.SFTPUtil;
+import com.alibaba.fastjson.JSON;
+import io.jsonwebtoken.lang.Collections;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,11 +20,13 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 @Service
 public class ProblemService {
@@ -64,6 +69,15 @@ public class ProblemService {
                 problemDto.setCodeLengthLimit(asyncProblem.getCodeLengthLimit());
                 problemDto.setExistCheckpoints(asyncProblem.isExistCheckpoints());
                 problemDto.setModifiedTime(asyncProblem.getModifiedTime());
+                if (asyncProblem.getSupportLanguages().isEmpty()){
+                    problemDto.setSupportLanguages(Arrays.asList(LanguageEnum.values()));
+                } else {
+                    List<LanguageEnum> supportLanguages = new ArrayList<>();
+                    for (String language : JSON.parseArray(asyncProblem.getSupportLanguages(), String.class)) {
+                        supportLanguages.add(LanguageEnum.valueOf(language));
+                    }
+                    problemDto.setSupportLanguages(supportLanguages);
+                }
             } else {
                 SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());
                 problemDto.setName(syncProblem.getName());
