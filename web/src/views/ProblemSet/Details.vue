@@ -4,15 +4,24 @@
     <el-card>
       <div slot="header">
         <el-row style="height: 5vh">
-          <el-col :span="12" style="text-align: left; line-height: 5vh">
+          <el-col
+            :span="12"
+            style="text-align: left; background: green; line-height: 5vh"
+          >
             <span style="font-weight: bolder; color: gray">{{
               problemSetInfo.name
             }}</span>
           </el-col>
-          <el-col :span="12" style="text-align: right; line-height: 5vh">
+          <el-col
+            :span="12"
+            style="text-align: right; background: yellow; line-height: 5vh"
+          >
             <el-button
               v-if="problemSetInfo.isMyProblemSet"
               icon="el-icon-edit"
+              type="primary"
+              plain
+              round
               style="float: right"
               @click="alteringInfo = true"
               >更新</el-button
@@ -84,7 +93,7 @@
               <el-link
                 type="primary"
                 @click="getToProblem(props.$index + 1, props.row)"
-                >{{ props.row.title }}</el-link
+                >{{ props.row.name }}</el-link
               >
             </template>
           </el-table-column>
@@ -156,9 +165,7 @@ export default {
         timeRange: "",
         name: "",
         introduction: "",
-
         openValue: 0,
-
         open: [
           { value: 0, label: "非公开" },
           { value: 1, label: "公开" },
@@ -213,7 +220,7 @@ export default {
     },
     //更新题目集信息之前初始化
     async initInfoForm() {
-      this.infoForm.name = this.problemSetInfo.title;
+      this.infoForm.name = this.problemSetInfo.name;
       this.infoForm.introduction = this.problemSetInfo.introduction;
       this.infoForm.timeRange = [
         new Date(this.problemSetInfo.beginTime),
@@ -290,10 +297,37 @@ export default {
         (sec < 10 ? "0" + sec : sec)
       );
     },
+    async getProblemSetInfo() {
+      let res = await this.$ajax.post(
+        "/problemSet/getProblemSetInfo",
+        {
+          problemSetId: this.$route.params.problemSetId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.state.token}`,
+          },
+        }
+      );
+      if (res.data.code == 0) {
+        this.$store.commit("setProblemSetInfo", res.data.data);
+        console.log(this.$store.state.problemSetInfo);
+        console.log
+      } else {
+        this.$notify({
+          title: "失败",
+          message: `${res.data.message}`,
+          type: "error",
+        });
+      }
+    },
+  },
+  async created() {
+  await  this.getProblemSetInfo();
+    this.initInfoForm();
   },
   computed: {
-    problemSetInfo() {
-       (this.$store.state.problemSetInfo);
+     problemSetInfo() {
       return this.$store.state.problemSetInfo;
     },
     isMyProblemSet() {

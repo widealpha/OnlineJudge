@@ -5,7 +5,7 @@
         <div style="text-align: left">
           <el-button @click="$emit('update:step', 1)" plain>上一步</el-button>
           <el-button
-            :disabled="points.length === 0"
+            :disabled="!existCheckpoints"
             style="float: right; margin-right: 20px"
             @click="$emit('update:step', 3)"
             plain
@@ -38,17 +38,6 @@
             ></el-button>
           </el-upload>
         </div>
-        <el-table
-          v-loading="loading"
-          :data="points"
-          style="width: 100%"
-          border
-          stripe
-        >
-          <el-table-column prop="testName" label="名称"> </el-table-column>
-          <el-table-column prop="score" label="分数"> </el-table-column>
-          <el-table-column prop="tip" label="提示"> </el-table-column>
-        </el-table>
       </div>
     </el-card>
   </div>
@@ -62,47 +51,15 @@ export default {
   data() {
     return {
       problemId: 0,
-      points: [],
+
       sha256: "",
-
-
-  
-
       loading: false,
     };
   },
   methods: {
-    // 测试点预览
-    async getMyTestPoints() {
-      this.loading = true;
-      let res = await this.$ajax.get(
-        "/problem/downloadCheckpoints",
-        {
-          problemId: this.problemId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
-          },
-        }
-      );
-       (res);
-      // if (res.data.code == 0) {
-      //   this.points = res.data.data;
-      // } else {
-      //   this.$message({
-      //     message: res.data.message,
-      //     type: "error",
-      //     showClose: false,
-      //     duration: 1000,
-      //   });
-      // }
-      this.loading = false;
-    },
-
+    // 上传并加密文件
     async analyzeZip(file) {
       const reader = new FileReader();
-
       reader.onloadend = async (evt) => {
         if (evt.target.readyState === FileReader.DONE) {
           // DONE == 2
@@ -126,6 +83,7 @@ export default {
           res;
           if (res.data.code === 0) {
             this.$message.success("上传成功！");
+            await this.getProblemInfoById();
           } else {
             this.$message.error(res.data.message);
           }
@@ -134,13 +92,12 @@ export default {
 
       reader.readAsArrayBuffer(file.raw);
     },
-    async remove(index) {
-      let point = this.points[index];
+    // 通过id获取更新题目信息（是否存在测试点）
+    async getProblemInfoById() {
       let res = await this.$ajax.post(
-        "/testPoint/deleteTestPoint",
+        "/problem/info",
         {
           problemId: this.problemId,
-          testName: point.testName,
         },
         {
           headers: {
@@ -148,17 +105,12 @@ export default {
           },
         }
       );
-      if (res.data.code == 0) {
-        this.$message({
-          message: "成功删除测试点",
-          type: "success",
-          showClose: false,
-          duration: 1000,
-        });
-        this.points.splice(index, 1);
+
+      if (res.data.code === 0) {
+        let data = res.data.data;
+        this.$store.commit("setProblemInfo", data);
       }
     },
-
     async downloadTestPoints() {
       let res = await this.$ajax.get(
         "/problem/downloadCheckpoints",
@@ -169,13 +121,13 @@ export default {
           headers: {
             Authorization: `Bearer ${this.$store.state.token}`,
           },
-          // responseType: "blob", // 以 blob 类型接收后端发回的响应数据
+          responseType: "blob", // 以 blob 类型接收后端发回的响应数据
         }
       );
-      res;
+
       const content = res.data; // 接收响应内容
       const blob = new Blob([content]); // 构造一个blob对象来处理数据
-      let fileName = `测试点${this.problemId}`;
+      let fileName = `测试点${this.problemId}.zip`;
       // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
       // IE10以上支持blob但是依然不支持download
       if ("download" in document.createElement("a")) {
@@ -194,24 +146,24 @@ export default {
       }
     },
   },
-  created() {
-    let problemId = this.$route.query.problemId;
-     (problemId);
+  async created() {
+    const { problemId } = this.$route.query;
     if (problemId) {
       this.problemId = Number(problemId);
-      this.getMyTestPoints();
+      this.getProblemInfoById();
     }
   },
-
+  computed: {
+    existCheckpoints() {
+      return this.$store.state.problemInfo.existCheckpoints;
+    },
+  },
   watch: {
     $route(newVal) {
       let problemId = newVal.query.problemId;
-      if (problemId) {
-        this.problemId = Number(problemId);
-        this.getMyTestPoints();
-      } else {
-        this.$emit("update:step", 1);
-      }
+      problemId
+        ? (this.problemId = Number(problemId))
+        : this.$emit("update:step", 1);
     },
   },
 };

@@ -24,4 +24,7 @@ public interface ProblemSetMapper {
             "SET name=#{name} ,introduction=#{introduction} ,is_public=#{isPublic},begin_time=#{beginTime},end_time=#{endTime} " +
             "WHERE `status`=0 AND `id`=#{id}")
     boolean alterProblemSetInfo(ProblemSet problemSet);
+
+
+    void getPunishRecord(Integer problemSetId, Integer problem_id, Integer a_member);
 }

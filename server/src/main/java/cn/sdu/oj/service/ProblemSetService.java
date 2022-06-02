@@ -37,7 +37,7 @@ public class ProblemSetService {
     private ProblemSetUserAnswerMapper problemSetUserAnswerMapper;
 
     //新建题目集
-    public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId) throws Exception {
+    public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId,Integer competitionType) throws Exception {
         ProblemSet problemSet = new ProblemSet();
         problemSet.setName(name);
         problemSet.setType(type);
@@ -45,6 +45,8 @@ public class ProblemSetService {
         problemSet.setIsPublic(isPublic);
         problemSet.setBeginTime(TimeUtil.stringLongToDate(beginTime));
         problemSet.setEndTime(TimeUtil.stringLongToDate(endTime));
+
+        problemSet.setCompetitionType(competitionType);
 
         problemSet.setCreatorId(creatorId);
         if (problemSetMapper.createProblemSet(problemSet)) {
@@ -239,5 +241,13 @@ public class ProblemSetService {
             }
 
    //     }
+    }
+
+    public Integer getPunishRecord(Integer problemSetId, Integer a_member) {
+        return solveRecordMapper.getPunishRecord(problemSetId,a_member);
+    }
+
+    public SolveRecord getLastCommit(Integer problemSetId, Integer id) {
+        return solveRecordMapper.getLastCommit(problemSetId,id);
     }
 }

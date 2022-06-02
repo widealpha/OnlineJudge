@@ -280,20 +280,20 @@ export default {
 				}
 			);
 			if (res.data.code === 0) {
-				for (const key in res.data.data) {
-					let children = [];
-					res.data.data[key].forEach((element) => {
-						children.push({
-							value: element,
-							label: element,
-						});
-					});
-					this.languages.push({
-						value: key,
-						label: key,
-						children: children,
-					});
-				}
+				// for (const key in res.data.data) {
+				// 	let children = [];
+				// 	res.data.data[key].forEach((element) => {
+				// 		children.push({
+				// 			value: element,
+				// 			label: element,
+				// 		});
+				// 	});
+				// 	this.languages.push({
+				// 		value: key,
+				// 		label: key,
+				// 		children: children,
+				// 	});
+				// }
 			}
 		},
 		async getMyLimits() {

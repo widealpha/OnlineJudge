@@ -14,7 +14,7 @@
 											<i class="el-icon-s-management" style="color: #888;">{{item.id}}</i>
 										</span>
 										&nbsp;
-										<el-link type="primary" @click="showProblemDetails(item)">{{item.title}}</el-link>
+										<el-link type="primary" @click="showProblemDetails(item)">{{item.name}}</el-link>
 									</el-col>
 									<el-col :span="12" style="text-align: right; line-height: 2em;">
 										<el-button v-if="$store.state.problemSetInfo.problemIds.indexOf(item.id) != -1" type="danger" size="mini" icon="el-icon-minus" @click="delProblem(item)">移除</el-button>
@@ -37,7 +37,7 @@
 
 		<div class="others">
 			<el-dialog :visible.sync="showDetails" :append-to-body="true" top="50px">
-				<el-descriptions :title="problemDetails.title" direction="vertical" :column="4" border>
+				<el-descriptions :title="problemDetails.name" direction="vertical" :column="4" border>
 					<el-descriptions-item label="作者">{{problemDetails.author}}</el-descriptions-item>
 					<el-descriptions-item label="难度">{{problemDetails.difficulty}}</el-descriptions-item>
 					<el-descriptions-item label="通过率">{{Number(problemDetails.passRadio * 100).toFixed(1)}}%</el-descriptions-item>

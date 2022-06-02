@@ -1,14 +1,25 @@
 <template>
-  <el-card style="text-align: left" shadow="hover">
-  <!-- 题目集列表的小卡片 -->
+  <el-card style="text-align: left; color: #4f4f4f" shadow="hover">
+    <!-- 题目集列表的小卡片 -->
     <div slot="header">
       <span style="height: 100%">
         <i
-          class="el-icon-s-management"
-          style="color: dodgerblue; font-size: 150%"
-        ></i>
+          class="el-icon-collection"
+          style="
+            color: dodgerblue;
+            vertical-align: middle;
+            margin-right: 5px;
+            font-size: 130%;
+          "
+        ></i
+        ><el-link
+          type="primary"
+          style="vertical-align: middle; font-weight: bold; font-size: 101%"
+          @click="toCertainProblemSet"
+          >{{ name }}</el-link
+        >
       </span>
-      <el-link type="primary" @click="toCertainProblemSet">{{ title }}</el-link>
+
       <el-tag
         style="float: right"
         effect="dark"
@@ -34,9 +45,34 @@
       </el-tag>
     </div>
     <div>
-      <span>结束时间:{{ endTime }}</span>
-      <span style="float: right"
-        ><i class="el-icon-user-solid"></i>作者id:{{ creatorId }}</span
+      <span>结束时间：{{ endTime }}</span>
+      <span style="float: right; margin-left: 20px; vertical-align: middle"
+        ><el-button
+          :v-if="isMyProblemSet"
+          type="danger"
+          size="mini"
+          @click="deleteProblemSet()"
+        >
+          删除
+        </el-button></span
+      >
+      <span style="float: right; margin-left: 20px; vertical-align: middle"
+        ><i
+          class="el-icon-user"
+          style="margin-right: 3px; vertical-align: middle; color: #409eff"
+        ></i
+        >作者id：<span style="color: #409eff; vertical-align: middle">{{
+          creatorId
+        }}</span></span
+      >
+      <span style="float: right; vertical-align: middle"
+        ><i
+          class="el-icon-price-tag"
+          style="margin-right: 3px; vertical-align: middle; color: #409eff"
+        ></i
+        >题目集id：<span style="color: #409eff; vertical-align: middle">{{
+          problemSetId
+        }}</span></span
       >
     </div>
   </el-card>
@@ -48,10 +84,10 @@ export default {
   props: {
     // 创建者id
     creatorId: {
-      type: Number ,
+      type: Number,
       default: 0,
     },
-    title: {
+    name: {
       type: String,
       default: "题目集标题",
     },
@@ -76,6 +112,11 @@ export default {
     open: Number,
   },
   methods: {
+
+    // 这个地方需要完善，后端接口没给
+    deleteProblemSet(){
+      console.log(this.problemSetId);
+    },
     getStatus() {
       let beginTime = new Date(this.beginTime);
       let endTime = new Date(this.endTime);
@@ -106,6 +147,11 @@ export default {
       this.$router.push({
         path: `/problem-set/${this.problemSetId}`,
       });
+    },
+  },
+  computed: {
+    isMyProblemSet() {
+      return this.creatorId == this.$store.state.myInfo.userId;
     },
   },
 };

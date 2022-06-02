@@ -4,7 +4,7 @@
     <ul style="list-style: none" class="ul">
       <li v-for="(item, index) in problemSets" :key="index">
         <problem-set
-          :title="item.title"
+          :name="item.name"
           :problemSetId="item.id"
           :type="item.type"
           :open="item.open"
