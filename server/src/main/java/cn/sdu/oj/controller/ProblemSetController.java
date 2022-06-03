@@ -8,10 +8,7 @@ import cn.sdu.oj.domain.po.ProblemSetProblem;
 import cn.sdu.oj.domain.vo.*;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
-import cn.sdu.oj.service.ProblemService;
-import cn.sdu.oj.service.ProblemSetService;
-import cn.sdu.oj.service.SolveService;
-import cn.sdu.oj.service.UserGroupService;
+import cn.sdu.oj.service.*;
 import cn.sdu.oj.util.RedisUtil;
 import cn.sdu.oj.util.StringUtil;
 import cn.sdu.oj.util.TimeUtil;
@@ -38,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 @Api(value = "题目集接口", tags = "题目集接口")
 public class ProblemSetController {
 
-    //TODO  统计
 
     @Autowired
     private ProblemSetService problemSetService;
@@ -51,6 +47,9 @@ public class ProblemSetController {
 
     @Autowired
     private UserGroupService userGroupService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     RedisUtil redisUtil;
@@ -137,7 +136,10 @@ public class ProblemSetController {
                                 (name + "参赛人员", "3", introduction, null, user.getId());
                 if (user_group_id != null) {
                     userGroupService.linkUserGroupProblemSet(user_group_id, problem_set_id);
-                    List<String> users = new ArrayList<>();  //返回n个账号 TODO
+                    List<User> users = new ArrayList<>();  //返回n个账号
+
+                    users = userService.generateCompetitionUserList(problem_set_id, teamNum).getData();
+
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("userGroupId", user_group_id);
                     jsonObject.put("problemSetId", problem_set_id);
@@ -146,6 +148,25 @@ public class ProblemSetController {
                 } else return ResultEntity.error(StatusCode.COMMON_FAIL);
 
             } else return ResultEntity.error(StatusCode.COMMON_FAIL);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
+    @ApiOperation("删除题目集|TEACHER+") //删除题目集   //创建者可以使用
+    @PostMapping("/deleteProblemSet")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> deleteProblemSet(
+            @ApiParam(value = "题目集ID") @RequestParam Integer problemSetId,
+            @ApiIgnore @AuthenticationPrincipal User user
+    ) {
+        try {
+            //创建者
+            if (problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
+                problemSetService.deleteProblemSet(problemSetId);
+                return ResultEntity.success("删除成功");
+            } else return ResultEntity.error(StatusCode.NO_PERMISSION);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -188,6 +209,22 @@ public class ProblemSetController {
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
     }
+
+    @ApiOperation("根据名称检索公开题目集|COMMON+") //根据名称检索公开题目集   //所有人可以使用
+    @PostMapping("/selectPublicProblemSet")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity selectPublicProblemSetByName(
+            @ApiParam(value = "名称") @RequestParam String name
+    ) {
+        try {
+            List<ProblemSet> problemSets = problemSetService.selectPublicProblemSetByName(name);
+            return ResultEntity.success("筛选后的题目集", problemSets);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultEntity.error(StatusCode.COMMON_FAIL);
+        }
+    }
+
 
     @ApiOperation("查看我做过的题目集|COMMON+") //查看我做过的题目集   //所有人可以使用
     @PostMapping("/getSelfDoneProblemSet")
@@ -420,22 +457,37 @@ public class ProblemSetController {
     }
 
     //竞赛查看自己的作答
-    @ApiOperation("获取某题目集的完成情况|COMMON+") //获取我做过的某题目集某题的完成情况   所有人可用
+    @ApiOperation("竞赛查看自己的作答|COMMON+") //获取我做过的某题目集某题的完成情况   所有人可用
     @PostMapping("/getSelfCompletionForCompetition")
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getSelfCompletionForCompetition(
             @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-            //TODO 判断是否是参赛者
-            ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
-            if (problemSet.getType() == 3) {
 
-                Integer type = problemSet.getCompetitionType();
-                if (type == 1) {  //OI 赛制不允许比赛中看到
-                    if (problemSet.getEndTime().getTime() > new Date().getTime()) {
-                        return ResultEntity.error("比赛还未结束");
-                    } else {
+            if (!problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
+                return ResultEntity.error(StatusCode.NO_PERMISSION);
+            } else {
+                ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
+                if (problemSet.getType() == 3) {
+
+                    Integer type = problemSet.getCompetitionType();
+                    if (type == 1) {  //OI 赛制不允许比赛中看到
+                        if (problemSet.getEndTime().getTime() > new Date().getTime()) {
+                            return ResultEntity.error("比赛还未结束");
+                        } else {
+                            List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
+                            List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
+                            for (ProblemSetProblem p : problems
+                            ) {
+                                Integer problem_id = p.getProblemId();
+                                ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, user.getId());
+                                problemSetProblemVos.add(problemSetProblemVo);
+                            }
+                            return ResultEntity.success("完成情况", problemSetProblemVos);
+                        }
+
+                    } else {  //其它 赛制允许比赛中看到
                         List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
                         List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
                         for (ProblemSetProblem p : problems
@@ -445,22 +497,11 @@ public class ProblemSetController {
                             problemSetProblemVos.add(problemSetProblemVo);
                         }
                         return ResultEntity.success("完成情况", problemSetProblemVos);
+
                     }
 
-                } else {  //其它 赛制允许比赛中看到
-                    List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
-                    List<ProblemSetProblemVo> problemSetProblemVos = new ArrayList<>();
-                    for (ProblemSetProblem p : problems
-                    ) {
-                        Integer problem_id = p.getProblemId();
-                        ProblemSetProblemVo problemSetProblemVo = problemSetService.getSelfCompletion(problemSetId, problem_id, user.getId());
-                        problemSetProblemVos.add(problemSetProblemVo);
-                    }
-                    return ResultEntity.success("完成情况", problemSetProblemVos);
-
-                }
-
-            } else return ResultEntity.error("非竞赛题目集");
+                } else return ResultEntity.error("非竞赛题目集");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
@@ -552,13 +593,13 @@ public class ProblemSetController {
                         i++;
                     }
                     //进行排序返回
-                    QuickSort(users,scores,0,members.size()-1);
+                    QuickSort(users, scores, 0, members.size() - 1);
                     JSONArray jsonArray = new JSONArray();
-                    for (int j = 0; j < members.size()-1; j++) {
+                    for (int j = 0; j < members.size() - 1; j++) {
                         JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("userId",users[i]);
-                        jsonObject.put("rank",i);
-                        jsonObject.put("score",scores[i]);
+                        jsonObject.put("userId", users[i]);
+                        jsonObject.put("rank", i);
+                        jsonObject.put("score", scores[i]);
                         jsonArray.add(jsonObject);
                     }
 
@@ -573,28 +614,29 @@ public class ProblemSetController {
     }
 
     //重写快速排序：同时将键值进行排序
-    public static void QuickSort(int arr[],double arr1[],int _left,int _right){
+    public static void QuickSort(int arr[], double arr1[], int _left, int _right) {
 
-        int right=_right;
-        int left=_left;
-        int temp=0;double temp1=0;
-        if(left<=right){
-            temp1=arr1[left];
-            temp=arr[left];
-            while(left!=right){
-                while(right>left&&arr[right]>temp)
+        int right = _right;
+        int left = _left;
+        int temp = 0;
+        double temp1 = 0;
+        if (left <= right) {
+            temp1 = arr1[left];
+            temp = arr[left];
+            while (left != right) {
+                while (right > left && arr[right] > temp)
                     right--;
-                arr1[left]=arr1[right];
-                arr[left]=arr[right];
-                while(left<right&&temp>arr[left])
+                arr1[left] = arr1[right];
+                arr[left] = arr[right];
+                while (left < right && temp > arr[left])
                     left++;
-                arr1[right]=arr1[left];
-                arr[right]=arr[left];
+                arr1[right] = arr1[left];
+                arr[right] = arr[left];
             }
-            arr1[right]=temp1;
-            arr[right]=temp;
-            QuickSort(arr,arr1,_left,left-1);
-            QuickSort(arr,arr1,right+1,_right);
+            arr1[right] = temp1;
+            arr[right] = temp;
+            QuickSort(arr, arr1, _left, left - 1);
+            QuickSort(arr, arr1, right + 1, _right);
         }
 
     }

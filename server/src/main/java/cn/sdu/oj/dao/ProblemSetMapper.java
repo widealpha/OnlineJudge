@@ -25,6 +25,11 @@ public interface ProblemSetMapper {
             "WHERE `status`=0 AND `id`=#{id}")
     boolean alterProblemSetInfo(ProblemSet problemSet);
 
+    @Update("UPDATE problem_set " +
+            "SET status=#{name} " +
+            "WHERE `id`=#{problemSetId} ")
+    void deleteProblemSet(Integer problemSetId);
 
-    void getPunishRecord(Integer problemSetId, Integer problem_id, Integer a_member);
+    @Select("SELECT * FROM problem_set WHERE `status`=0 AND `is_public`=1 AND name LIKE #{name}"  )
+    List<ProblemSet> selectPublicProblemSetByName(String name);
 }
