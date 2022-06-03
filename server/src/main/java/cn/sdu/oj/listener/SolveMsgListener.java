@@ -1,7 +1,5 @@
 package cn.sdu.oj.listener;
 
-import cn.sdu.oj.domain.bo.JudgeResult;
-import cn.sdu.oj.domain.bo.JudgeStatus;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.service.SolveService;
 import com.alibaba.fastjson.JSONObject;

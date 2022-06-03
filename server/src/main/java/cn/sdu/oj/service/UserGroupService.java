@@ -1,19 +1,30 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.UserGroupMapper;
+import cn.sdu.oj.dao.UserMapper;
+import cn.sdu.oj.domain.bo.StudentExcelInfo;
 import cn.sdu.oj.domain.po.UserGroup;
+import cn.sdu.oj.domain.vo.User;
+import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Random;
 
 
 @Service
 public class UserGroupService {
     @Autowired
     private UserGroupMapper UserGroupMapper;
+    @Resource
+    private UserMapper userMapper;
+    @Resource
+    private PasswordEncoder passwordEncoder;
 
     //新建用户组 || 添加子用户组
     public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId) {
@@ -130,5 +141,18 @@ public class UserGroupService {
         if (userGroupMembers.contains(user_id)) {
             return true;
         } else return false;
+    }
+
+    public ResultEntity<Boolean> importStudentGroup(List<StudentExcelInfo> infos, int userId){
+        for (StudentExcelInfo info : infos) {
+            String username = "sdu-" + info.getStudentId();
+            User user = new User(username, passwordEncoder.encode("123456"));
+            //注册成功
+            if (userMapper.insert(user)){
+                int newUserId = user.getId();
+            }
+
+        }
+        return ResultEntity.data(true);
     }
 }
