@@ -11,9 +11,7 @@ import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.service.ProblemService;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.*;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +64,7 @@ public class ProblemController {
             @ApiParam("题目表述,题干") @RequestParam String description,
             @ApiParam("题目结果样例") @RequestParam(required = false) String example,
             @ApiParam("难度") @RequestParam Integer difficulty,
-            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags,
+            @ApiParam(value = "标签Id数组(JSON数组)", defaultValue = "[1,2]") @RequestParam String tags,
             @ApiParam(value = "支持的语言(JSON数组),默认所有", example = "[C,CPP]")
             @RequestParam(required = false) String supportLanguages) {
         AsyncProblem asyncProblem = new AsyncProblem();
@@ -76,15 +74,19 @@ public class ProblemController {
         asyncProblem.setDifficulty(difficulty);
         asyncProblem.setCreator(user.getId());
         try {
-            if (supportLanguages == null){
+            if (supportLanguages == null || supportLanguages.isEmpty()) {
                 asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
             } else {
-                for (String language: JSON.parseArray(supportLanguages, String.class)){
-                    LanguageEnum.valueOf(language);
+                JSONArray array = new JSONArray();
+                for (String language : JSON.parseArray(supportLanguages, String.class)) {
+                    array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
                 }
-                asyncProblem.setSupportLanguages(supportLanguages);
+                if (array.isEmpty()) {
+                    return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
+                }
+                asyncProblem.setSupportLanguages(array.toJSONString());
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "支持的语言错误");
         }
         try {
@@ -116,15 +118,19 @@ public class ProblemController {
         asyncProblem.setDifficulty(difficulty);
         asyncProblem.setCreator(user.getId());
         try {
-            if (supportLanguages == null){
+            if (supportLanguages == null) {
                 asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
             } else {
-                for (String language: JSON.parseArray(supportLanguages, String.class)){
-                    LanguageEnum.valueOf(language);
+                JSONArray array = new JSONArray();
+                for (String language : JSON.parseArray(supportLanguages, String.class)) {
+                    array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
                 }
-                asyncProblem.setSupportLanguages(supportLanguages);
+                if (array.isEmpty()) {
+                    return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
+                }
+                asyncProblem.setSupportLanguages(array.toJSONString());
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "支持的语言错误");
         }
         try {
