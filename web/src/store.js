@@ -7,6 +7,7 @@ export default new Vuex.Store({
     state: {
         token: null,
         noToken: true,
+        // 编程题
         problemInfo: {
             answer: "",
             codeLengthLimit: 0,
@@ -20,6 +21,7 @@ export default new Vuex.Store({
             memoryLimit: 0,
             modifiedTime: "",
             name: "",
+            supportLangauges:null,
             options: "",
             passRate: 0,
             tags: [],

@@ -40,6 +40,7 @@ export default {
           },
         }
       );
+
       if (res.data.code == 0) {
         this.problemSets = res.data.data;
       }

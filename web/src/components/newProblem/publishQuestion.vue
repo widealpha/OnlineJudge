@@ -38,21 +38,17 @@
                   list-style-type: none;
                 "
               >
-                <li
+                <el-tag
                   v-for="item in BasicInfo.myTags"
                   :key="item.index"
-                  style="height: 2em"
+                  :disable-transitions="false"
+                  class="tags"
+                  closable
+                  size="small"
+                  @close="deleteTag(item)"
                 >
-                  <el-tag
-                    :disable-transitions="false"
-                    closable
-                    effect="plain"
-                    size="small"
-                    @close="deleteTag(item)"
-                  >
-                    {{ item.value }}
-                  </el-tag>
-                </li>
+                  {{ item.value }}
+                </el-tag>
               </ul>
               <el-dropdown
                 ref="tagDrop"
@@ -75,6 +71,56 @@
                     :props="tagCascaderProps"
                     @change="selectTag"
                   />
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </el-form-item>
+          <el-form-item style="margin-top: -1em">
+            <div style="text-align: left;">
+              <ul
+                style="
+                  padding: 0;
+                  margin-top: 0;
+                  margin-bottom: 0.2em;
+                  list-style-type: none;
+                "
+              >
+                <el-tag
+                  v-for="item in BasicInfo.supportLanguages"
+                  :key="item.index"
+                  :disable-transitions="false"
+                  closable
+                  type="success"
+                  class="tags"
+                  size="small"
+                  @close="deleteLangTag(item)"
+                >
+                  {{ item }}
+                </el-tag>
+              </ul>
+              <el-dropdown
+                @command="addLanguage"
+                placement="bottom-start"
+                size="small"
+                trigger="click"
+              >
+                <el-button
+                  icon="el-icon-circle-plus-outline"
+                  plain
+                  round
+                  size="mini"
+                  >选择支持的语言
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    v-for="(item, index) in allLangTags"
+                    :key="index"
+                    :disabled="
+                      BasicInfo.supportLanguages.some((lang) => lang === item)
+                    "
+                    :command="item"
+                    >{{ item }}</el-dropdown-item
+                  >
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -111,10 +157,13 @@ export default {
     return {
       tagStr: "",
       problemId: 0,
+      allLangTags: [],
+      langStr: "",
       BasicInfo: {
         title: "",
         difficulty: 1,
         myTags: [],
+        supportLanguages: [],
         description:
           "这是一个编程题模板。请在这里写题目描述。例如：本题目要求读入2个整数A和B，然后输出它们的和。\n" +
           "\n" +
@@ -225,6 +274,30 @@ export default {
     };
   },
   methods: {
+    deleteLangTag(item) {
+      this.BasicInfo.supportLanguages.splice(
+        this.BasicInfo.supportLanguages.indexOf(item),
+        1
+      );
+    },
+    addLanguage(language) {
+      this.BasicInfo.supportLanguages.push(language);
+    },
+    async getAllSupportLanguages() {
+      let res = await this.$ajax.get(
+        "/solve/supportLanguages",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${this.$store.state.token}`,
+          },
+        }
+      );
+      if (res.data.code === 0) {
+        this.allLangTags = res.data.data;
+      }
+    },
+
     //上一步返回后，根据问题id获取问题信息
     async getProblemInfoById() {
       let res = await this.$ajax.post(
@@ -242,7 +315,6 @@ export default {
       if (res.data.code === 0) {
         let data = res.data.data;
         this.$store.commit("setProblemInfo", data);
-
         this.BasicInfo.title = data.name;
         this.BasicInfo.difficulty = data.difficulty;
         this.BasicInfo.description = data.description;
@@ -266,6 +338,7 @@ export default {
           difficulty: this.BasicInfo.difficulty,
           tags: this.tagStr,
           description: this.BasicInfo.description,
+          supportLanguages: this.langStr,
         },
         {
           headers: {
@@ -273,7 +346,7 @@ export default {
           },
         }
       );
-
+      // console.log(this.langStr);
       if (res.data.code == 0) {
         this.$message({
           message: "提交成功",
@@ -286,6 +359,7 @@ export default {
           params: { step: 2 },
         });
       } else {
+        // console.log(res)
         this.$message({
           message: "提交失败",
           type: "error",
@@ -299,6 +373,7 @@ export default {
         {
           problemId: this.problemId,
           name: this.BasicInfo.title,
+          supportLanguages: this.langStr,
           difficulty: this.BasicInfo.difficulty,
           tags: this.tagStr,
           description: this.BasicInfo.description,
@@ -309,6 +384,7 @@ export default {
           },
         }
       );
+      // console.log(this.langStr);
       if (res.data.code == 0) {
         this.$message({
           message: "提交成功",
@@ -329,6 +405,12 @@ export default {
         this.tagStr = JSON.stringify(
           this.BasicInfo.myTags.map((item) => item.id)
         );
+        if (this.BasicInfo.supportLanguages.length !== 0) {
+          this.langStr = JSON.stringify(
+            this.BasicInfo.supportLanguages
+          );
+        }
+
         if (valid) {
           if (this.problemId === 0) {
             this.addAProblem();
@@ -402,6 +484,7 @@ export default {
   },
   async created() {
     let problemId = this.$route.query.problemId;
+    this.getAllSupportLanguages();
 
     if (problemId) {
       this.problemId = Number(problemId);
@@ -414,7 +497,7 @@ export default {
       let problemId = newVal.query.problemId;
       if (problemId) {
         this.problemId = Number(problemId);
-
+this.getAllSupportLanguages();
         this.getProblemInfoById();
       } else {
         this.problemId = 0;
@@ -462,13 +545,14 @@ export default {
 
 .text {
   text-align: left;
-
 }
 
 .el-row {
   margin-bottom: 5px;
 }
-
+.tags {
+  margin: 0 1em 0 0;
+}
 .form-control {
   display: block;
   width: 100%;

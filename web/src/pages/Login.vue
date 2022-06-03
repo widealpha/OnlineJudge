@@ -110,12 +110,9 @@ export default {
           username: this.userId,
           password: this.userPsw,
         },
-        {
-          headers: {
-            // "token": 'UmamusumePrettyDerby',
-          },
-        }
+        {}
       );
+
       if (res.status == 200) {
         const _token = res.data.data;
         // 请求个人信息
@@ -141,7 +138,6 @@ export default {
           onClose: () => {
             this.$store.commit("setToken", _token);
             this.$store.commit("setNoToken", false);
-         
 
             this.$router.push("/");
           },
