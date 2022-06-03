@@ -71,6 +71,9 @@ public class SolveService {
         if (problem == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }
+        if (!problem.getSupportLanguages().isEmpty() && !problem.getSupportLanguages().contains(task.getLanguage().name())) {
+            return ResultEntity.error(StatusCode.LANGUAGE_NOT_SUPPORT);
+        }
         //生成判题限制
         JudgeLimit judgeLimit = new JudgeLimit();
         ProblemLimit problemLimit = new ProblemLimit(problem);

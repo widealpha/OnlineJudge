@@ -9,12 +9,12 @@ public interface AsyncProblemMapper {
     @Select("SELECT * FROM async_problem WHERE id = #{id} AND status > 0")
     AsyncProblem selectProblem(int id);
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    @Insert("INSERT INTO async_problem (name, description, example, difficulty, creator) " +
-            "VALUES (#{name}, #{description}, #{example}, #{difficulty}, #{creator})")
+    @Insert("INSERT INTO async_problem (name, description, example, difficulty, creator, support_languages) " +
+            "VALUES (#{name}, #{description}, #{example}, #{difficulty}, #{creator}, #{supportLanguages})")
     boolean insertProblem(AsyncProblem problem);
 
     @Update("UPDATE async_problem " +
-            "SET name = #{name}, description = #{description}, example = #{example}, difficulty = #{difficulty} " +
+            "SET name = #{name}, description = #{description}, example = #{example}, difficulty = #{difficulty}, support_languages = #{supportLanguages} " +
             "WHERE id = #{id}")
     boolean updateProblem(AsyncProblem problem);
 

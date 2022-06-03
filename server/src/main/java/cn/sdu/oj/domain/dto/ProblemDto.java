@@ -1,5 +1,6 @@
 package cn.sdu.oj.domain.dto;
 
+import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.po.Tag;
 
 import java.util.Date;
@@ -24,6 +25,8 @@ public class ProblemDto {
     private double passRate;
 
     private List<Tag> tags;
+
+    private List<LanguageEnum> supportLanguages;
 
     /**
      * 时间限制,单位ms
@@ -182,5 +185,14 @@ public class ProblemDto {
 
     public void setExistCheckpoints(boolean existCheckpoints) {
         this.existCheckpoints = existCheckpoints;
+    }
+
+
+    public List<LanguageEnum> getSupportLanguages() {
+        return supportLanguages;
+    }
+
+    public void setSupportLanguages(List<LanguageEnum> supportLanguages) {
+        this.supportLanguages = supportLanguages;
     }
 }

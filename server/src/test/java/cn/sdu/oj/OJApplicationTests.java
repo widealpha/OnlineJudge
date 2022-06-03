@@ -1,5 +1,6 @@
 package cn.sdu.oj;
 
+import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.util.JwtUtil;
 import cn.sdu.oj.util.StringUtil;
 import com.alibaba.fastjson.JSON;
@@ -23,6 +24,7 @@ class OJApplicationTests {
 //        list.add("A");
 //        System.out.println(JSON.toJSONString(list));
 //        String s = UUID.randomUUID().toString().replace("-", "");
+        System.out.println(JSON.toJSONString(LanguageEnum.values()));
         List<String> list = new ArrayList<>();
         list.add("A");
         list.add("C");

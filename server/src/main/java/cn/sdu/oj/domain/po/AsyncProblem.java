@@ -13,6 +13,8 @@ public class AsyncProblem {
     private String example;
     private int difficulty;
     private int creator;
+
+    private String supportLanguages;
     int status;
 
     /**
@@ -127,6 +129,14 @@ public class AsyncProblem {
 
     public void setModifiedTime(Date modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public String getSupportLanguages() {
+        return supportLanguages;
+    }
+
+    public void setSupportLanguages(String supportLanguages) {
+        this.supportLanguages = supportLanguages;
     }
 
     public boolean isExistCheckpoints() {

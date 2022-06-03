@@ -1,5 +1,6 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.po.Tag;
@@ -10,9 +11,7 @@ import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.service.ProblemService;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.*;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-@Slf4j
 @RestController
 @RequestMapping("/problem")
 @Api(value = "问题接口", tags = "问题接口")
@@ -66,13 +64,31 @@ public class ProblemController {
             @ApiParam("题目表述,题干") @RequestParam String description,
             @ApiParam("题目结果样例") @RequestParam(required = false) String example,
             @ApiParam("难度") @RequestParam Integer difficulty,
-            @ApiParam(value = "标签Id数组(JSON数组)", defaultValue = "[1,2]") @RequestParam String tags) {
+            @ApiParam(value = "标签Id数组(JSON数组)", defaultValue = "[1,2]") @RequestParam String tags,
+            @ApiParam(value = "支持的语言(JSON数组),默认所有", example = "[C,CPP]")
+            @RequestParam(required = false) String supportLanguages) {
         AsyncProblem asyncProblem = new AsyncProblem();
         asyncProblem.setName(name);
         asyncProblem.setDescription(description);
         asyncProblem.setExample(example);
         asyncProblem.setDifficulty(difficulty);
         asyncProblem.setCreator(user.getId());
+        try {
+            if (supportLanguages == null || supportLanguages.isEmpty()) {
+                asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
+            } else {
+                JSONArray array = new JSONArray();
+                for (String language : JSON.parseArray(supportLanguages, String.class)) {
+                    array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
+                }
+                if (array.isEmpty()) {
+                    return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
+                }
+                asyncProblem.setSupportLanguages(array.toJSONString());
+            }
+        } catch (Exception e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "支持的语言错误");
+        }
         try {
             return problemService.addProgramingProblem(asyncProblem, JSON.parseArray(tags, Integer.class));
         } catch (TagNotExistException e) {
@@ -92,13 +108,31 @@ public class ProblemController {
             @ApiParam("题目表述,题干") @RequestParam String description,
             @ApiParam("例子") @RequestParam(required = false) String example,
             @ApiParam("难度") @RequestParam Integer difficulty,
-            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags) {
+            @ApiParam(value = "标签Id数组(JSON数组)", example = "[1,2]") @RequestParam String tags,
+            @ApiParam(value = "支持的语言(JSON数组),默认所有", example = "[C,CPP]")
+            @RequestParam(required = false) String supportLanguages) {
         AsyncProblem asyncProblem = new AsyncProblem();
         asyncProblem.setName(name);
         asyncProblem.setDescription(description);
         asyncProblem.setExample(example);
         asyncProblem.setDifficulty(difficulty);
         asyncProblem.setCreator(user.getId());
+        try {
+            if (supportLanguages == null) {
+                asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
+            } else {
+                JSONArray array = new JSONArray();
+                for (String language : JSON.parseArray(supportLanguages, String.class)) {
+                    array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
+                }
+                if (array.isEmpty()) {
+                    return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
+                }
+                asyncProblem.setSupportLanguages(array.toJSONString());
+            }
+        } catch (Exception e) {
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "支持的语言错误");
+        }
         try {
             return problemService.updateProgramingProblem(problemId, asyncProblem, JSON.parseArray(tags, Integer.class));
         } catch (TagNotExistException e) {
