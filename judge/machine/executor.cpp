@@ -19,7 +19,9 @@ void Executor::run() {
     if (child_pid != 0) {
         int status;
         rusage resource_usage{};
-        start_timeout_guard(config->limit.max_real_time / 1000 + 1);
+        if (config->limit.max_real_time != UNLIMITED) {
+            start_timeout_guard(config->limit.max_real_time / 1000 + 1);
+        }
         clock_t start = clock();
         if (wait4(child_pid, &status, WSTOPPED, &resource_usage) == -1) {
             kill(child_pid, SIGKILL);
@@ -33,14 +35,8 @@ void Executor::run() {
         applyConfig();
         //todo applySeccompRule
         applySeccompRule();
+
         execve(config->bin_file.c_str(), config->args, config->env);
-        ///删除new的char内存
-        for (auto ptr: config->args) {
-            delete ptr;
-        }
-        for (auto ptr: config->env) {
-            delete ptr;
-        }
     }
 }
 
@@ -69,10 +65,9 @@ void Executor::applyConfig() const {
     }
 
     if (limit.max_memory != UNLIMITED) {
-        struct rlimit max_memory{
-                static_cast<rlim_t>(limit.max_memory) * 2,
-                static_cast<rlim_t>(limit.max_memory) * 2};
-        if (setrlimit(RLIMIT_AS, &max_memory) != 0) {
+        rlim_t stack_size = limit.max_memory * 1024;
+        struct rlimit max_memory{stack_size, stack_size};
+        if (setrlimit(RLIMIT_DATA, &max_memory) != 0) {
             exit(SETRLIMIT_FAILED);
         }
     }
@@ -135,7 +130,8 @@ void Executor::applySeccompRule() {
 }
 
 void Executor::generateSignal() {
-    if (config->limit.max_memory != UNLIMITED && result->memory > config->limit.max_memory) {
+    if (config->limit.max_memory != UNLIMITED
+        && (result->memory > config->limit.max_memory || result->exit_code == 11)) {
         result->signal = Signal::MEMORY_LIMIT_EXCEEDED;
     } else if (config->limit.max_cpu_time != UNLIMITED && result->cpu_time > config->limit.max_cpu_time) {
         result->signal = Signal::CPU_TIME_LIMIT_EXCEEDED;
@@ -145,7 +141,7 @@ void Executor::generateSignal() {
         result->signal = Signal::REAL_TIME_LIMIT_EXCEEDED;
     } else if (result->exit_code == 0) {
         result->signal = Signal::SUCCESS;
-    } else if (result->exit_code < 0) {
+    } else if (result->exit_code < 255) {
         result->signal = Signal::RUNTIME_ERROR;
     } else {
         result->signal = Signal::SYSTEM_ERROR;

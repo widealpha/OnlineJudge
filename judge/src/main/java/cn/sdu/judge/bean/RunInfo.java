@@ -2,6 +2,7 @@ package cn.sdu.judge.bean;
 
 public class RunInfo {
     private int exitCode;
+    private int signal;
     private boolean success;
 
     private int cpuTime;
@@ -75,6 +76,14 @@ public class RunInfo {
 
     public void setRealTime(int realTime) {
         this.realTime = realTime;
+    }
+
+    public int getSignal() {
+        return signal;
+    }
+
+    public void setSignal(int signal) {
+        this.signal = signal;
     }
 
     @Override

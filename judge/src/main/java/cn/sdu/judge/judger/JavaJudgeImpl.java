@@ -2,6 +2,7 @@ package cn.sdu.judge.judger;
 
 import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.bean.CompileInfo;
+import cn.sdu.judge.bean.JudgeLimit;
 import cn.sdu.judge.bean.RunInfo;
 import cn.sdu.judge.util.FileUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -61,7 +62,7 @@ public class JavaJudgeImpl implements JudgeInterface {
     }
 
     @Override
-    public RunInfo run(Checkpoint checkpoint) throws IOException, InterruptedException {
+    public RunInfo run(Checkpoint checkpoint, JudgeLimit limit) throws IOException, InterruptedException {
         //构建进程，重定向输入输出和错误
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(machine,
@@ -69,7 +70,10 @@ public class JavaJudgeImpl implements JudgeInterface {
                 "-i", checkpoint.getInput().getAbsolutePath(),
                 "-o", outputFile.getAbsolutePath(),
                 "-e", errorFile.getAbsolutePath(),
-                "--args", "-Dfile.encoding=UTF-8 -classpath " + compiledFile.getParent() + " Main");
+                "--args", "-Dfile.encoding=UTF-8 -classpath " + compiledFile.getParent() + " Main",
+                "--max-memory", String.valueOf(limit.getMemory()),
+                "--max-cpu-time", String.valueOf(limit.getCpuTime()),
+                "--max-real-time", String.valueOf(limit.getRealTime()));
         Process process = processBuilder.start();
         RunInfo runInfo = new RunInfo();
         //构建运行信息
@@ -79,6 +83,7 @@ public class JavaJudgeImpl implements JudgeInterface {
         String res = reader.readLine();
         JSONObject jsonObject = JSONObject.parseObject(res);
         runInfo.setCpuTime(jsonObject.getInteger("cpu_time"));
+        runInfo.setSignal(jsonObject.getInteger("signal"));
         runInfo.setMemory(jsonObject.getInteger("memory"));
         runInfo.setRealTime(jsonObject.getInteger("real_time"));
         //关掉输出流防止后面的读取收到影响

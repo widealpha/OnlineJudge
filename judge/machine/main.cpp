@@ -49,7 +49,7 @@ bool match_arguments(int argc, char *argv[], Config &config) {
     parser.add<int>("rule", 'r', "seccomp rule", false, UNLIMITED);
     parser.add<int>("max-real-time", '\0', "max real time use(ms)", false, UNLIMITED, cmdline::range(0, 200 * 1000));
     parser.add<int>("max-cpu-time", '\0', "max cpu time use(ms)", false, UNLIMITED, cmdline::range(0, 200 * 1000));
-    parser.add<int>("max-memory", '\0', "max memory use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
+    parser.add<int>("max-memory", '\0', "max memory use(KB)", false, UNLIMITED, cmdline::range(0, 1024 * 200));
     parser.add<int>("max-stack-size", '\0', "max stack use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
     parser.add<int>("max-output-size", '\0', "max stack use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
     parser.add<int>("num-threads", '\0', "max thread num", false, 1, cmdline::range(1, 8));
