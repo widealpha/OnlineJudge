@@ -4,6 +4,7 @@ import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.bean.CompileInfo;
 import cn.sdu.judge.bean.RunInfo;
 import cn.sdu.judge.util.FileUtil;
+import com.alibaba.fastjson.JSONObject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -61,29 +62,32 @@ public class JavaJudgeImpl implements JudgeInterface {
 
     @Override
     public RunInfo run(Checkpoint checkpoint) throws IOException, InterruptedException {
+        //构建进程，重定向输入输出和错误
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command(machine,
+                "-b", "/usr/bin/java",
+                "-i", checkpoint.getInput().getAbsolutePath(),
+                "-o", outputFile.getAbsolutePath(),
+                "-e", errorFile.getAbsolutePath(),
+                "--args", "-Dfile.encoding=UTF-8 -classpath " + compiledFile.getParent() + " Main");
+        Process process = processBuilder.start();
         RunInfo runInfo = new RunInfo();
+        //构建运行信息
+        runInfo.setExitCode(process.waitFor());
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String res = reader.readLine();
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        runInfo.setCpuTime(jsonObject.getInteger("cpu_time"));
+        runInfo.setMemory(jsonObject.getInteger("memory"));
+        runInfo.setRealTime(jsonObject.getInteger("real_time"));
+        //关掉输出流防止后面的读取收到影响
+        process.getErrorStream().close();
+        process.getInputStream().close();
         runInfo.setCheckpoint(checkpoint);
-        try {
-            //构建进程，重定向输入输出和错误
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.command("java", "-Dfile.encoding=UTF-8", "-classpath", compiledFile.getParent(), "Main");
-            processBuilder.redirectInput(checkpoint.getInput().getAbsoluteFile());
-            processBuilder.redirectOutput(outputFile);
-            processBuilder.redirectError(errorFile);
-            Process process = processBuilder.start();
-            //构建运行信息
-            runInfo.setExitCode(process.waitFor());
-            //关掉输出流防止后面的读取收到影响
-            process.getErrorStream().close();
-            process.getInputStream().close();
-            runInfo.setSuccess(FileUtil.fileSame(checkpoint.getOutput(), outputFile));
-            runInfo.setError(FileUtil.topLinesFromFile(errorFile, 100));
-            runInfo.setOutput(FileUtil.topLinesFromFile(outputFile, 100));
-        } catch (IOException e) {
-            runInfo.setSuccess(false);
-            runInfo.setError(e.getMessage());
-            runInfo.setExitCode(-1);
-        }
+        runInfo.setSuccess(FileUtil.fileSame(checkpoint.getOutput(), outputFile));
+        runInfo.setError(FileUtil.topLinesFromFile(errorFile, 100));
+        runInfo.setOutput(FileUtil.topLinesFromFile(outputFile, 100));
         return runInfo;
     }
 

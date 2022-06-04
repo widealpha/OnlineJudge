@@ -34,6 +34,13 @@ void Executor::run() {
         //todo applySeccompRule
         applySeccompRule();
         execve(config->bin_file.c_str(), config->args, config->env);
+        ///删除new的char内存
+        for (auto ptr: config->args) {
+            delete ptr;
+        }
+        for (auto ptr: config->env) {
+            delete ptr;
+        }
     }
 }
 

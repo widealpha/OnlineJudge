@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.16)
 project(machine)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(machine main.cpp executor.cpp rule/cpp_rule.cpp)
-target_link_libraries(machine pthread seccomp)
+file(GLOB rules "rule/*.cpp")
+add_library(rule-lib STATIC ${rules})
+
+add_executable(machine main.cpp executor.cpp)
+target_link_libraries(machine pthread seccomp rule-lib)
 
 add_executable(hello demo/hello.cpp)

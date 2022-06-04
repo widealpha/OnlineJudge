@@ -6,9 +6,10 @@
 
 using namespace std;
 
-int main() {
-    string s;
-    cin >> s;
-    cout << "hello";
+
+int main(int argc, char *argv[]) {
+    for (int i = 0; i < argc; ++i) {
+        cout << argv[i] << endl;
+    }
     return 0;
 }
