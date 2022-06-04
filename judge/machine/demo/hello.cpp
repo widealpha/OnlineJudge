@@ -3,13 +3,24 @@
 //
 
 #include <iostream>
+#include <stdlib.h>
+#include <unistd.h>
 
 using namespace std;
 
 
-int main(int argc, char *argv[]) {
-    for (int i = 0; i < argc; ++i) {
-        cout << argv[i] << endl;
+int main() {
+    string s;
+    cin >> s;
+    if (s.empty()) {
+        ptr[0] = 1;
     }
+//    sleep(2);
+    if (ptr[0]) {
+        cout << "hello" << endl;
+    } else {
+        cout << "hello1" << endl;
+    }
+    free(ptr);
     return 0;
 }

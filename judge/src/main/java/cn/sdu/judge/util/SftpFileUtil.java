@@ -50,9 +50,9 @@ public class SftpFileUtil {
             }
         }
         if (!localCheckpointsDir.exists()) {
-            logger.warn("新建测试点文件夹{}错误", localCheckpointsDir.getAbsolutePath());
             //新建文件夹失败返回null
             if (!localCheckpointsDir.mkdirs()) {
+                logger.warn("新建测试点文件夹{}错误", localCheckpointsDir.getAbsolutePath());
                 return null;
             }
         }

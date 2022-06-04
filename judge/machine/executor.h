@@ -11,7 +11,6 @@
 #include <wait.h>
 #include <ctime>
 #include <iostream>
-#include <ctime>
 
 
 #include "config.h"
