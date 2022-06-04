@@ -4,10 +4,9 @@ import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.bean.CompileInfo;
 import cn.sdu.judge.bean.RunInfo;
 import cn.sdu.judge.util.FileUtil;
+import com.alibaba.fastjson.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,17 +60,26 @@ public class CJudgeImpl implements JudgeInterface {
     public RunInfo run(Checkpoint checkpoint) throws IOException, InterruptedException {
         //构建进程，重定向输入输出和错误
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command(compiledFile.getAbsolutePath());
-        processBuilder.redirectInput(checkpoint.getInput().getAbsoluteFile());
-        processBuilder.redirectOutput(outputFile);
-        processBuilder.redirectError(errorFile);
+        processBuilder.command(machine,
+                "-b", compiledFile.getAbsolutePath(),
+                "-i", checkpoint.getInput().getAbsolutePath(),
+                "-o", outputFile.getAbsolutePath(),
+                "-e", errorFile.getAbsolutePath());
         Process process = processBuilder.start();
         //构建运行信息
         RunInfo runInfo = new RunInfo();
         runInfo.setExitCode(process.waitFor());
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String res = reader.readLine();
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        runInfo.setCpuTime(jsonObject.getInteger("cpu_time"));
+        runInfo.setMemory(jsonObject.getInteger("memory"));
+        runInfo.setRealTime(jsonObject.getInteger("real_time"));
         //关掉输出流防止后面的读取收到影响
         process.getErrorStream().close();
         process.getInputStream().close();
+        runInfo.setCheckpoint(checkpoint);
         runInfo.setSuccess(FileUtil.fileSame(checkpoint.getOutput(), outputFile));
         runInfo.setError(FileUtil.topLinesFromFile(errorFile, 50));
         runInfo.setOutput(FileUtil.topLinesFromFile(outputFile, 50));

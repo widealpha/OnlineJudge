@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 public interface JudgeInterface {
+    String machine = "/machine/machine";
     /**
      * 编译文件
      *

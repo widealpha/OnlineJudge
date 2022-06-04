@@ -23,6 +23,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +47,7 @@ public class UserGroupController {
     public ResultEntity createUserGroup(
             @ApiParam(value = "姓名") @RequestParam(required = true) String name,
             @ApiParam(value = "类型") @RequestParam(required = true) String type,
-            @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
+            @ApiParam(value = "简介") @RequestParam(required = false) String introduction,
             @ApiParam(value = "父用户组（可选）有则创建子用户组") @RequestParam(required = false) Integer fatherId,
             @ApiParam(value = "是否需要生成邀请码（可选）,有请填1") @RequestParam(required = false) Integer isNeedInviteCode,
             @ApiParam(value = "题目集id（可选），有则为用户组添加这个题目集") @RequestParam(required = false) Integer problemSetId,
@@ -318,8 +319,8 @@ public class UserGroupController {
     //克隆用户组 TODO
 
 
-    @ApiOperation("导入学生用户组|TEACHER+")
-    @PostMapping("/importStudentGroup")    //为一个用户组删除题目集
+    @ApiOperation("导入19级学生用户组|TEACHER+")
+    @PostMapping("/importStudentGroup")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<Boolean> importStudentGroup(
             @ApiIgnore HttpServletResponse response,
@@ -331,6 +332,7 @@ public class UserGroupController {
         }
         List<StudentExcelInfo> list = EasyExcel.read(file.getInputStream()).head(StudentExcelInfo.class).sheet().doReadSync();
 
+
 //        response.setContentType("application/vnd.ms-excel");
 //        response.setCharacterEncoding("utf-8");
 //        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
@@ -338,6 +340,6 @@ public class UserGroupController {
 //        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
 //        EasyExcel.write(response.getOutputStream(), StudentExcelInfo.class).sheet("sheet1")
 //                .doWrite(userGroupService.generateGroup(list)));
-        return userGroupService.importStudentGroup(list, user.getId());
+        return userGroupService.importStudentGroup(list);
     }
 }

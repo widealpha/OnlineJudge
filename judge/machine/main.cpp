@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stack>
 #include "executor.h"
 #include "cmdline.h"
 #include "rule/rule.h"
@@ -14,6 +15,29 @@ int main(int argc, char *argv[]) {
     Executor executor(&config, &result);
     executor.run();
     std::cout << result << std::endl;
+}
+
+void string2argv(const std::string &str, char *argv[], int max_length) {
+    std::vector<char *> args;
+    std::istringstream iss(str);
+
+    std::string token;
+    while (iss >> token) {
+        char *arg = new char[token.size() + 1];
+        copy(token.begin(), token.end(), arg);
+        arg[token.size()] = '\0';
+        args.push_back(arg);
+    }
+    args.push_back(nullptr);
+    if (args.size() > max_length){
+        for (auto  arg: args) {
+            delete[] arg;
+        }
+        return;
+    }
+    for (int i = 0; i < args.size(); ++i) {
+        argv[i] = args.at(i);
+    }
 }
 
 bool match_arguments(int argc, char *argv[], Config &config) {
@@ -50,9 +74,7 @@ bool match_arguments(int argc, char *argv[], Config &config) {
     config.output_file = parser.get<std::string>("output-file");
     config.error_file = parser.get<std::string>("error-file");
     config.args[0] = (char *) config.bin_file.c_str();
-    std::vector<std::string> rest = parser.rest();
-    for (int i = 1; i < rest.size() + 1; ++i) {
-        config.args[i] = (char *) rest[i].c_str();
-    }
+    string2argv(parser.get<std::string>("args"), &config.args[1], 254);
+    string2argv(parser.get<std::string>("env"), config.env, 254);
     return true;
 }

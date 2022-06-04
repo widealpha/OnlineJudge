@@ -18,7 +18,7 @@ struct Config {
     std::string output_file;
     std::string error_file;
     int rule;
-    char *args[MAX_ARGS_COUNT];
+    char *args[MAX_ARGS_COUNT] = {};
     char *env[MAX_ENV_COUNT] = {};
 };
 
