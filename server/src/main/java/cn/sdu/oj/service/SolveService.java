@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -100,9 +101,8 @@ public class SolveService {
             int recordId = solveRecord.getId();
             //插入成功后，将插入的数据的id作为taskId发送到mq
             task.setTaskId("" + recordId);
-
             task.setLimit(judgeLimit);
-            rabbitTemplate.convertAndSend(routingKey, JSONObject.toJSONString(task));
+            rabbitTemplate.convertAndSend(routingKey, JSONObject.toJSONString(task, SerializerFeature.WriteEnumUsingToString));
             return ResultEntity.data(task.getTaskId());
         } catch (Exception e) {
             //可能是在数据库插入失败
