@@ -71,7 +71,6 @@ public class JavaJudgeImpl implements JudgeInterface {
                 "-o", outputFile.getAbsolutePath(),
                 "-e", errorFile.getAbsolutePath(),
                 "--args", "-Dfile.encoding=UTF-8 -classpath " + compiledFile.getParent() + " Main",
-                "--max-memory", String.valueOf(limit.getMemory()),
                 "--max-cpu-time", String.valueOf(limit.getCpuTime()),
                 "--max-real-time", String.valueOf(limit.getRealTime()));
         Process process = processBuilder.start();
@@ -83,7 +82,6 @@ public class JavaJudgeImpl implements JudgeInterface {
         String res = reader.readLine();
         JSONObject jsonObject = JSONObject.parseObject(res);
         runInfo.setCpuTime(jsonObject.getInteger("cpu_time"));
-        runInfo.setSignal(jsonObject.getInteger("signal"));
         runInfo.setMemory(jsonObject.getInteger("memory"));
         runInfo.setRealTime(jsonObject.getInteger("real_time"));
         //关掉输出流防止后面的读取收到影响

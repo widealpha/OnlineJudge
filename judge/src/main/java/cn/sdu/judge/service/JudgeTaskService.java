@@ -89,14 +89,14 @@ public class JudgeTaskService {
                 StatusCode status = StatusCode.JUDGE_COMPILE_ERROR;
                 taskRecordMapper.updateTaskRecord(taskRecord);
                 taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-                judgeResult.getErrors().put(-1, compileInfo.getError());
+                judgeResult.getErrors().put(0, compileInfo.getError());
                 return ResultEntity.data(status, judgeResult);
             }
         } catch (Exception e) {
             logger.error("判题机错误或远程数据不存在: ", e);
             StatusCode status = StatusCode.PROBLEM_NOT_EXIST;
             taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-            judgeResult.getErrors().put(-1, e.getMessage());
+            judgeResult.getErrors().put(0, e.getMessage());
             return ResultEntity.data(status, judgeResult);
         } finally {
             if (judge != null) {

@@ -58,7 +58,8 @@ void Executor::start_timeout_guard(int seconds) {
 void Executor::applyConfig() const {
     Limit limit = config->limit;
     if (limit.max_stack_size != UNLIMITED) {
-        struct rlimit max_stack{static_cast<rlim_t>(limit.max_stack_size), static_cast<rlim_t>(limit.max_stack_size)};
+        rlim_t stack_size = limit.max_stack_size * 1024;
+        struct rlimit max_stack{stack_size, stack_size};
         if (setrlimit(RLIMIT_STACK, &max_stack) != 0) {
             exit(SETRLIMIT_FAILED);
         }

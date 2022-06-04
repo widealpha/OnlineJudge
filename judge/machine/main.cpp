@@ -52,7 +52,7 @@ bool match_arguments(int argc, char *argv[], Config &config) {
     parser.add<int>("max-memory", '\0', "max memory use(KB)", false, UNLIMITED, cmdline::range(0, 1024 * 200));
     parser.add<int>("max-stack-size", '\0', "max stack use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
     parser.add<int>("max-output-size", '\0', "max stack use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
-    parser.add<int>("num-threads", '\0', "max thread num", false, 1, cmdline::range(1, 8));
+    parser.add<int>("num-threads", '\0', "max thread num", false, UNLIMITED, cmdline::range(1, 8));
     parser.add<std::string>("args", '\0', "executable arguments", false);
     parser.add<std::string>("env", '\0', "executable environment", false);
     parser.parse_check(argc, argv);

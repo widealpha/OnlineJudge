@@ -12,6 +12,7 @@ using namespace std;
 int main() {
     string s;
     cin >> s;
+    char *ptr = new char[1024000];
     if (s.empty()) {
         ptr[0] = 1;
     }

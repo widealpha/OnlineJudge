@@ -23,14 +23,14 @@ class JudgeApplicationTests {
             JudgeTask judgeTask = new JudgeTask();
             judgeTask.setProblemId(42);
             judgeTask.setTaskId(UUID.randomUUID().toString());
-            LanguageEnum language = LanguageEnum.C99;
+            LanguageEnum language = LanguageEnum.JAVA8;
             judgeTask.setCode(code(language));
             judgeTask.setLanguage(language);
             judgeTask.setSpecialJudge(false);
             JudgeLimit judgeLimit = new JudgeLimit();
-            judgeLimit.setMemory(1000);
-            judgeLimit.setCpuTime(10);
-            judgeLimit.setRealTime(10);
+            judgeLimit.setMemory(1024 * 200);
+            judgeLimit.setCpuTime(1000 * 20);
+            judgeLimit.setRealTime(1000 * 20);
             judgeTask.setLimit(judgeLimit);
             ResultEntity resultEntity = judgeTaskService.judgeProblem(judgeTask);
             System.out.println(resultEntity);
