@@ -136,8 +136,8 @@ export default {
           duration: 1000,
           showClose: false,
           onClose: () => {
-            this.$store.commit("setToken", _token);
-            this.$store.commit("setNoToken", false);
+      
+           
 
             this.$router.push("/");
           },
@@ -166,7 +166,7 @@ export default {
     },
   },
   beforeCreate() {
-    if (this.$store.state.token !== null) {
+    if (localStorage.getItem("token") !== null) {
       this.$router.replace("/");
     }
   },

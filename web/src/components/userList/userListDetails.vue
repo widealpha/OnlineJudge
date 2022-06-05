@@ -193,7 +193,7 @@ export default {
   },
   created() {
     if (
-      this.$store.state.token === null ||
+      localStorage.getItem("token") === null ||
       !this.$store.state.myInfo.roles.includes("ROLE_TEACHER")
     ) {
       this.$router.replace("/");
@@ -227,7 +227,7 @@ export default {
         { userId: this.info.creatorId },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -245,7 +245,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -264,7 +264,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -280,7 +280,7 @@ export default {
       data.append("id", this.id);
       let res = await this.$ajax.post("/usergroup/addStudent", data, {
         headers: {
-          Authorization: `Bearer ${this.$store.state.token}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "multipart/form-data",
         },
         responseType: "blob", //服务器返回的数据类型
@@ -298,7 +298,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -319,7 +319,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );

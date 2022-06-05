@@ -43,7 +43,7 @@ export default {
 		},
 	},
 	beforeCreate() {
-		if (this.$store.state.token === null) {
+		if (localStorage.getItem("token") === null) {
 			this.$router.replace("/");
 		}
 	},

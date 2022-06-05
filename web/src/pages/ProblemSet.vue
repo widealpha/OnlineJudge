@@ -121,7 +121,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -217,7 +217,7 @@ export default {
     },
   },
   beforeCreate() {
-    if (this.$store.state.token === null) {
+    if (localStorage.getItem("token") === null) {
       this.$router.replace("/");
     }
   },

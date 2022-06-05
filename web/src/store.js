@@ -5,8 +5,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        token: null,
-        noToken: true,
+ 
+      
         // 编程题
         problemInfo: {
             answer: "",
@@ -32,7 +32,7 @@ export default new Vuex.Store({
         myInfo: {
             avatar: null,
             nickname: null,
-            name: null,
+            name: "",
             email: null,
             roles: [],
             userId: undefined,
@@ -60,12 +60,8 @@ export default new Vuex.Store({
     },
     //同步操作
     mutations: {
-        setToken(state, token) {
-            state.token = token
-        },
-        setNoToken(state, noToken) {
-            state.noToken = noToken;
-        },
+      
+    
 
         setMyInfo(state, myInfo) {
             for (const key in myInfo) {

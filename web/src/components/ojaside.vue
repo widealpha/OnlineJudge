@@ -75,7 +75,7 @@ export default {
   },
   computed: {
     noToken() {
-      return this.$store.state.token === null;
+      return localStorage.getItem("token") === null;
     },
     isTeacher() {
       this.$store.state.myInfo;

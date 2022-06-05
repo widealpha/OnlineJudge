@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 首页，我的题目集 -->
-    <ul style="list-style: none" class="ul">
+    <ul style="list-style: none" class="ul" >
       <li v-for="(item, index) in problemSets" :key="index">
         <problem-set
           :name="item.name"
@@ -36,11 +36,11 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-
+ console.log(res);
       if (res.data.code == 0) {
         this.problemSets = res.data.data;
       }

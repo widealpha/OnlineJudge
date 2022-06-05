@@ -75,7 +75,7 @@ export default {
             formData,
             {
               headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
                 contentType: "multipart/form-data",
               },
             }
@@ -101,7 +101,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -119,7 +119,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           responseType: "blob", // 以 blob 类型接收后端发回的响应数据
         }

@@ -14,9 +14,7 @@
         label-position="left"
         :model="addForm"
         ref="addForm"
-        :rules="addRules"
-		
-      >
+        :rules="addRules"      >
         <el-form-item prop="codeLengthLimit" label="最大代码长度:">
           <el-input v-model="addForm.codeLengthLimit">
             <template slot="append">kb</template>
@@ -33,7 +31,10 @@
           </el-input>
         </el-form-item>
       </el-form>
-      <el-button style="margin: 20px auto 40px auto;" type="primary" @click="submitLimit"
+      <el-button
+        style="margin: 20px auto 40px auto;"
+        type="primary"
+        @click="submitLimit"
         >提交限制</el-button
       >
     </el-card>
@@ -107,7 +108,7 @@ export default {
             },
             {
               headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
             }
           );

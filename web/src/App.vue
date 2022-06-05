@@ -26,15 +26,13 @@ export default {
 
       if (info.data.code === 0) {
         await this.$store.commit("setMyInfo", info.data.data);
-        await this.$store.commit("setToken", _token);
-        await this.$store.commit("setNoToken", false);
+       
+   
       }
     },
   },
   async created() {
-     (
-      "███████╗██████╗ ██╗   ██╗ ██████╗      ██╗\n██╔════╝██╔══██╗██║   ██║██╔═══██╗     ██║\n███████╗██║  ██║██║   ██║██║   ██║     ██║\n╚════██║██║  ██║██║   ██║██║   ██║██   ██║\n███████║██████╔╝╚██████╔╝╚██████╔╝╚█████╔╝\n╚══════╝╚═════╝  ╚═════╝  ╚═════╝  ╚════╝ \n"
-    );
+    ("███████╗██████╗ ██╗   ██╗ ██████╗      ██╗\n██╔════╝██╔══██╗██║   ██║██╔═══██╗     ██║\n███████╗██║  ██║██║   ██║██║   ██║     ██║\n╚════██║██║  ██║██║   ██║██║   ██║██   ██║\n███████║██████╔╝╚██████╔╝╚██████╔╝╚█████╔╝\n╚══════╝╚═════╝  ╚═════╝  ╚═════╝  ╚════╝ \n");
     if (localStorage.getItem("darkTheme") == null) {
       localStorage.setItem("darkTheme", false);
     }

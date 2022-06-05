@@ -37,7 +37,7 @@ export default {
 			formdata: {},
 			students: [],
 			headers: {
-				Authorization: `Bearer ${this.$store.state.token}`,
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
 			fileRes: "",
 		};

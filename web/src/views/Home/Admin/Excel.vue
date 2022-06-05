@@ -26,7 +26,7 @@ export default {
 				this.$refs.excelImport.formdata,
 				{
 					headers: {
-						Authorization: `Bearer ${this.$store.state.token}`,
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
 						"Content-Type": "multipart/form-data",
 					},
 					responseType: "blob", //服务器返回的数据类型

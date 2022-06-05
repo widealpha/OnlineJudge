@@ -115,7 +115,7 @@ export default {
 
     // 这个地方需要完善，后端接口没给
     deleteProblemSet(){
-      console.log(this.problemSetId);
+       (this.problemSetId);
     },
     getStatus() {
       let beginTime = new Date(this.beginTime);

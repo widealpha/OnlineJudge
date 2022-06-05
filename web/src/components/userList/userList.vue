@@ -152,7 +152,7 @@ export default {
     await this.getUserList();
   },
   created() {
-    if (this.$store.state.token === null) {
+    if (localStorage.getItem("token") === null) {
       this.$router.replace("/");
     }
   },
@@ -165,7 +165,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -188,7 +188,7 @@ export default {
           },
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
@@ -230,7 +230,7 @@ export default {
           },
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
@@ -256,7 +256,7 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -278,7 +278,7 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );

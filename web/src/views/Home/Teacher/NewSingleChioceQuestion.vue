@@ -196,7 +196,7 @@ export default {
           {},
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
@@ -208,7 +208,7 @@ export default {
           },
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );

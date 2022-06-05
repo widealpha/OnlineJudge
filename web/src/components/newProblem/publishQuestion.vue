@@ -289,7 +289,7 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -307,7 +307,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -342,11 +342,11 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      // console.log(this.langStr);
+      //  (this.langStr);
       if (res.data.code == 0) {
         this.$message({
           message: "提交成功",
@@ -359,7 +359,7 @@ export default {
           params: { step: 2 },
         });
       } else {
-        // console.log(res)
+        //  (res)
         this.$message({
           message: "提交失败",
           type: "error",
@@ -380,11 +380,11 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      // console.log(this.langStr);
+      //  (this.langStr);
       if (res.data.code == 0) {
         this.$message({
           message: "提交成功",
@@ -434,7 +434,7 @@ export default {
           {},
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
@@ -446,7 +446,7 @@ export default {
           },
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );

@@ -17,10 +17,11 @@
           </el-col>
         </el-row>
       </div>
-      <div>
+      <div :v-if="problemSets.length!==0">
         <ul style="list-style: none" class="ul" v-loading="loading">
           <li v-for="(item, index) in problemSets" :key="index">
             <problem-set
+            
               :name="item.name"
               :problemSetId="item.id"
               :type="item.type"
@@ -206,7 +207,7 @@ export default {
     //克隆题目集
     async cloneProblemSet() {
       this.$refs.cloneForm.validate(async (valid) => {
-        console.log(Number(this.cloneForm.problemSetId));
+         (Number(this.cloneForm.problemSetId));
         if (valid) {
           let res = await this.$ajax.post(
             "/problemSet/cloneProblemSet",
@@ -216,7 +217,7 @@ export default {
             },
             {
               headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
             }
           );
@@ -247,11 +248,11 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      res.data.data;
+
       if (res.data.code == 0) {
         this.problemSets = res.data.data;
       }
@@ -272,11 +273,11 @@ export default {
             },
             {
               headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
             }
           );
-          console.log(res);
+           (res);
           if (res.data.code == 0) {
             this.$notify({
               title: "成功",

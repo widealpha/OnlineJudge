@@ -247,7 +247,7 @@ export default {
             request,
             {
               headers: {
-                Authorization: `Bearer ${this.$store.state.token}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
             }
           );
@@ -305,14 +305,14 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
       if (res.data.code == 0) {
         this.$store.commit("setProblemSetInfo", res.data.data);
-        console.log(this.$store.state.problemSetInfo);
-        console.log
+         (this.$store.state.problemSetInfo);
+         
       } else {
         this.$notify({
           title: "失败",

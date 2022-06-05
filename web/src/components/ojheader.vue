@@ -72,7 +72,7 @@ export default {
   methods: {
     Logout() {
       Promise.all([
-        this.$store.commit("setToken", null),
+        
 
         this.$store.commit("setMyInfo", {
           headImage: null,
@@ -99,7 +99,7 @@ export default {
   },
   computed: {
     noToken() {
-      return this.$store.state.token === null;
+      return localStorage.getItem("token") === null;
     },
     username() {
       return this.$store.getters.usernameToShow;

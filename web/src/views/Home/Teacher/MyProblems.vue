@@ -106,12 +106,12 @@ export default {
 
     //处理切换页码
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+       (`每页 ${val} 条`);
       this.size = val;
       this.pageList();
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+       (`当前页: ${val}`);
       this.page = val;
       this.pageList();
     },
@@ -134,11 +134,11 @@ export default {
           },
           {
             headers: {
-              Authorization: `Bearer ${this.$store.state.token}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        console.log(res);
+         (res);
         if (res.data.code === 0) {
           this.problemsList = [res.data.data];
         }
@@ -152,7 +152,7 @@ export default {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -179,7 +179,7 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -193,7 +193,7 @@ export default {
   // 身份校验
   beforeCreate() {
     if (
-      this.$store.state.token === null ||
+      localStorage.getItem("token") === null ||
       !this.$store.state.myInfo.roles.includes("ROLE_TEACHER")
     ) {
       this.$router.replace("/");

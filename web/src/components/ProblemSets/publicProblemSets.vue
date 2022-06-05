@@ -36,12 +36,12 @@ export default {
         {},
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
       if (res.data.code == 0) {
-        res;
+   
         this.problemSets = res.data.data;
       }
     },
