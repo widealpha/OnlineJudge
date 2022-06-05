@@ -2,12 +2,12 @@ package cn.sdu.judge.judger;
 
 import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.bean.CompileInfo;
+import cn.sdu.judge.bean.JudgeLimit;
 import cn.sdu.judge.bean.RunInfo;
 import cn.sdu.judge.util.FileUtil;
+import com.alibaba.fastjson.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,20 +58,33 @@ public class CJudgeImpl implements JudgeInterface {
     }
 
     @Override
-    public RunInfo run(Checkpoint checkpoint) throws IOException, InterruptedException {
+    public RunInfo run(Checkpoint checkpoint, JudgeLimit limit) throws IOException, InterruptedException {
         //构建进程，重定向输入输出和错误
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command(compiledFile.getAbsolutePath());
-        processBuilder.redirectInput(checkpoint.getInput().getAbsoluteFile());
-        processBuilder.redirectOutput(outputFile);
-        processBuilder.redirectError(errorFile);
+        processBuilder.command(machine,
+                "-b", compiledFile.getAbsolutePath(),
+                "-i", checkpoint.getInput().getAbsolutePath(),
+                "-o", outputFile.getAbsolutePath(),
+                "-e", errorFile.getAbsolutePath(),
+                "--max-memory", String.valueOf(limit.getMemory()),
+                "--max-cpu-time", String.valueOf(limit.getCpuTime()),
+                "--max-real-time", String.valueOf(limit.getRealTime()));
         Process process = processBuilder.start();
         //构建运行信息
         RunInfo runInfo = new RunInfo();
         runInfo.setExitCode(process.waitFor());
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String res = reader.readLine();
+        JSONObject jsonObject = JSONObject.parseObject(res);
+        runInfo.setSignal(jsonObject.getInteger("signal"));
+        runInfo.setCpuTime(jsonObject.getInteger("cpu_time"));
+        runInfo.setMemory(jsonObject.getInteger("memory"));
+        runInfo.setRealTime(jsonObject.getInteger("real_time"));
         //关掉输出流防止后面的读取收到影响
         process.getErrorStream().close();
         process.getInputStream().close();
+        runInfo.setCheckpoint(checkpoint);
         runInfo.setSuccess(FileUtil.fileSame(checkpoint.getOutput(), outputFile));
         runInfo.setError(FileUtil.topLinesFromFile(errorFile, 50));
         runInfo.setOutput(FileUtil.topLinesFromFile(outputFile, 50));

@@ -62,16 +62,15 @@ public class JudgeTaskService {
             if (compileInfo.isSuccess()) {
                 for (int i = 1; i <= checkpointList.size(); i++) {
                     Checkpoint checkpoint = checkpointList.get(i - 1);
-                    RunInfo runInfo = judge.run(checkpoint);
+                    RunInfo runInfo = judge.run(checkpoint, task.getLimit());
                     if (!runInfo.isSuccess()) {
-                        StatusCode statusCode;
-                        //返回码不为0,并且错误信息不为空,则认为该测试点运行时出错
-                        if (runInfo.getExitCode() != 0 && runInfo.getError() != null && !runInfo.getError().isEmpty()) {
-                            statusCode = StatusCode.JUDGE_RUNTIME_ERROR;
-                            judgeResult.getErrors().put(i, runInfo.getError());
-                        } else {
+                        StatusCode statusCode = mapStatusCode(runInfo.getSignal());
+                        //如果评测机器没有报错但是测试点未通过
+                        if (statusCode == StatusCode.JUDGE_SUCCESS){
                             statusCode = StatusCode.JUDGE_WRONG_ANSWER;
                             judgeResult.getErrors().put(i, "测试点未通过");
+                        } else {
+                            judgeResult.getErrors().put(i, runInfo.getError());
                         }
                         runInfo.setCheckpoint(checkpoint);
                         taskRecord.setRunInfo(JSON.toJSONString(runInfo));
@@ -90,14 +89,14 @@ public class JudgeTaskService {
                 StatusCode status = StatusCode.JUDGE_COMPILE_ERROR;
                 taskRecordMapper.updateTaskRecord(taskRecord);
                 taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-                judgeResult.getErrors().put(-1, compileInfo.getError());
+                judgeResult.getErrors().put(0, compileInfo.getError());
                 return ResultEntity.data(status, judgeResult);
             }
         } catch (Exception e) {
             logger.error("判题机错误或远程数据不存在: ", e);
             StatusCode status = StatusCode.PROBLEM_NOT_EXIST;
             taskRecordMapper.updateTaskRecordStatus(taskRecord.getTaskId(), status.getCode());
-            judgeResult.getErrors().put(-1, e.getMessage());
+            judgeResult.getErrors().put(0, e.getMessage());
             return ResultEntity.data(status, judgeResult);
         } finally {
             if (judge != null) {
@@ -122,6 +121,37 @@ public class JudgeTaskService {
                 return new PythonJudgeImpl();
             default:
                 throw new CurrentNotSupportException(language);
+        }
+    }
+
+    /**
+     * SUCCESS = 0,
+     * CPU_TIME_LIMIT_EXCEEDED = 1,
+     * REAL_TIME_LIMIT_EXCEEDED = 2,
+     * MEMORY_LIMIT_EXCEEDED = 3,
+     * OUTPUT_LIMIT_EXCEEDED = 4,
+     * RUNTIME_ERROR = 5,
+     * SYSTEM_ERROR = 6
+     *
+     * @param signal 状态吗
+     * @return 状态枚举
+     */
+    StatusCode mapStatusCode(int signal) {
+
+        switch (signal) {
+            case 0:
+                return StatusCode.JUDGE_SUCCESS;
+            case 1:
+            case 2:
+                return StatusCode.JUDGE_TIME_OUT;
+            case 3:
+                return StatusCode.JUDGE_MEMORY_OUT;
+            case 4:
+                return StatusCode.JUDGE_OUTPUT_OUT;
+            case 5:
+                return StatusCode.JUDGE_RUNTIME_ERROR;
+            default:
+                return StatusCode.JUDGE_SYSTEM_ERROR;
         }
     }
 }

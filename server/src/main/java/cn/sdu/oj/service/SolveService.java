@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -100,9 +101,8 @@ public class SolveService {
             int recordId = solveRecord.getId();
             //插入成功后，将插入的数据的id作为taskId发送到mq
             task.setTaskId("" + recordId);
-
             task.setLimit(judgeLimit);
-            rabbitTemplate.convertAndSend(routingKey, JSONObject.toJSONString(task));
+            rabbitTemplate.convertAndSend(routingKey, JSONObject.toJSONString(task, SerializerFeature.WriteEnumUsingToString));
             return ResultEntity.data(task.getTaskId());
         } catch (Exception e) {
             //可能是在数据库插入失败
@@ -273,8 +273,8 @@ public class SolveService {
             int allCpuTime = 0;
             int allMemory = 0;
             int allRealTime = 0;
-            for (int i = 0; i < judgeResult.getCheckPointSize(); i++) {
-                JudgeLimit detail = judgeResult.getDetails().get(i);
+            for (int i = 1; i <= judgeResult.getCheckPointSize(); i++) {
+                JudgeLimit detail = judgeResult.getDetails().get("" + i);
                 if (detail != null) {
                     allCpuTime += detail.getCpuTime();
                     allMemory += detail.getMemory();
@@ -299,10 +299,10 @@ public class SolveService {
 //                }
 //            }
         } else if (resultEntity.getCode() == JudgeStatus.JUDGE_COMPILE_ERROR.getCode()) { // 编译错误将错误信息放入error字段
-            //-1为规定的编译错误的信息
-            record.setError(judgeResult.getErrors().get(-1));
+            //0为规定的编译错误的信息
+            record.setError(judgeResult.getErrors().get("0"));
         } else { // 其他错误对客户隐藏具体错误
-            record.setError("评测异常");
+            record.setError("{\"0\":\"评测异常\"}");
         }
         solveRecordMapper.updateSolveRecordByPrimaryKey(record);
         return true;

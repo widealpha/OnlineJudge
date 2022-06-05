@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stack>
 #include "executor.h"
 #include "cmdline.h"
 #include "rule/rule.h"
@@ -16,6 +17,29 @@ int main(int argc, char *argv[]) {
     std::cout << result << std::endl;
 }
 
+void string2argv(const std::string &str, char *argv[], int max_length) {
+    std::vector<char *> args;
+    std::istringstream iss(str);
+
+    std::string token;
+    while (iss >> token) {
+        char *arg = new char[token.size() + 1];
+        copy(token.begin(), token.end(), arg);
+        arg[token.size()] = '\0';
+        args.push_back(arg);
+    }
+    args.push_back(nullptr);
+    if (args.size() > max_length){
+        for (auto  arg: args) {
+            delete[] arg;
+        }
+        return;
+    }
+    for (int i = 0; i < args.size(); ++i) {
+        argv[i] = args.at(i);
+    }
+}
+
 bool match_arguments(int argc, char *argv[], Config &config) {
     cmdline::parser parser;
     parser.add<std::string>("bin-file", 'b', "executable file to run", true);
@@ -25,10 +49,10 @@ bool match_arguments(int argc, char *argv[], Config &config) {
     parser.add<int>("rule", 'r', "seccomp rule", false, UNLIMITED);
     parser.add<int>("max-real-time", '\0', "max real time use(ms)", false, UNLIMITED, cmdline::range(0, 200 * 1000));
     parser.add<int>("max-cpu-time", '\0', "max cpu time use(ms)", false, UNLIMITED, cmdline::range(0, 200 * 1000));
-    parser.add<int>("max-memory", '\0', "max memory use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
+    parser.add<int>("max-memory", '\0', "max memory use(KB)", false, UNLIMITED, cmdline::range(0, 1024 * 200));
     parser.add<int>("max-stack-size", '\0', "max stack use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
     parser.add<int>("max-output-size", '\0', "max stack use(KB)", false, UNLIMITED, cmdline::range(0, 65535));
-    parser.add<int>("num-threads", '\0', "max thread num", false, 1, cmdline::range(1, 8));
+    parser.add<int>("num-threads", '\0', "max thread num", false, UNLIMITED, cmdline::range(1, 8));
     parser.add<std::string>("args", '\0', "executable arguments", false);
     parser.add<std::string>("env", '\0', "executable environment", false);
     parser.parse_check(argc, argv);
@@ -50,9 +74,7 @@ bool match_arguments(int argc, char *argv[], Config &config) {
     config.output_file = parser.get<std::string>("output-file");
     config.error_file = parser.get<std::string>("error-file");
     config.args[0] = (char *) config.bin_file.c_str();
-    std::vector<std::string> rest = parser.rest();
-    for (int i = 1; i < rest.size() + 1; ++i) {
-        config.args[i] = (char *) rest[i].c_str();
-    }
+    string2argv(parser.get<std::string>("args"), &config.args[1], 254);
+    string2argv(parser.get<std::string>("env"), config.env, 254);
     return true;
 }

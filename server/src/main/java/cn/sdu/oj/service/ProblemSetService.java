@@ -250,4 +250,14 @@ public class ProblemSetService {
     public SolveRecord getLastCommit(Integer problemSetId, Integer id) {
         return solveRecordMapper.getLastCommit(problemSetId,id);
     }
+
+    public void deleteProblemSet(Integer problemSetId) {
+        problemSetMapper.deleteProblemSet(problemSetId);
+    }
+
+    public List<ProblemSet> selectPublicProblemSetByName(String name) {
+        return  problemSetMapper.selectPublicProblemSetByName(name);
+    }
+
+
 }

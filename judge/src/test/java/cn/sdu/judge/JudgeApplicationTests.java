@@ -1,5 +1,6 @@
 package cn.sdu.judge;
 
+import cn.sdu.judge.bean.JudgeLimit;
 import cn.sdu.judge.bean.JudgeTask;
 import cn.sdu.judge.bean.LanguageEnum;
 import cn.sdu.judge.entity.ResultEntity;
@@ -20,12 +21,17 @@ class JudgeApplicationTests {
     void contextLoads() {
         try {
             JudgeTask judgeTask = new JudgeTask();
-            judgeTask.setProblemId(38);
+            judgeTask.setProblemId(42);
             judgeTask.setTaskId(UUID.randomUUID().toString());
             LanguageEnum language = LanguageEnum.JAVA8;
             judgeTask.setCode(code(language));
             judgeTask.setLanguage(language);
             judgeTask.setSpecialJudge(false);
+            JudgeLimit judgeLimit = new JudgeLimit();
+            judgeLimit.setMemory(1024 * 200);
+            judgeLimit.setCpuTime(1000 * 20);
+            judgeLimit.setRealTime(1000 * 20);
+            judgeTask.setLimit(judgeLimit);
             ResultEntity resultEntity = judgeTaskService.judgeProblem(judgeTask);
             System.out.println(resultEntity);
         } catch (Exception e) {
@@ -37,7 +43,9 @@ class JudgeApplicationTests {
         switch (language) {
             case C99:
                 return "#include <stdio.h>\n" +
+                        "#include <unistd.h>\n" +
                         "int main() {\n" +
+                        "    sleep(1);" +
                         "    char arr[100];" +
                         "    scanf(\"%s\",arr);" +
                         "    printf(\"%s\", arr);" +

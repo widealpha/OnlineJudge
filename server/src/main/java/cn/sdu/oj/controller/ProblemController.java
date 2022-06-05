@@ -13,7 +13,6 @@ import cn.sdu.oj.exception.TagNotExistException;
 import cn.sdu.oj.service.ProblemService;
 import com.alibaba.fastjson.*;
 import io.swagger.annotations.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,9 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,14 +74,9 @@ public class ProblemController {
             if (supportLanguages == null || supportLanguages.isEmpty()) {
                 asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
             } else {
-                JSONArray array = new JSONArray();
-                for (String language : JSON.parseArray(supportLanguages, String.class)) {
-                    array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
-                }
-                if (array.isEmpty()) {
+                if (generateLanguageSupport(supportLanguages, asyncProblem)){
                     return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
                 }
-                asyncProblem.setSupportLanguages(array.toJSONString());
             }
         } catch (Exception e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "支持的语言错误");
@@ -121,14 +113,9 @@ public class ProblemController {
             if (supportLanguages == null) {
                 asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
             } else {
-                JSONArray array = new JSONArray();
-                for (String language : JSON.parseArray(supportLanguages, String.class)) {
-                    array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
-                }
-                if (array.isEmpty()) {
+                if (generateLanguageSupport(supportLanguages, asyncProblem)){
                     return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
                 }
-                asyncProblem.setSupportLanguages(array.toJSONString());
             }
         } catch (Exception e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "支持的语言错误");
@@ -140,6 +127,18 @@ public class ProblemController {
         } catch (JSONException e) {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID, "标签不是JSON数组");
         }
+    }
+
+    private boolean generateLanguageSupport(String supportLanguages, AsyncProblem asyncProblem) {
+        JSONArray array = new JSONArray();
+        for (String language : JSON.parseArray(supportLanguages, String.class)) {
+            array.add(LanguageEnum.valueOf(LanguageEnum.valueOf(language).name()));
+        }
+        if (array.isEmpty()) {
+            return true;
+        }
+        asyncProblem.setSupportLanguages(array.toString());
+        return false;
     }
 
     @ApiOperation("更新编程题目限制信息|TEACHER+")

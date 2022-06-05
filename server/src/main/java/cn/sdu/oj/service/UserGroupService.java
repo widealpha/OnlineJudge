@@ -1,19 +1,34 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.UserGroupMapper;
+import cn.sdu.oj.dao.UserMapper;
+import cn.sdu.oj.domain.bo.StudentExcelInfo;
 import cn.sdu.oj.domain.po.UserGroup;
+import cn.sdu.oj.domain.vo.User;
+import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 
 @Service
 public class UserGroupService {
     @Autowired
     private UserGroupMapper UserGroupMapper;
+    @Resource
+    private UserMapper userMapper;
+    @Resource
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserGroupService userGroupService;
 
     //新建用户组 || 添加子用户组
     public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId) {
@@ -60,11 +75,11 @@ public class UserGroupService {
             for (int i = 0; i < members.size(); i++) {
                 int onePersonId = members.getInteger(i);
 
-               if( !judgeUserGroupContainUser(onePersonId,user_group_id)){
-                   if (!UserGroupMapper.addMemberToUserGroup(user_group_id, onePersonId)) {
-                       return StatusCode.COMMON_FAIL;
-                   }
-               } else continue;
+                if (!judgeUserGroupContainUser(onePersonId, user_group_id)) {
+                    if (!UserGroupMapper.addMemberToUserGroup(user_group_id, onePersonId)) {
+                        return StatusCode.COMMON_FAIL;
+                    }
+                } else continue;
             }
             return StatusCode.SUCCESS;
         } else
@@ -130,5 +145,31 @@ public class UserGroupService {
         if (userGroupMembers.contains(user_id)) {
             return true;
         } else return false;
+    }
+
+    public ResultEntity<Boolean> importStudentGroup(List<StudentExcelInfo> infos) {
+        //拿出所有班级
+        HashMap all_class = new HashMap();
+
+        for (StudentExcelInfo info : infos) {
+
+            String username = "sdu-" + info.getStudentId();
+            User user = new User(username, passwordEncoder.encode("123456"));
+            //注册成功
+
+            if (userMapper.insert(user)) {
+                int newUserId = user.getId();
+                String user_group_name = info.getClassName();
+                if (all_class.get(user_group_name) == null) {
+                    Integer id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, user.getId());
+                    all_class.put(user_group_name, id);
+                }
+                JSONArray members = new JSONArray();
+                members.add(newUserId);
+
+                userGroupService.addMemberToUserGroup(user.getId(), 20, members);
+            }
+        }
+        return ResultEntity.data(true);
     }
 }

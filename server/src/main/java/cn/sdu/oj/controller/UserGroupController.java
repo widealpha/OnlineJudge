@@ -1,5 +1,6 @@
 package cn.sdu.oj.controller;
 
+import cn.sdu.oj.domain.bo.StudentExcelInfo;
 import cn.sdu.oj.domain.po.UserGroup;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
@@ -8,6 +9,7 @@ import cn.sdu.oj.service.ProblemSetService;
 import cn.sdu.oj.service.UserGroupService;
 import cn.sdu.oj.util.RedisUtil;
 import cn.sdu.oj.util.StringUtil;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -16,9 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.IllegalFormatCodePointException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +47,7 @@ public class UserGroupController {
     public ResultEntity createUserGroup(
             @ApiParam(value = "姓名") @RequestParam(required = true) String name,
             @ApiParam(value = "类型") @RequestParam(required = true) String type,
-            @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
+            @ApiParam(value = "简介") @RequestParam(required = false) String introduction,
             @ApiParam(value = "父用户组（可选）有则创建子用户组") @RequestParam(required = false) Integer fatherId,
             @ApiParam(value = "是否需要生成邀请码（可选）,有请填1") @RequestParam(required = false) Integer isNeedInviteCode,
             @ApiParam(value = "题目集id（可选），有则为用户组添加这个题目集") @RequestParam(required = false) Integer problemSetId,
@@ -313,4 +318,28 @@ public class UserGroupController {
 
     //克隆用户组 TODO
 
+
+    @ApiOperation("导入19级学生用户组|TEACHER+")
+    @PostMapping("/importStudentGroup")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<Boolean> importStudentGroup(
+            @ApiIgnore HttpServletResponse response,
+            @ApiParam("上传的excel") @RequestPart MultipartFile file,
+            @ApiIgnore @AuthenticationPrincipal User user) throws IOException {
+        if (file == null || file.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return ResultEntity.error(StatusCode.PARAM_NOT_VALID);
+        }
+        List<StudentExcelInfo> list = EasyExcel.read(file.getInputStream()).head(StudentExcelInfo.class).sheet().doReadSync();
+
+
+//        response.setContentType("application/vnd.ms-excel");
+//        response.setCharacterEncoding("utf-8");
+//        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+//        String fileName = URLEncoder.encode("data", "UTF-8");
+//        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+//        EasyExcel.write(response.getOutputStream(), StudentExcelInfo.class).sheet("sheet1")
+//                .doWrite(userGroupService.generateGroup(list)));
+        return userGroupService.importStudentGroup(list);
+    }
 }

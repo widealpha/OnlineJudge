@@ -8,8 +8,8 @@ public class JudgeResult {
     private String taskId;
     private int problemId;
     private int checkPointSize;
-    private Map<Integer, JudgeLimit> details;
-    private Map<Integer, String> errors;
+    private Map<String, JudgeLimit> details;
+    private Map<String, String> errors;
 
     public JudgeResult() {
         details = new HashMap<>();
@@ -32,27 +32,27 @@ public class JudgeResult {
         this.problemId = problemId;
     }
 
-    public Map<Integer, JudgeLimit> getDetails() {
-        return details;
-    }
-
-    public void setDetails(Map<Integer, JudgeLimit> details) {
-        this.details = details;
-    }
-
-    public Map<Integer, String> getErrors() {
-        return errors;
-    }
-
-    public void setErrors(Map<Integer, String> errors) {
-        this.errors = errors;
-    }
-
     public int getCheckPointSize() {
         return checkPointSize;
     }
 
     public void setCheckPointSize(int checkPointSize) {
         this.checkPointSize = checkPointSize;
+    }
+
+    public Map<String, JudgeLimit> getDetails() {
+        return details;
+    }
+
+    public void setDetails(Map<String, JudgeLimit> details) {
+        this.details = details;
+    }
+
+    public Map<String, String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Map<String, String> errors) {
+        this.errors = errors;
     }
 }

@@ -114,7 +114,7 @@ public class SolveController {
     @GetMapping("supportLanguages")
     ResultEntity<String[]> supportLanguages() {
         return ResultEntity.data(new String[]{
-                "JAVA8", "PYTHON3", "C++17", "C99"
+                "JAVA8", "PYTHON3", "CPP17", "C99"
         });
     }
 

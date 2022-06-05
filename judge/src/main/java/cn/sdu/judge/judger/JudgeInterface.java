@@ -2,12 +2,14 @@ package cn.sdu.judge.judger;
 
 import cn.sdu.judge.bean.Checkpoint;
 import cn.sdu.judge.bean.CompileInfo;
+import cn.sdu.judge.bean.JudgeLimit;
 import cn.sdu.judge.bean.RunInfo;
 
 import java.io.File;
 import java.io.IOException;
 
 public interface JudgeInterface {
+    String machine = "/machine/machine";
     /**
      * 编译文件
      *
@@ -26,7 +28,7 @@ public interface JudgeInterface {
      * @throws IOException          IO异常
      * @throws InterruptedException 等待进程运行时发生的异常
      */
-    RunInfo run(Checkpoint checkpoint) throws IOException, InterruptedException;
+    RunInfo run(Checkpoint checkpoint, JudgeLimit limit) throws IOException, InterruptedException;
 
     /**
      * 清理编译中间以及结果产物
