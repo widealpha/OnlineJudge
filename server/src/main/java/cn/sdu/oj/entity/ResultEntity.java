@@ -20,9 +20,6 @@ public class ResultEntity<T> {
         this.data = data;
     }
 
-    public static ResultEntity<Void> empty() {
-        return new ResultEntity<>(0, "TODO", null);
-    }
 
     public static ResultEntity<Boolean> success() {
         return new ResultEntity<>(0, "SUCCESS", true);

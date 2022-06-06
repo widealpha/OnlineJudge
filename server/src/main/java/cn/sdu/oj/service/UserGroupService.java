@@ -98,12 +98,6 @@ public class UserGroupService {
             return StatusCode.NO_PERMISSION;
     }
 
-
-    //为用户组添加子用户组 （复制现有用户组作为子用户组）. //TODO
-    public StatusCode copyUserGroupAsChildren() {
-        return StatusCode.NO_PERMISSION;
-    }
-
     //查询一个用户组的所有人，目前只能查询最底层用户组
     public List<Integer> getUserGroupMembers(Integer id) {
         return UserGroupMapper.getUserGroupMembers(id);
@@ -147,10 +141,10 @@ public class UserGroupService {
         } else return false;
     }
 
-    public ResultEntity<Boolean> importStudentGroup(List<StudentExcelInfo> infos) {
+    public ResultEntity<Boolean> importStudentGroup(List<StudentExcelInfo> infos, Integer creator) {
         //拿出所有班级
         HashMap all_class = new HashMap();
-
+        Integer id = null;
         for (StudentExcelInfo info : infos) {
 
             String username = "sdu-" + info.getStudentId();
@@ -160,14 +154,12 @@ public class UserGroupService {
             if (userMapper.insert(user)) {
                 int newUserId = user.getId();
                 String user_group_name = info.getClassName();
+
                 if (all_class.get(user_group_name) == null) {
-                    Integer id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, user.getId());
+                    id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, creator);
                     all_class.put(user_group_name, id);
                 }
-                JSONArray members = new JSONArray();
-                members.add(newUserId);
-
-                userGroupService.addMemberToUserGroup(user.getId(), 20, members);
+                UserGroupMapper.addMemberToUserGroup(id, newUserId);
             }
         }
         return ResultEntity.data(true);

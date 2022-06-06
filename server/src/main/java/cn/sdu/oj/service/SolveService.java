@@ -68,7 +68,7 @@ public class SolveService {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }
         AsyncProblem problem = asyncProblemMapper.selectProblem(typeProblemId);
-        //todo 判断用户能否提交
+
         if (problem == null) {
             return ResultEntity.error(StatusCode.PROBLEM_NOT_EXIST);
         }

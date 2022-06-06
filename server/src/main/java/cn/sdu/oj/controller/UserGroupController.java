@@ -228,7 +228,7 @@ public class UserGroupController {
     @PostMapping("/joinUserGroupByInviteCode")
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity joinUserGroupByInviteCode(
-            @ApiParam(value = "邀请码") @RequestParam(required = true) Integer inviteCode,
+            @ApiParam(value = "邀请码") @RequestParam(required = true) String inviteCode,
             @ApiIgnore @AuthenticationPrincipal User user) {
         if (redisUtil.hasKey("inviteCode:" + inviteCode)) {
             Integer user_group_id = Integer.valueOf(redisUtil.get("inviteCode:" + inviteCode));
@@ -256,9 +256,12 @@ public class UserGroupController {
     public ResultEntity getUserGroupMembers(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(userGroupService.getUserGroupMembers(id));
-        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
+        if (userGroup != null) {
+            if (userGroup.getCreatorId().equals(user.getId())) {
+                return ResultEntity.data(userGroupService.getUserGroupMembers(id));
+            } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+        } else return ResultEntity.error(StatusCode.COMMON_FAIL);
     }
 
     //获取一个用户组有的题目集
@@ -283,7 +286,7 @@ public class UserGroupController {
             @ApiParam(value = "题目集id") @RequestParam(required = true) Integer problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
         if (userGroupService.getUserGroupInfoById(userGroupId).getCreatorId().equals(user.getId())
-        && problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
+                && problemSetService.getProblemSetInfo(problemSetId).getCreatorId().equals(user.getId())) {
             List<Integer> list = userGroupService.getUserGroupProblemSet(userGroupId);
             for (Integer i : list
             ) {
@@ -318,6 +321,15 @@ public class UserGroupController {
 
     //克隆用户组 TODO
 
+    //获取公开用户组(目前固定19级)
+    @ApiOperation("获取公开用户组(目前固定19级)|TEACHER+")    //创建者（老师）或者用户组成员可以使用
+    @PostMapping("/getPublicUserGroupInfo")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity getPublicUserGroupInfo(
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        UserGroup userGroup = userGroupService.getUserGroupInfoById(20);
+        return ResultEntity.data(userGroup);
+    }
 
     @ApiOperation("导入19级学生用户组|TEACHER+")
     @PostMapping("/importStudentGroup")
@@ -340,6 +352,6 @@ public class UserGroupController {
 //        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
 //        EasyExcel.write(response.getOutputStream(), StudentExcelInfo.class).sheet("sheet1")
 //                .doWrite(userGroupService.generateGroup(list)));
-        return userGroupService.importStudentGroup(list);
+        return userGroupService.importStudentGroup(list, user.getId());
     }
 }

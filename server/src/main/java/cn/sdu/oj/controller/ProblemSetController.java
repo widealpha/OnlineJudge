@@ -73,14 +73,12 @@ public class ProblemSetController {
     @PostMapping("/createExerciseProblemSet")
     public ResultEntity<Integer> createExerciseProblemSet(
             @ApiParam(value = "名称") @RequestParam(required = true) String name,
-            // @ApiParam(value = "类型") @RequestParam(required = true) Integer type,
             @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
             @ApiParam(value = "是否公开") @RequestParam(required = true) Integer isPublic,
             @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
             @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
-
             Integer id = problemSetService.createProblemSet(name, 1, introduction, isPublic, beginTime, endTime, user.getId(), null);
             if (id != null) {
                 return ResultEntity.data(id);
@@ -97,9 +95,7 @@ public class ProblemSetController {
     @PostMapping("/createTestProblemSet")
     public ResultEntity<Integer> createTestProblemSet(
             @ApiParam(value = "名称") @RequestParam(required = true) String name,
-
             @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
-
             @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
             @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
             @ApiIgnore @AuthenticationPrincipal User user) {
@@ -120,10 +116,8 @@ public class ProblemSetController {
     @PostMapping("/createCompetitionProblemSet")
     public ResultEntity createCompetitionProblemSet(
             @ApiParam(value = "名称") @RequestParam(required = true) String name,
-
             @ApiParam(value = "简介") @RequestParam(required = true) String introduction,
             @ApiParam(value = "参赛队伍数") @RequestParam(required = true) Integer teamNum,
-
             @ApiParam(value = "开始时间", example = "2022-05-26 22:00:00") @RequestParam String beginTime,
             @ApiParam(value = "结束时间", example = "2022-06-30 22:00:00") @RequestParam String endTime,
             @ApiParam(value = "竞赛类型，0 ACM,1 IO,3 IOI") @RequestParam Integer competitionType,
@@ -497,7 +491,6 @@ public class ProblemSetController {
                             problemSetProblemVos.add(problemSetProblemVo);
                         }
                         return ResultEntity.success("完成情况", problemSetProblemVos);
-
                     }
 
                 } else return ResultEntity.error("非竞赛题目集");
@@ -520,7 +513,7 @@ public class ProblemSetController {
             ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
             if (problemSet.getType() == 3) {
 
-                //TODO 判断是否是参赛者
+
                 if (!problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
                     return ResultEntity.error(StatusCode.NO_PERMISSION);
                 } else {
@@ -602,7 +595,6 @@ public class ProblemSetController {
                         jsonObject.put("score", scores[i]);
                         jsonArray.add(jsonObject);
                     }
-
                     return ResultEntity.success("排名情况", jsonArray);
 
                 }
@@ -615,7 +607,6 @@ public class ProblemSetController {
 
     //重写快速排序：同时将键值进行排序
     public static void QuickSort(int arr[], double arr1[], int _left, int _right) {
-
         int right = _right;
         int left = _left;
         int temp = 0;
@@ -638,9 +629,7 @@ public class ProblemSetController {
             QuickSort(arr, arr1, _left, left - 1);
             QuickSort(arr, arr1, right + 1, _right);
         }
-
     }
-
 
     @ApiOperation("用户为一个题目集保存答案|COMMON+") //用户为一个题目集保存答案   答题人可用
     @PostMapping("/saveProblemAnswer")
@@ -682,7 +671,7 @@ public class ProblemSetController {
         }
     }
 
-    @ApiOperation("用户为一个题目集提交答案|COMMON+") //用户为一个题目集保存答案   答题人可用
+    @ApiOperation("用户为测验提交答案|COMMON+") //用户为一个题目集保存答案   答题人可用
     @PostMapping("/submitProblemAnswer")
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity submitProblemAnswer(
