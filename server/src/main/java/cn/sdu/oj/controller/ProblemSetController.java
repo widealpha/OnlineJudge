@@ -127,7 +127,7 @@ public class ProblemSetController {
             if (problem_set_id != null) {
                 Integer user_group_id =
                         userGroupService.createUserGroup
-                                (name + "参赛人员", "3", introduction, null, user.getId());
+                                (name + "参赛人员", "3", introduction, null, user.getId(),0);
                 if (user_group_id != null) {
                     userGroupService.linkUserGroupProblemSet(user_group_id, problem_set_id);
                     List<User> users = new ArrayList<>();  //返回n个账号
