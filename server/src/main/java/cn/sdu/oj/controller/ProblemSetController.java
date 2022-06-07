@@ -133,7 +133,8 @@ public class ProblemSetController {
                     List<User> users = new ArrayList<>();  //返回n个账号
 
                     users = userService.generateCompetitionUserList(problem_set_id, teamNum).getData();
-
+                    JSONArray userJsonArray = new JSONArray(users);
+                    userGroupService.addMemberToUserGroup(user.getId(), user_group_id, userJsonArray);
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("userGroupId", user_group_id);
                     jsonObject.put("problemSetId", problem_set_id);
@@ -249,10 +250,11 @@ public class ProblemSetController {
                 ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);  //获取题目集信息
                 List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSet.getId());
                 List<ProblemDto> problemDtos = new ArrayList<>();
-                for (ProblemSetProblem p : problems
-                ) {
+                for (ProblemSetProblem p : problems) {
                     ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(), user.getId());
-                    problemDtos.add(problemDtoResultEntity.getData());
+                    if (problemDtoResultEntity.getData() != null){
+                        problemDtos.add(problemDtoResultEntity.getData());
+                    }
                 }
                 ProblemSetVo problemSetVo = new ProblemSetVo(problemSet, problemDtos);
                 return ResultEntity.success("查看一个题目集的信息和题号", problemSetVo);

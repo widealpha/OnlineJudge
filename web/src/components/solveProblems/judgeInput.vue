@@ -357,7 +357,7 @@ export default {
 		},
 		// 用户这一题目最后提交的代码
 		async latestProblemCommitCode() {
-			let res = await this.$ajax.get(
+			let res = await this.$ajax.post(
 				"/solve/latestProblemCommitCode",
 				{
 					problemId: this.problemId,
@@ -369,22 +369,8 @@ export default {
 					},
 				}
 			);
-			if (res.data.code === 0 && res.data.message === "success") {
-				if (
-					res.data.data.code !== "C" ||
-					res.data.data.language !== null
-				) {
-					this.langVersion = [
-						res.data.data.language.replaceAll(/[0-9]+/g, ""),
-						res.data.data.language,
-					];
-					this.cmOption.mode = this.getCmMode(this.langVersion[1]);
-					this.setPreCode(this.langVersion[0]);
-					this.code = res.data.data.code;
-				} else {
-					this.lang = this.languages[0].value;
-					this.langVersion = this.languages[0].children[0].value;
-				}
+			if (res.data.code === 0) {
+        this.code = res.data.data.code;
 			}
 		},
 		// 获取可用语言
@@ -437,9 +423,10 @@ export default {
 				this.testing = true;
 				this.testOutput = "";
 				let res = await this.$ajax.post(
-					"/solve/trySolveProblemCustomInput",
+					"/solve/runCodeTest",
 					{
 						problemId: this.problemId,
+            problemSetId: this.$store.state.problemSetInfo.id,
 						code: this.code,
 						language: this.langVersion[1],
 						input: this.testInput,
