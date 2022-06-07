@@ -113,6 +113,7 @@ export default {
     };
   },
   methods: {
+    // 获取到所有的题目集信息
     async getProblemset() {
       let res = await this.$ajax.post(
         "/problemSet/getProblemSetInfo",
@@ -125,7 +126,7 @@ export default {
           },
         }
       );
-       (res);
+       console.log(res);
       if (res.data.code == 0) {
         const data = res.data.data;
         const title = data.name;

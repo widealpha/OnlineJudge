@@ -39,7 +39,7 @@ export default new Vuex.Store({
             studentId: null,
         },
         problemSetInfo: {
-            problems: [],
+            problemDtos: [],
             // 是否公开 0:私有 1:公开
             open: 0,
             // 题目

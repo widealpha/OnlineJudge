@@ -124,14 +124,7 @@ export default {
 		}
 	},
 	async created() {
-		this.$alert(
-			"按逻辑以后不再允许通过题目列表进行答题，因此请前往题目集进行答题",
-			"提示",
-			{
-				confirmButtonText: "我已知悉",
-				type: "warning",
-			}
-		);
+		
 		let res = await this.$ajax.post(
 			"/problem/getProblemByDifficulty",
 			{

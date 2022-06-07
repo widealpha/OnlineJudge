@@ -226,16 +226,22 @@ export default {
 		},
 	},
 	created() {
+	
 		if (!this.$store.state.myInfo.roles.includes("ROLE_TEACHER")) {
 			this.$router.replace(
 				`/problem-set/${this.$store.state.problemSetInfo.problemSetId}/`
 			);
 		} else {
-			if (this.$route.query.tag) {
-				this.getProblemsByTag();
-			} else {
-				this.getAllProblems();
+			const problem=this.$store.state.problemSetInfo.problemDtos
+			if(problem.length!==0){
+					this.allProblemList =problem;
+				this.total =problem.length;
 			}
+			// if (this.$route.query.tag) {
+			// 	this.getProblemsByTag();
+			// } else {
+			// 	this.getAllProblems();
+			// }
 		}
 	},
 	watch: {
