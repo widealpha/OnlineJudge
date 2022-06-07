@@ -364,12 +364,8 @@ public class SolveService {
         }
     }
 
-    public ResultEntity<String> latestProblemCommitCode(int problemId, int problemSetId, Integer userId) {
+    public ResultEntity<SolveRecord> latestProblemCommitCode(int problemId, int problemSetId, Integer userId) {
         SolveRecord solveRecord = solveRecordMapper.latestRecord(problemId, problemSetId, userId);
-        if (solveRecord != null) {
-            return ResultEntity.data(solveRecord.getCode());
-        } else {
-            return ResultEntity.data(StatusCode.SUCCESS, null);
-        }
+        return ResultEntity.data(solveRecord);
     }
 }

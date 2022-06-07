@@ -35,7 +35,7 @@ public class UserGroupService {
         UserGroup userGroup = new UserGroup();
         userGroup.setName(name);
         userGroup.setType(type);
-        userGroup.setintroduction(introduction);
+        userGroup.setIntroduction(introduction);
         userGroup.setFatherId(fatherId);
         userGroup.setCreatorId(creatorId);
         userGroup.setIsPublic(isPublic);

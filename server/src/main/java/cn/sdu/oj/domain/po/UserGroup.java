@@ -50,14 +50,6 @@ public class UserGroup {
         this.type = type;
     }
 
-    public String getintroduction() {
-        return introduction;
-    }
-
-    public void setintroduction(String introduction) {
-        this.introduction = introduction;
-    }
-
     public Integer getCreatorId() {
         return creatorId;
     }

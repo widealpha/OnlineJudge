@@ -4,7 +4,9 @@
 			<div>
 				<el-row>
 					<el-col :span="6">
-						<el-cascader v-model="langVersion" :options="languages" placeholder="请选择语言" @change="chooseLanguage" />
+            <el-select v-model="lang" placeholder="请选择语言" @change="chooseLanguage">
+              <el-option v-for="language in languages" :label="language" :value="language" :key="language"></el-option>
+            </el-select>
 					</el-col>
 					<el-col :span="6">
 						<el-select v-model="cmOption.theme" placeholder="选择皮肤" class="chooseTheme">
@@ -155,7 +157,6 @@ export default {
 			],
 			code: "",
 			lang: "C99",
-			langVersion: [],
 			keepCode: false,
 			cmOption: {
 				tabSize: 4,
@@ -370,6 +371,7 @@ export default {
 				}
 			);
 			if (res.data.code === 0) {
+        this.lang = res.data.data.language;
         this.code = res.data.data.code;
 			}
 		},
@@ -385,41 +387,32 @@ export default {
 				}
 			);
 			if (res.data.code === 0) {
-        res.data.data.forEach((element)=>{
-          this.languages.push({
-            value: element,
-            label: element,
-            children: [{
-              value: element,
-              label: element,
-            }],
-          });
-        })
+        this.languages = res.data.data
 			}
 		},
 		// 选择语言
 		chooseLanguage(newVal) {
-			this.lang = newVal[0];
+			this.lang = newVal;
 		},
 		// 设置初始代码
 		setPreCode(language) {
 			switch (language) {
-				case "C":
+				case "C99":
 					this.code = preCode.cCode;
 					break;
-				case "CPP":
+				case "CPP17":
 					this.code = preCode.cppCode;
 					break;
-				case "PYTHON":
+				case "PYTHON3":
 					this.code = preCode.python3Code;
 					break;
-				case "JAVA":
+				case "JAVA8":
 					this.code = preCode.javaCode;
 			}
 		},
 		// 执行测试用例
 		async exeTest() {
-			if (this.langVersion && this.code) {
+			if (this.lang && this.code) {
 				this.testing = true;
 				this.testOutput = "";
 				let res = await this.$ajax.post(

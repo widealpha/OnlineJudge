@@ -6,6 +6,7 @@ import cn.sdu.oj.domain.dto.ShortQuestionAnswerDto;
 import cn.sdu.oj.domain.dto.SolveResultDto;
 import cn.sdu.oj.domain.po.AnswerRecord;
 import cn.sdu.oj.domain.po.ProblemSet;
+import cn.sdu.oj.domain.po.SolveRecord;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
@@ -91,9 +92,9 @@ public class SolveController {
     @ApiOperation("提交自定义测试代码")
     @PostMapping("latestProblemCommitCode")
     @PreAuthorize("hasRole('COMMON')")
-    ResultEntity<String> latestProblemCommitCode(@ApiIgnore @AuthenticationPrincipal User user,
-                                     @ApiParam("题目Id") @RequestParam int problemId,
-                                     @ApiParam("题目集编号") @RequestParam int problemSetId) {
+    ResultEntity<SolveRecord> latestProblemCommitCode(@ApiIgnore @AuthenticationPrincipal User user,
+                                                      @ApiParam("题目Id") @RequestParam int problemId,
+                                                      @ApiParam("题目集编号") @RequestParam int problemSetId) {
         return solveService.latestProblemCommitCode(problemId, problemSetId, user.getId());
     }
 
