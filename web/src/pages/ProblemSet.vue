@@ -135,7 +135,7 @@ export default {
         const open = data.isPublic;
         const endTime = data.endTime;
         const beginTime = data.beginTime;
-        const problems = data.problems;
+        const problemDtos = data.problemDtos;
         const type = data.type;
         const isMyProblemSet = creatorId == this.$store.state.myInfo.userId;
 
@@ -146,7 +146,7 @@ export default {
           open,
           endTime,
           beginTime,
-          problems,
+          problemDtos,
           type,
           isMyProblemSet,
         });
