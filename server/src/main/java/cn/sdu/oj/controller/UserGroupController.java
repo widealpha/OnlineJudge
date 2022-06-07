@@ -149,6 +149,9 @@ public class UserGroupController {
             @ApiParam(value = "用户组id") @RequestParam Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
         UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
+        if (userGroup == null){
+            return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
+        }
         if (userGroup.getIsPublic()==1){
             return ResultEntity.data(userGroup);
         }

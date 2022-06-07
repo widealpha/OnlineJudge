@@ -37,7 +37,7 @@ public class ProblemSetService {
     private ProblemSetUserAnswerMapper problemSetUserAnswerMapper;
 
     //新建题目集
-    public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId,Integer competitionType) throws Exception {
+    public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId, Integer competitionType) throws Exception {
         ProblemSet problemSet = new ProblemSet();
         problemSet.setName(name);
         problemSet.setType(type);
@@ -206,7 +206,7 @@ public class ProblemSetService {
 
     public double getProblemPassRate(Integer problem_id, Integer problem_set_id) {
         GeneralProblem generalProblem = generalProblemMapper.selectGeneralProblem(problem_id);
-    //    if (problem_set_id == null) {
+        //    if (problem_set_id == null) {
 
 //            if (generalProblem.getType() == 0) // 编程题
 //            {
@@ -223,32 +223,32 @@ public class ProblemSetService {
 //                return rate;
 //            }
 //        } else {
-            //指定在题目集中查找
+        //指定在题目集中查找
 
-            if (generalProblem.getType() == 0) // 编程题
-            {
-                Integer answer_num = solveRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId(),problem_set_id);
-                Integer correct_num = solveRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId(),problem_set_id);
-                double rate = (double) correct_num / answer_num;
-                return rate;
+        if (generalProblem.getType() == 0) // 编程题
+        {
+            Integer answer_num = solveRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId(), problem_set_id);
+            Integer correct_num = solveRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId(), problem_set_id);
+            double rate = (double) correct_num / answer_num;
+            return rate;
 
-            } else //非编程题 默认只有是否正确
-            {
-                Integer answer_num = answerRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId(),problem_set_id);
-                Integer correct_num = answerRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId(),problem_set_id);
-                double rate = (double) correct_num / answer_num;
-                return rate;
-            }
+        } else //非编程题 默认只有是否正确
+        {
+            Integer answer_num = answerRecordMapper.getProblemRecordNum(generalProblem.getTypeProblemId(), problem_set_id);
+            Integer correct_num = answerRecordMapper.getProblemRecordCorrectNum(generalProblem.getTypeProblemId(), problem_set_id);
+            double rate = (double) correct_num / answer_num;
+            return rate;
+        }
 
-   //     }
+        //     }
     }
 
     public Integer getPunishRecord(Integer problemSetId, Integer a_member) {
-        return solveRecordMapper.getPunishRecord(problemSetId,a_member);
+        return solveRecordMapper.getPunishRecord(problemSetId, a_member);
     }
 
     public SolveRecord getLastCommit(Integer problemSetId, Integer id) {
-        return solveRecordMapper.getLastCommit(problemSetId,id);
+        return solveRecordMapper.getLastCommit(problemSetId, id);
     }
 
     public void deleteProblemSet(Integer problemSetId) {
@@ -256,8 +256,18 @@ public class ProblemSetService {
     }
 
     public List<ProblemSet> selectPublicProblemSetByName(String name) {
-        return  problemSetMapper.selectPublicProblemSetByName(name);
+        return problemSetMapper.selectPublicProblemSetByName(name);
     }
 
 
+    //todo 做权限认证
+    public ResultEntity<List<UserGroup>> problemSetUserGroups(int problemSetId, Integer id) {
+        List<UserGroup> userGroupsIds = new ArrayList<>();
+        for (ProblemSetUserGroup e : problemSetUserGroupMapper.getUserGroupByProblemSet(problemSetId)) {
+            if (e.getUserGroupId() != null){
+                userGroupsIds.add(userGroupService.getUserGroupInfoById(e.getUserGroupId()));
+            }
+        }
+        return ResultEntity.data(userGroupsIds);
+    }
 }

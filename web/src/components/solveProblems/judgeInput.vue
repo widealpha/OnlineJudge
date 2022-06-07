@@ -272,10 +272,11 @@ export default {
 						timeout: 2000,
 					}
 				);
-				if (res.status == 200 && res.data.data.result != null) {
+				if (res.status === 200 && res.data.code !== 0) {
 					clearInterval(this.getResInterval);
 					this.$emit("updatePassRadio");
-				}
+          this.showResult = true;
+        }
 
 			}, 2000);
 		},
@@ -297,7 +298,7 @@ export default {
         this.result.message = res.data.message;
         this.showResult = true;
       }
-		},
+    },
 		async showDet(index) {
 			let res = await this.$ajax.post(
 				"/solve/solveTaskResult",

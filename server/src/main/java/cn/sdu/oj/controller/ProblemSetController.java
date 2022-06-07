@@ -5,6 +5,7 @@ import cn.sdu.oj.domain.bo.LanguageEnum;
 import cn.sdu.oj.domain.dto.ProblemDto;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
+import cn.sdu.oj.domain.po.UserGroup;
 import cn.sdu.oj.domain.vo.*;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
@@ -127,7 +128,7 @@ public class ProblemSetController {
             if (problem_set_id != null) {
                 Integer user_group_id =
                         userGroupService.createUserGroup
-                                (name + "参赛人员", "3", introduction, null, user.getId(),0);
+                                (name + "参赛人员", "3", introduction, null, user.getId(), 0);
                 if (user_group_id != null) {
                     userGroupService.linkUserGroupProblemSet(user_group_id, problem_set_id);
                     List<User> users = new ArrayList<>();  //返回n个账号
@@ -252,7 +253,7 @@ public class ProblemSetController {
                 List<ProblemDto> problemDtos = new ArrayList<>();
                 for (ProblemSetProblem p : problems) {
                     ResultEntity<ProblemDto> problemDtoResultEntity = problemService.findProblemInfo(p.getProblemId(), user.getId());
-                    if (problemDtoResultEntity.getData() != null){
+                    if (problemDtoResultEntity.getData() != null) {
                         problemDtos.add(problemDtoResultEntity.getData());
                     }
                 }
@@ -803,4 +804,13 @@ public class ProblemSetController {
         }
     }
 
+
+    @ApiOperation("获取题目集的用户组|TEACHER+") //获取题目集的克隆码 创建者可用
+    @PostMapping("/problemSetUserGroups")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<List<UserGroup>> problemSetUserGroups(
+            @ApiParam("题目集id") int problemSetId,
+            @ApiIgnore @AuthenticationPrincipal User user) {
+        return problemSetService.problemSetUserGroups(problemSetId, user.getId());
+    }
 }
