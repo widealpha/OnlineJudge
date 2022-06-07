@@ -31,13 +31,14 @@ public class UserGroupService {
     private UserGroupService userGroupService;
 
     //新建用户组 || 添加子用户组
-    public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId) {
+    public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId,Integer isPublic) {
         UserGroup userGroup = new UserGroup();
         userGroup.setName(name);
         userGroup.setType(type);
         userGroup.setintroduction(introduction);
         userGroup.setFatherId(fatherId);
         userGroup.setCreatorId(creatorId);
+        userGroup.setIsPublic(isPublic);
         if (UserGroupMapper.createUserGroup(userGroup)) {
             return userGroup.getId();
         } else return null;
@@ -156,12 +157,14 @@ public class UserGroupService {
                 String user_group_name = info.getClassName();
 
                 if (all_class.get(user_group_name) == null) {
-                    id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, creator);
+                    id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, creator,1);
                     all_class.put(user_group_name, id);
+                    userGroupService.updateChildrenUserGroup(20,id);
                 }
                 UserGroupMapper.addMemberToUserGroup(id, newUserId);
             }
         }
+
         return ResultEntity.data(true);
     }
 }

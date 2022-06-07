@@ -8,6 +8,23 @@ public class UserGroup {
     private Integer creatorId;
     private Integer fatherId;
     private String childrenId;
+    private Integer isPublic;
+
+    public Integer getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Integer isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public String getIntroduction() {
+        return introduction;
+    }
+
+    public void setIntroduction(String introduction) {
+        this.introduction = introduction;
+    }
 
     public Integer getId() {
         return id;

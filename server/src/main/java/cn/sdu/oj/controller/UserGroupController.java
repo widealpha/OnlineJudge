@@ -57,7 +57,7 @@ public class UserGroupController {
             if (isNeedInviteCode != null && isNeedInviteCode == 1) {  //需要生成邀请码
 
                 if (fatherId == null) {  //创建新用户组
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
 
                     //生成邀请码在redis，10分钟内可通过邀请码加入用户组
                     String inviteCode = StringUtil.getRandomString(6);
@@ -81,7 +81,7 @@ public class UserGroupController {
                         return ResultEntity.error("无法为已有成员的用户组添加子用户组");
                     }
 
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
 
                     userGroupService.updateChildrenUserGroup(fatherId, id);  //更新父用户组的子用户组
 
@@ -103,7 +103,7 @@ public class UserGroupController {
 
             } else {
                 if (fatherId == null) {  //创建新用户组
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
                     if (problemSetId != null) {
                         userGroupService.linkUserGroupProblemSet(id, problemSetId);
                     }
@@ -121,7 +121,7 @@ public class UserGroupController {
                         return ResultEntity.error("无法为已有成员的用户组添加子用户组");
                     }
 
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId());
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
 
                     userGroupService.updateChildrenUserGroup(fatherId, id);  //更新父用户组的子用户组
 
@@ -142,13 +142,16 @@ public class UserGroupController {
         }
     }
 
-    @ApiOperation("用户组信息获取|COMMON+") //获取用户组信息，只包含本组信息   //创建者（老师）或者用户组成员可以使用
-    @PostMapping("/getUserGroupInfo")
+    @ApiOperation("用户组信息获取|COMMON+") //获取用户组信息，只包含本组信息   //私有用户组：创建者（老师）或者用户组成员可以使用
+    @PostMapping("/getUserGroupInfo")                               //公开用户组：所有用户可用
     @PreAuthorize("hasRole('COMMON')")
     public ResultEntity getUserGroupInfo(
             @ApiParam(value = "用户组id") @RequestParam Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
         UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
+        if (userGroup.getIsPublic()==1){
+            return ResultEntity.data(userGroup);
+        }
         if (userGroup.getCreatorId().equals(user.getId())) {
             return ResultEntity.data(userGroup);
         } else {
