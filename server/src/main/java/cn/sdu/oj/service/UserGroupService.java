@@ -1,21 +1,24 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.UserGroupMapper;
+import cn.sdu.oj.dao.UserInfoMapper;
 import cn.sdu.oj.dao.UserMapper;
 import cn.sdu.oj.domain.bo.StudentExcelInfo;
 import cn.sdu.oj.domain.po.UserGroup;
+import cn.sdu.oj.domain.po.UserInfo;
 import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
 import cn.sdu.oj.entity.StatusCode;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
 @Service
@@ -30,8 +33,11 @@ public class UserGroupService {
     @Autowired
     private UserGroupService userGroupService;
 
+    @Resource
+    private UserInfoMapper userInfoMapper;
+
     //新建用户组 || 添加子用户组
-    public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId,Integer isPublic) {
+    public Integer createUserGroup(String name, String type, String introduction, Integer fatherId, Integer creatorId, Integer isPublic) {
         UserGroup userGroup = new UserGroup();
         userGroup.setName(name);
         userGroup.setType(type);
@@ -154,17 +160,74 @@ public class UserGroupService {
 
             if (userMapper.insert(user)) {
                 int newUserId = user.getId();
+                UserInfo userInfo = new UserInfo();
+                userInfo.setUserId(user.getId());
+                userInfo.setStudentId(info.getStudentId());
+                userInfo.setNickname(username);
+                userInfoMapper.insertUserInfo(userInfo);
                 String user_group_name = info.getClassName();
 
                 if (all_class.get(user_group_name) == null) {
-                    id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, creator,1);
+                    id = userGroupService.createUserGroup(user_group_name, "班级", null, 20, creator, 1);
                     all_class.put(user_group_name, id);
-                    userGroupService.updateChildrenUserGroup(20,id);
+                    userGroupService.updateChildrenUserGroup(20, id);
                 }
                 UserGroupMapper.addMemberToUserGroup(id, newUserId);
             }
         }
 
         return ResultEntity.data(true);
+    }
+
+    public ResultEntity<JSONObject> allSubGroupInfo(int userGroupId) {
+        JSONObject object = new JSONObject();
+        UserGroup group = UserGroupMapper.getUserGroupInfoById(userGroupId);
+        object.put("label", group.getName());
+        object.put("value", userGroupId);
+        reachChildren(userGroupId, object);
+//        if (group.getChildrenId() != null) {
+//            JSONArray array = new JSONArray();
+//            List<Integer> ids = JSON.parseArray(group.getChildrenId(), Integer.class);
+//            for (int id : ids) {
+//                UserGroup userGroup = UserGroupMapper.getUserGroupInfoById(id);
+//                JSONObject jsonObject = new JSONObject();
+//                jsonObject.put("label", userGroup.getName());
+//                jsonObject.put("value", userGroup.getId());
+//                array.add(jsonObject);
+//            }
+//            object.put("children", array);
+//        }
+        return ResultEntity.data(object);
+    }
+
+    public void reachChildren(int userGroupId, JSONObject object) {
+        UserGroup group = UserGroupMapper.getUserGroupInfoById(userGroupId);
+        if (group.getChildrenId() != null) {
+            JSONArray array = new JSONArray();
+            List<Integer> ids = JSON.parseArray(group.getChildrenId(), Integer.class);
+            for (int id : ids) {
+                UserGroup userGroup = UserGroupMapper.getUserGroupInfoById(id);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("label", userGroup.getName());
+                jsonObject.put("value", userGroup.getId());
+                reachChildren(id, jsonObject);
+                array.add(jsonObject);
+            }
+            object.put("children", array);
+        }/* else {
+            List<Integer> members = userGroupService.getUserGroupMembers(userGroupId);
+            JSONArray array = new JSONArray();
+            for (int member : members) {
+                UserInfo info = userInfoMapper.selectByUserId(member);
+                if (info == null){
+                    continue;
+                }
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("label", info.getName());
+                jsonObject.put("value", info.getStudentId());
+                array.add(jsonObject);
+            }
+            object.put("children", array);
+        }*/
     }
 }

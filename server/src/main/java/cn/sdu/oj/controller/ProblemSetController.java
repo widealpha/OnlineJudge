@@ -25,6 +25,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -148,6 +150,17 @@ public class ProblemSetController {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);
         }
+    }
+
+
+    @ApiOperation("导出竞赛的账号列表")
+    @PostMapping("/exportCompetitionAccounts")
+    @PreAuthorize("hasRole('TEACHER')")
+    public void exportCompetitionAccounts(
+            @ApiParam("竞赛题目集id") @RequestParam int problemSetId,
+            @ApiIgnore HttpServletResponse response,
+            @ApiIgnore @AuthenticationPrincipal User user) throws IOException {
+        problemSetService.exportCompetitionAccounts(problemSetId, user.getId(), response);
     }
 
     @ApiOperation("删除题目集|TEACHER+") //删除题目集   //创建者可以使用
@@ -805,11 +818,11 @@ public class ProblemSetController {
     }
 
 
-    @ApiOperation("获取题目集的用户组|TEACHER+") //获取题目集的克隆码 创建者可用
+    @ApiOperation("获取题目集的用户组|TEACHER+") //获取题目集的用户组，题目集创建者可用
     @PostMapping("/problemSetUserGroups")
     @PreAuthorize("hasRole('TEACHER')")
     public ResultEntity<List<UserGroup>> problemSetUserGroups(
-            @ApiParam("题目集id") int problemSetId,
+            @ApiParam("题目集id") @RequestParam int problemSetId,
             @ApiIgnore @AuthenticationPrincipal User user) {
         return problemSetService.problemSetUserGroups(problemSetId, user.getId());
     }

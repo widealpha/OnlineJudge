@@ -1,13 +1,20 @@
 package cn.sdu.oj.service;
 
 import cn.sdu.oj.dao.*;
+import cn.sdu.oj.domain.bo.AccountExcelInfo;
 import cn.sdu.oj.domain.po.*;
 import cn.sdu.oj.domain.vo.ProblemSetProblemVo;
+import cn.sdu.oj.domain.vo.User;
 import cn.sdu.oj.entity.ResultEntity;
+import cn.sdu.oj.entity.StatusCode;
 import cn.sdu.oj.util.TimeUtil;
+import com.alibaba.excel.EasyExcel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +42,9 @@ public class ProblemSetService {
 
     @Autowired
     private ProblemSetUserAnswerMapper problemSetUserAnswerMapper;
+
+    @Resource
+    UserMapper userMapper;
 
     //新建题目集
     public Integer createProblemSet(String name, Integer type, String introduction, Integer isPublic, String beginTime, String endTime, Integer creatorId, Integer competitionType) throws Exception {
@@ -259,15 +269,34 @@ public class ProblemSetService {
         return problemSetMapper.selectPublicProblemSetByName(name);
     }
 
-
-    //todo 做权限认证
-    public ResultEntity<List<UserGroup>> problemSetUserGroups(int problemSetId, Integer id) {
+    public ResultEntity<List<UserGroup>> problemSetUserGroups(int problemSetId, int id) {
+        ProblemSet problemSet = problemSetMapper.getProblemSetInfo(problemSetId);
+        if (problemSet == null || problemSet.getCreatorId() != id) {
+            return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
         List<UserGroup> userGroupsIds = new ArrayList<>();
         for (ProblemSetUserGroup e : problemSetUserGroupMapper.getUserGroupByProblemSet(problemSetId)) {
-            if (e.getUserGroupId() != null){
+            if (e.getUserGroupId() != null) {
                 userGroupsIds.add(userGroupService.getUserGroupInfoById(e.getUserGroupId()));
             }
         }
         return ResultEntity.data(userGroupsIds);
+    }
+
+    public void exportCompetitionAccounts(int problemSetId, int userId, HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-disposition", "attachment;filename=accounts.xls");
+        int userGroupId = problemSetUserGroupMapper.getUserGroupByProblemSet(problemSetId).get(0).getUserGroupId();
+        List<Integer> accountIds = userGroupService.getUserGroupMembers(userGroupId);
+        List<AccountExcelInfo> accountExcelInfos = new ArrayList<>();
+        for (int accountId : accountIds) {
+            User user = userMapper.selectByPrimaryKey(accountId);
+            if (user != null){
+                accountExcelInfos.add(new AccountExcelInfo(user.getUsername(), "123456"));
+            }
+        }
+
+        EasyExcel.write(response.getOutputStream(), AccountExcelInfo.class).sheet().doWrite(accountExcelInfos);
     }
 }

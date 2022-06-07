@@ -57,7 +57,7 @@ public class UserGroupController {
             if (isNeedInviteCode != null && isNeedInviteCode == 1) {  //需要生成邀请码
 
                 if (fatherId == null) {  //创建新用户组
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(), 0);
 
                     //生成邀请码在redis，10分钟内可通过邀请码加入用户组
                     String inviteCode = StringUtil.getRandomString(6);
@@ -81,7 +81,7 @@ public class UserGroupController {
                         return ResultEntity.error("无法为已有成员的用户组添加子用户组");
                     }
 
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(), 0);
 
                     userGroupService.updateChildrenUserGroup(fatherId, id);  //更新父用户组的子用户组
 
@@ -103,7 +103,7 @@ public class UserGroupController {
 
             } else {
                 if (fatherId == null) {  //创建新用户组
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(), 0);
                     if (problemSetId != null) {
                         userGroupService.linkUserGroupProblemSet(id, problemSetId);
                     }
@@ -121,7 +121,7 @@ public class UserGroupController {
                         return ResultEntity.error("无法为已有成员的用户组添加子用户组");
                     }
 
-                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(),0);
+                    Integer id = userGroupService.createUserGroup(name, type, introduction, fatherId, user.getId(), 0);
 
                     userGroupService.updateChildrenUserGroup(fatherId, id);  //更新父用户组的子用户组
 
@@ -149,10 +149,10 @@ public class UserGroupController {
             @ApiParam(value = "用户组id") @RequestParam Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
         UserGroup userGroup = userGroupService.getUserGroupInfoById(id);
-        if (userGroup == null){
+        if (userGroup == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST);
         }
-        if (userGroup.getIsPublic()==1){
+        if (userGroup.getIsPublic() == 1) {
             return ResultEntity.data(userGroup);
         }
         if (userGroup.getCreatorId().equals(user.getId())) {
@@ -349,15 +349,15 @@ public class UserGroupController {
             return ResultEntity.error(StatusCode.PARAM_NOT_VALID);
         }
         List<StudentExcelInfo> list = EasyExcel.read(file.getInputStream()).head(StudentExcelInfo.class).sheet().doReadSync();
-
-
-//        response.setContentType("application/vnd.ms-excel");
-//        response.setCharacterEncoding("utf-8");
-//        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
-//        String fileName = URLEncoder.encode("data", "UTF-8");
-//        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
-//        EasyExcel.write(response.getOutputStream(), StudentExcelInfo.class).sheet("sheet1")
-//                .doWrite(userGroupService.generateGroup(list)));
         return userGroupService.importStudentGroup(list, user.getId());
     }
+
+    @ApiOperation("获取用户组以及所有子组的信息|TEACHER+")
+    @PostMapping("/allSubGroupInfo")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResultEntity<JSONObject> allSubGroupInfo(@ApiParam("需要获取子组的用户组") @RequestParam int userGroupId) {
+        return userGroupService.allSubGroupInfo(userGroupId);
+    }
+
+
 }

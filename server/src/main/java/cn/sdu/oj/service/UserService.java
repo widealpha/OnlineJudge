@@ -136,6 +136,10 @@ public class UserService {
             String username = "js-" + problemSetId + "-" + (10000 + random.nextInt(9999));
             User user = new User(username, passwordEncoder.encode("123456"));
             userMapper.insert(user);
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUserId(user.getId());
+            userInfo.setNickname(username);
+            userInfoMapper.insertUserInfo(userInfo);
             users.add(user);
         }
         return ResultEntity.data(users);
