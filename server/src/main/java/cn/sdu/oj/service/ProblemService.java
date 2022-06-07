@@ -40,6 +40,9 @@ public class ProblemService {
     @Resource
     TagMapper tagMapper;
 
+    @Resource
+    SolveRecordMapper solveRecordMapper;
+
     public ResultEntity<List<Tag>> allTags() {
         return ResultEntity.data(tagMapper.selectAllTags());
     }
@@ -69,7 +72,7 @@ public class ProblemService {
                 problemDto.setCodeLengthLimit(asyncProblem.getCodeLengthLimit());
                 problemDto.setExistCheckpoints(asyncProblem.isExistCheckpoints());
                 problemDto.setModifiedTime(asyncProblem.getModifiedTime());
-                if (asyncProblem.getSupportLanguages().isEmpty()){
+                if (asyncProblem.getSupportLanguages().isEmpty()) {
                     problemDto.setSupportLanguages(Arrays.asList(LanguageEnum.values()));
                 } else {
                     List<LanguageEnum> supportLanguages = new ArrayList<>();
@@ -77,6 +80,12 @@ public class ProblemService {
                         supportLanguages.add(LanguageEnum.valueOf(language));
                     }
                     problemDto.setSupportLanguages(supportLanguages);
+                }
+                int count = solveRecordMapper.solveRecordCount(problemId);
+                if (count == 0) {
+                    problemDto.setPassRate(0);
+                } else {
+                    problemDto.setPassRate(1.0 * solveRecordMapper.passSolveRecordCount(problemId) / count);
                 }
             } else {
                 SyncProblem syncProblem = syncProblemMapper.selectProblem(generalProblem.getTypeProblemId());

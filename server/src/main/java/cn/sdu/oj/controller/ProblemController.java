@@ -74,7 +74,7 @@ public class ProblemController {
             if (supportLanguages == null || supportLanguages.isEmpty()) {
                 asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
             } else {
-                if (generateLanguageSupport(supportLanguages, asyncProblem)){
+                if (generateLanguageSupport(supportLanguages, asyncProblem)) {
                     return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
                 }
             }
@@ -113,7 +113,7 @@ public class ProblemController {
             if (supportLanguages == null) {
                 asyncProblem.setSupportLanguages(JSON.toJSONString(LanguageEnum.values()));
             } else {
-                if (generateLanguageSupport(supportLanguages, asyncProblem)){
+                if (generateLanguageSupport(supportLanguages, asyncProblem)) {
                     return ResultEntity.error(StatusCode.PARAM_EMPTY, "判题语言不可置空");
                 }
             }

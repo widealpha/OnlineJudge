@@ -88,6 +88,15 @@ public class SolveController {
         return solveService.runTestCode(judgeTask, user.getId(), problemSetId);
     }
 
+    @ApiOperation("提交自定义测试代码")
+    @PostMapping("latestProblemCommitCode")
+    @PreAuthorize("hasRole('COMMON')")
+    ResultEntity<String> latestProblemCommitCode(@ApiIgnore @AuthenticationPrincipal User user,
+                                     @ApiParam("题目Id") @RequestParam int problemId,
+                                     @ApiParam("题目集编号") @RequestParam int problemSetId) {
+        return solveService.latestProblemCommitCode(problemId, problemSetId, user.getId());
+    }
+
 
     @ApiOperation("提交非编程题判题")
     @PostMapping("trySolveSyncProblem")

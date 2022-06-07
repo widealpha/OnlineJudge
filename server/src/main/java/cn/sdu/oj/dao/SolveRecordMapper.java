@@ -13,6 +13,9 @@ public interface SolveRecordMapper {
             "WHERE user_id = #{userId} AND problem_id = #{problemId} AND `status` > 0")
     List<SolveRecord> selectSolveRecord(Integer problemId, Integer userId);
 
+    @Select("SELECT * FROM solve_record WHERE problem_id = #{problemId} AND problem_set_id = #{problemSetId} AND user_id = #{userId} ORDER BY create_time DESC LIMIT 1")
+    SolveRecord latestRecord(int problemId, int problemSetId, int userId);
+
     @Select("SELECT * " +
             "FROM solve_record " +
             "WHERE id = #{id}")
@@ -65,7 +68,7 @@ public interface SolveRecordMapper {
             "FROM solve_record " +
             "WHERE problem_id = #{problem_id} AND problem_set_id = #{problem_set_id} AND user_id = #{user_id} " +
             "ORDER BY create_time DESC LIMIT 1")
-    SolveRecord getSelfCompletion(Integer problem_id, Integer problem_set_id,  Integer user_id);
+    SolveRecord getSelfCompletion(Integer problem_id, Integer problem_set_id, Integer user_id);
 
 //    @Select("SELECT COUNT(*) " +
 //            "FROM  solve_record WHERE problem_id = #{problem_id} AND `status` >= 0")
@@ -73,7 +76,7 @@ public interface SolveRecordMapper {
 
     @Select("SELECT COUNT(*) " +
             "FROM  solve_record WHERE problem_id = #{problem_id} AND `status` >= 0 AND problem_set_id = #{problem_set_id}")
-    Integer getProblemRecordNum(int problem_id,int problem_set_id);
+    Integer getProblemRecordNum(int problem_id, int problem_set_id);
 //
 //    @Select("SELECT COUNT(*) " +
 //            "FROM  solve_record WHERE problem_id = #{problem_id} AND `status` = 1")
@@ -81,7 +84,7 @@ public interface SolveRecordMapper {
 
     @Select("SELECT COUNT(*) " +
             "FROM  solve_record WHERE problem_id = #{problem_id} AND `status` = 1 AND problem_set_id = #{problem_set_id}")
-    Integer getProblemRecordCorrectNum(int problem_id,int problem_set_id);
+    Integer getProblemRecordCorrectNum(int problem_id, int problem_set_id);
 
     @Select("SELECT count(*)" +
             "FROM solve_record " +
@@ -92,4 +95,12 @@ public interface SolveRecordMapper {
             "FROM solve_record " +
             "WHERE  problem_set_id = #{problem_set_id} AND user_id = #{user_id} ORDER BY create_time DESC LIMIT 1")
     SolveRecord getLastCommit(Integer problem_set_id, Integer user_id);
+
+    //todo 也要根据problemSet
+    @Select("SELECT COUNT(*) FROM solve_record WHERE problem_id = #{problemId}")
+    Integer solveRecordCount(int problemId);
+
+    //todo 也要根据problemSet
+    @Select("SELECT COUNT(*) FROM solve_record WHERE problem_id = #{problemId} AND status = 1")
+    Integer passSolveRecordCount(int problemId);
 }

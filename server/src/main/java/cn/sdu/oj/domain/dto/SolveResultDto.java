@@ -2,6 +2,8 @@ package cn.sdu.oj.domain.dto;
 
 import cn.sdu.oj.domain.po.SolveRecord;
 
+import java.util.Date;
+
 public class SolveResultDto {
     private String taskId;
     private int problemId;
@@ -27,6 +29,10 @@ public class SolveResultDto {
 
     private int statusCode;
 
+    private String code;
+
+    private Date date;
+
     public static SolveResultDto fromSolveRecord(SolveRecord solveRecord) {
         SolveResultDto solveResultDto = new SolveResultDto();
         solveResultDto.taskId = "" + solveRecord.getId();
@@ -38,6 +44,8 @@ public class SolveResultDto {
         solveResultDto.totalCorrect = solveRecord.getTotalCorrect();
         solveResultDto.statusCode = solveRecord.getStatus();
         solveResultDto.error = solveRecord.getError();
+        solveResultDto.date = solveRecord.getCreateTime();
+        solveResultDto.code = solveRecord.getCode();
         return solveResultDto;
     }
 
@@ -75,5 +83,57 @@ public class SolveResultDto {
 
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+    }
+
+    public void setProblemId(int problemId) {
+        this.problemId = problemId;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public void setCpuTime(int cpuTime) {
+        this.cpuTime = cpuTime;
+    }
+
+    public void setMemory(int memory) {
+        this.memory = memory;
+    }
+
+    public void setCheckpointSize(int checkpointSize) {
+        this.checkpointSize = checkpointSize;
+    }
+
+    public void setTotalCorrect(int totalCorrect) {
+        this.totalCorrect = totalCorrect;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }
