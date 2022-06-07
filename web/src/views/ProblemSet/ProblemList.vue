@@ -2,7 +2,7 @@
   <div>
     <el-card>
       <div>
-        <el-table :data="problems" style="width=100%">
+        <el-table :data="problems" style="width:100%">
           <el-table-column label="id" prop="id" />
           <el-table-column label="标题" prop="name" />
           <el-table-column label="类型" prop="typeName" />
@@ -32,9 +32,9 @@ export default {
   },
   methods: {
     goToProblems(id) {
-     
-       	this.$router.push(`/problems/${id}`);
-      
+
+       	this.$router.push({name:"Question",params:{problemId:id}});
+
     },
   },
   created() {

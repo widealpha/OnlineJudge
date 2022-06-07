@@ -24,7 +24,7 @@
 					</div>
 					<div class="submit">
 						<el-button type="primary" @click="tryToSubmit" :loading="isSubmitting" :disabled="$store.state.token===null">提交代码</el-button>
-						<el-button :disabled="solveId==0" @click="showRes">查看结果</el-button>
+						<el-button :disabled="taskId==0" @click="showRes">查看结果</el-button>
 					</div>
 				</el-col>
 				<el-col :span="8" >
@@ -45,9 +45,12 @@
 			<el-dialog title="当前结果" :visible.sync="showResult" width="80%" top="10vh" :append-to-body="true">
 				<el-descriptions border>
 					<el-descriptions-item label="使用语言">{{result.language}}</el-descriptions-item>
-					<el-descriptions-item label="提交时间">{{result.date}}</el-descriptions-item>
-					<el-descriptions-item label="测试结果">{{result.result==null?'正在运行':result.result}}</el-descriptions-item>
-					<el-descriptions-item label="详细代码">
+					<el-descriptions-item label="测试结果">{{result.message}}</el-descriptions-item>
+					<el-descriptions-item label="通过率">{{result.totalCorrect}}/{{result.checkpointSize}}</el-descriptions-item>
+					<el-descriptions-item label="内存消耗">{{(result.memory / 1024).toFixed(1)}}MB</el-descriptions-item>
+					<el-descriptions-item label="时间占用">{{result.cpuTime}}ms</el-descriptions-item>
+          <el-descriptions-item label="提交时间">{{result.date}}</el-descriptions-item>
+          <el-descriptions-item label="详细代码">
 						<el-input type="textarea" v-model="result.code" readonly :autosize="true"></el-input>
 					</el-descriptions-item>
 				</el-descriptions>
@@ -130,7 +133,7 @@ export default {
 	data() {
 		return {
 			isSubmitting: false,
-			solveId: 0,
+      taskId: 0,
 			languages: [],
 			skins: [
 				{
@@ -151,7 +154,7 @@ export default {
 				},
 			],
 			code: "",
-			lang: "",
+			lang: "C99",
 			langVersion: [],
 			keepCode: false,
 			cmOption: {
@@ -214,26 +217,7 @@ export default {
 		async tryToSubmit() {
 			if (this.code) {
 				this.isSubmitting = true;
-				let res = await this.$ajax.post(
-					"/solve/canTrySolveProblem",
-					{
-						problemId: this.problemId,
-					},
-					{
-						headers: {
-							Authorization: `Bearer ${localStorage.getItem("token")}`,
-						},
-					}
-				);
-				if (res.data.code === 0) {
-					if (res.data.data) {
-						await this.submit();
-					} else {
-						this.$alert(
-							"当前有超过5个人正在排队请求判断的题解，或者当前题目已经请求题解还未完成"
-						);
-					}
-				}
+        await this.submit();
 				this.isSubmitting = false;
 			} else {
 				this.$alert("请选择编译器并输入代码", "错误", {
@@ -247,9 +231,9 @@ export default {
 				"/solve/trySolveProblem",
 				{
 					problemId: this.problemId,
-					code: this.code,
-					language: this.langVersion[1],
-					problemsetId: this.$route.params.problemSetId,
+          language: this.lang,
+          problemSetId: this.$store.state.problemSetInfo.id,
+          code: this.code,
 				},
 				{
 					headers: {
@@ -259,9 +243,9 @@ export default {
 			);
 			if (res.data.code == 0) {
 				if (res.data.data) {
-					this.solveId = res.data.data;
+					this.taskId = res.data.data;
 					this.getRes();
-					this.showRes();
+					await this.showRes();
 				} else {
 					this.$notify({
 						title: "警告",
@@ -276,9 +260,9 @@ export default {
 			let res;
 			this.getResInterval = setInterval(async () => {
 				res = await this.$ajax.post(
-					"/solve/mySolveResult",
+					"/solve/solveTaskResult",
 					{
-						solveId: this.solveId,
+						taskId: this.taskId,
 					},
 					{
 						headers: {
@@ -291,15 +275,15 @@ export default {
 					clearInterval(this.getResInterval);
 					this.$emit("updatePassRadio");
 				}
-				this.result = res.data.data;
+
 			}, 2000);
 		},
 		// 查看当前提交结果
 		async showRes() {
 			let res = await this.$ajax.post(
-				"/solve/mySolveResult",
+				"/solve/solveTaskResult",
 				{
-					solveId: this.solveId,
+          taskId: this.taskId,
 				},
 				{
 					headers: {
@@ -307,16 +291,17 @@ export default {
 					},
 				}
 			);
-			if (res.data.code == 0) {
-				this.result = res.data.data;
-				this.showResult = true;
-			}
+      if (res.data.data != null){
+        this.result = res.data.data;
+        this.result.message = res.data.message;
+        this.showResult = true;
+      }
 		},
 		async showDet(index) {
 			let res = await this.$ajax.post(
-				"/solve/solveResultDetail",
+				"/solve/solveTaskResult",
 				{
-					solveId: this.filterRecords[index].id,
+          taskId: this.filterRecords[index].id,
 				},
 				{
 					headers: {
@@ -352,7 +337,7 @@ export default {
 			let res = await this.$ajax.post(
 				"/solve/deleteMySolveRecord",
 				{
-					solveId: this.filterRecords[index].id,
+          taskId: this.filterRecords[index].id,
 				},
 				{
 					headers: {
@@ -376,6 +361,7 @@ export default {
 				"/solve/latestProblemCommitCode",
 				{
 					problemId: this.problemId,
+          problemSetId: this.$store.state.problemSetInfo.id
 				},
 				{
 					headers: {
@@ -413,20 +399,16 @@ export default {
 				}
 			);
 			if (res.data.code === 0) {
-				for (const key in res.data.data) {
-					let children = [];
-					res.data.data[key].forEach((element) => {
-						children.push({
-							value: element,
-							label: element,
-						});
-					});
-					this.languages.push({
-						value: key,
-						label: key,
-						children: children,
-					});
-				}
+        res.data.data.forEach((element)=>{
+          this.languages.push({
+            value: element,
+            label: element,
+            children: [{
+              value: element,
+              label: element,
+            }],
+          });
+        })
 			}
 		},
 		// 选择语言
@@ -503,7 +485,7 @@ export default {
 	watch: {
 		$route() {
 			this.isSubmitting = false;
-			this.solveId = 0;
+			this.taskId = 0;
 			this.skin = "darcula";
 			this.code = "";
 			this.lang = "";
@@ -511,7 +493,7 @@ export default {
 		},
 		problemId() {
 			this.isSubmitting = false;
-			this.solveId = 0;
+			this.taskId = 0;
 			this.skin = "darcula";
 			this.code = "";
 			this.latestProblemCommitCode();

@@ -265,7 +265,8 @@ public class SolveService {
         JudgeResult judgeResult = JSONObject.parseObject(resultEntity.getData(), JudgeResult.class);
         SolveRecord record = solveRecordMapper.selectSolveRecordByPrimaryKey(Integer.parseInt(judgeResult.getTaskId()));
         record.setStatus(resultEntity.getCode());
-
+        record.setCheckpointSize(judgeResult.getCheckPointSize());
+        record.setTotalCorrect(0);
 
         //判题成功,插入判题的数据
         if (resultEntity.getCode() == JudgeStatus.JUDGE_SUCCESS.getCode()) {
@@ -282,6 +283,7 @@ public class SolveService {
                 }
 
             }
+            record.setTotalCorrect(judgeResult.getCheckPointSize());
             record.setCpuTime(allCpuTime / judgeResult.getCheckPointSize());
             record.setMemory(allMemory / judgeResult.getCheckPointSize());
             record.setRealTime(allRealTime / judgeResult.getCheckPointSize());
@@ -299,8 +301,10 @@ public class SolveService {
 //                }
 //            }
         } else if (resultEntity.getCode() == JudgeStatus.JUDGE_COMPILE_ERROR.getCode()) { // 编译错误将错误信息放入error字段
+            JSONObject object = new JSONObject();
+            object.put("0", judgeResult.getErrors().get("0"));
             //0为规定的编译错误的信息
-            record.setError(judgeResult.getErrors().get("0"));
+            record.setError(object.toJSONString());
         } else { // 其他错误对客户隐藏具体错误
             record.setError("{\"0\":\"评测异常\"}");
         }
@@ -357,6 +361,15 @@ public class SolveService {
             return ResultEntity.data(true);
         } else {
             return ResultEntity.error(StatusCode.NO_PERMISSION_OR_EMPTY);
+        }
+    }
+
+    public ResultEntity<String> latestProblemCommitCode(int problemId, int problemSetId, Integer userId) {
+        SolveRecord solveRecord = solveRecordMapper.latestRecord(problemId, problemSetId, userId);
+        if (solveRecord != null) {
+            return ResultEntity.data(solveRecord.getCode());
+        } else {
+            return ResultEntity.data(StatusCode.SUCCESS, null);
         }
     }
 }
