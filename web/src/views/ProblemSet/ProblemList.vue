@@ -32,9 +32,7 @@ export default {
   },
   methods: {
     goToProblems(id) {
-     
-       	this.$router.push(`/problems/${id}`);
-      
+      this.$router.push({ name: "Question", params: { problemId: id } });
     },
   },
   created() {
