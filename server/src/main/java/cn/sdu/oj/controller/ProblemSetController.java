@@ -27,10 +27,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -531,9 +528,7 @@ public class ProblemSetController {
         try {
             ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
             if (problemSet.getType() == 3) {
-
-
-                if (!problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
+                if (!Objects.equals(user.getId(), problemSet.getCreatorId()) && !problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
                     return ResultEntity.error(StatusCode.NO_PERMISSION);
                 } else {
                     //获取用户组列表
