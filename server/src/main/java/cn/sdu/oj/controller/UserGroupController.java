@@ -271,9 +271,9 @@ public class UserGroupController {
     }
 
     //获取一个用户组有的题目集
-    @ApiOperation("获取一个用户组有的题目集|TEACHER+")  // 创建者（老师）可以使用
+    @ApiOperation("获取一个用户组有的题目集|COMMON")  // 创建者（老师）可以使用
     @PostMapping("/getUserGroupProblemSet")    //获取一个用户组有的题目集
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasAnyRole('TEACHER','COMMON')")
     public ResultEntity getUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
