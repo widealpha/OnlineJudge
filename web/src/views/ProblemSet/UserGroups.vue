@@ -33,8 +33,8 @@ export default {
       this.$router.replace(
         `/problem-set/${this.$store.state.problemSetInfo.problemSetId}/`
       );
-    } else {
     }
+
   },
 };
 </script>

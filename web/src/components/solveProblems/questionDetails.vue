@@ -155,7 +155,7 @@ export default {
 			let res = await this.$ajax.post(
 				"/problem/info",
 				{
-					id: problemId,
+          problemId: problemId,
 				},
 				{
 					headers: {
@@ -173,7 +173,9 @@ export default {
 					).toFixed(1);
 					this.myEcharts();
 					this.$emit("update:title", res.data.data.title);
-					this.getLimits(problemId);
+          this.codeMax = res.data.data.codeLengthLimit / 1024;
+          this.timeMax = res.data.data.timeLimit;
+          this.memoryMax = (res.data.data.memoryLimit / 1024).toFixed(0);
 				} else {
 					this.$message({
 						message: "查无此题",

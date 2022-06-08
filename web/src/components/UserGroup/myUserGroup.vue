@@ -10,7 +10,7 @@
     >
       <el-input v-model="userGroupId" @input="checkIsNull"></el-input>
       <span slot="footer" class="dialog-footer">
-      
+
         <el-button @click="addUserGroup" :disabled="disableSubmit" type="primary"
           >提交</el-button
         >
@@ -38,7 +38,7 @@ export default {
     checkIsNull() {
       if (this.userGroupId=="") {
        this.disableSubmit=true
-       
+
       } else {
         this.disableSubmit = false;
       }
@@ -71,6 +71,7 @@ export default {
           },
         }
       );
+      console.log(res);
     },
   },
   created() {
