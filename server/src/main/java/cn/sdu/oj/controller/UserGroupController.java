@@ -271,15 +271,17 @@ public class UserGroupController {
     }
 
     //获取一个用户组有的题目集
-    @ApiOperation("获取一个用户组有的题目集|TEACHER+")  // 创建者（老师）可以使用
+    @ApiOperation("获取一个用户组有的题目集|COMMON")  // 创建者（老师）可以使用
     @PostMapping("/getUserGroupProblemSet")    //获取一个用户组有的题目集
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasAnyRole('TEACHER','COMMON')")
     public ResultEntity getUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
-        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+        //todo 把权限加回去
+        return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
+//        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
+//            return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
+//        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
 
@@ -351,6 +353,16 @@ public class UserGroupController {
         List<StudentExcelInfo> list = EasyExcel.read(file.getInputStream()).head(StudentExcelInfo.class).sheet().doReadSync();
         return userGroupService.importStudentGroup(list, user.getId());
     }
+
+    @PostMapping("/updateStudentGroup")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity<Boolean> updateStudentGroup(
+            @ApiParam("上传的excel") @RequestPart MultipartFile file) throws IOException {
+        List<StudentExcelInfo> list = EasyExcel.read(file.getInputStream()).head(StudentExcelInfo.class).sheet().doReadSync();
+        return userGroupService.updateStudentGroup(list);
+    }
+
+
 
     @ApiOperation("获取用户组以及所有子组的信息|TEACHER+")
     @PostMapping("/allSubGroupInfo")

@@ -27,10 +27,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -136,7 +133,10 @@ public class ProblemSetController {
                     List<User> users = new ArrayList<>();  //返回n个账号
 
                     users = userService.generateCompetitionUserList(problem_set_id, teamNum).getData();
-                    JSONArray userJsonArray = new JSONArray(users);
+                    JSONArray userJsonArray = new JSONArray();
+                    for (User u : users) {
+                        userJsonArray.add(u.getId());
+                    }
                     userGroupService.addMemberToUserGroup(user.getId(), user_group_id, userJsonArray);
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("userGroupId", user_group_id);
@@ -528,14 +528,17 @@ public class ProblemSetController {
         try {
             ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
             if (problemSet.getType() == 3) {
-
-
-                if (!problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
+                if (!Objects.equals(user.getId(), problemSet.getCreatorId()) && !problemSetService.getUserCanTrySolveProblemSet(user.getId(), problemSetId)) {
                     return ResultEntity.error(StatusCode.NO_PERMISSION);
                 } else {
                     //获取用户组列表
-                    List<Integer> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
-                    List<Integer> members = userGroupService.getUserGroupMembers(user_group_id_list.get(0));
+                    List<UserGroup> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
+                    if (user_group_id_list.isEmpty()){
+                        UserGroup userGroup = new UserGroup();
+                        userGroup.setId(problemSetService.problemSetUserGroups(problemSetId, user.getId()).getData().get(0).getId());
+                        user_group_id_list.add(userGroup);
+                    }
+                    List<Integer> members = userGroupService.getUserGroupMembers(user_group_id_list.get(0).getId());
                     //获取题目列表
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
                     //存放id和分数

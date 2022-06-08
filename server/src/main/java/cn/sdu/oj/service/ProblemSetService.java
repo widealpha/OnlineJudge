@@ -163,7 +163,7 @@ public class ProblemSetService {
             ) {
                 Integer user_group_id = problemSetUserGroup.getUserGroupId();
                 if (userGroupService.judgeUserGroupContainUser(user_id, user_group_id)) {
-                    return false;
+                    return true;
                 }
             }
             return false;

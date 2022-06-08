@@ -111,8 +111,15 @@ public class UserGroupService {
     }
 
     //查询我加入的所有用户组
-    public List<Integer> getSelfJoinedUserGroup(Integer user_id) {
-        return UserGroupMapper.getSelfJoinedUserGroup(user_id);
+    public List<UserGroup> getSelfJoinedUserGroup(Integer user_id) {
+        //todo 生成对应的dto
+        List<UserGroup> groups = new ArrayList<>();
+        List<Integer> ids = UserGroupMapper.getSelfJoinedUserGroup(user_id);
+        for (int id: ids){
+            UserGroup group = UserGroupMapper.getUserGroupInfoById(id);
+            groups.add(group);
+        }
+        return groups;
     }
 
     public void updateChildrenUserGroup(Integer fatherId, Integer id) {
@@ -229,5 +236,19 @@ public class UserGroupService {
             }
             object.put("children", array);
         }*/
+    }
+
+    public ResultEntity<Boolean> updateStudentGroup(List<StudentExcelInfo> list) {
+        for (StudentExcelInfo info : list) {
+            String username = "sdu-" + info.getStudentId();
+            User user = userMapper.selectByUsername(username);
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUserId(user.getId());
+            userInfo.setName(info.getName());
+            userInfo.setNickname(username);
+            userInfo.setStudentId(info.getStudentId());
+            userInfoMapper.insertUserInfo(userInfo);
+        }
+        return ResultEntity.data(true);
     }
 }
