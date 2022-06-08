@@ -210,6 +210,7 @@ const routes = [
           title: '题目列表'
         },
       },
+    
       {
         path: ':problemSetId/problems/:problemId',
         component: resolve => require(['./views/ProblemSet/Problem'], resolve),
@@ -228,7 +229,7 @@ const routes = [
         path: ':problemSetId/userGroups',
         component: resolve => require(['./views/ProblemSet/UserGroups'], resolve),
         meta: {
-          title: '开放信息'
+          title: '用户组管理'
         }
       },
       {

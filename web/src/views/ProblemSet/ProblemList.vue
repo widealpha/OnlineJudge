@@ -16,9 +16,15 @@
           <template slot-scope="scope">
             <el-button
               @click="goToProblems(scope.row.id)"
-              type="text"
+              type="primary"
               size="small"
               >做题</el-button
+            >
+            <el-button
+              @click="deleteProblems(scope.row.id)"
+              type="danger"
+              size="small"
+              >删除</el-button
             >
           </template>
         </el-table-column>
@@ -56,6 +62,28 @@ export default {
     };
   },
   methods: {
+    async deleteProblems(id) {
+      this.loading = true;
+      const res = await this.$ajax.post(
+        "/problem/deleteProblem",
+        {
+          problemId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      this.loading = false;
+      if (res.data.code === 0) {
+        this.$message.success("删除成功");
+        this.getProblemset();
+      } else {
+        this.$message.error("删除失败");
+      }
+    },
+
     async addProblem() {
       this.loading = true;
       this.openDialog = false;
@@ -94,7 +122,9 @@ export default {
       );
 
       if (res.data.code == 0) {
+        
         const data = res.data.data;
+        console.log(data);
         const title = data.name;
         const introduction = data.introduction;
         const creatorId = data.creatorId;
@@ -129,7 +159,8 @@ export default {
       this.$router.push({ name: "Question", params: { problemId: id } });
     },
   },
-  created() {
+  async created() {
+    await this.getProblemset();
     this.problems = this.$store.state.problemSetInfo.problemDtos;
     console.log(this.$store.state.problemSetInfo.problemDtos);
   },

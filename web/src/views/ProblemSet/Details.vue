@@ -6,7 +6,7 @@
         <el-row style="height: 5vh">
           <el-col
             :span="12"
-            style="text-align: left; background: green; line-height: 5vh"
+            style="text-align: left; line-height: 5vh"
           >
             <span style="font-weight: bolder; color: gray">{{
               problemSetInfo.name
@@ -14,7 +14,7 @@
           </el-col>
           <el-col
             :span="12"
-            style="text-align: right; background: yellow; line-height: 5vh"
+            style="text-align: right; line-height: 5vh"
           >
             <el-button
               v-if="problemSetInfo.isMyProblemSet"
@@ -118,6 +118,7 @@
           <el-form-item label="新名称" prop="name">
             <el-input v-model="infoForm.name" class="input"></el-input>
           </el-form-item>
+       
           <el-form-item label=" 新时间范围" prop="timeRange">
             <el-date-picker
               style="width: 100%"
@@ -164,6 +165,7 @@ export default {
       infoForm: {
         timeRange: "",
         name: "",
+       
         introduction: "",
         openValue: 0,
         open: [
@@ -179,6 +181,7 @@ export default {
             trigger: ["blur", "change"],
           },
         ],
+        
         name: [
           {
             required: true,

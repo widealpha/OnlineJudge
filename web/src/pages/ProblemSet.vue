@@ -35,12 +35,14 @@
             @click="goToUserGroups"
           >
             <i class="el-icon-menu" />
-            <span slot="title">开放信息</span>
+            <span slot="title">用户组管理</span>
           </el-menu-item>
+          
           <el-menu-item index="-4" @click="goToRank">
             <i class="el-icon-menu" />
             <span slot="title">成绩排行</span>
           </el-menu-item>
+       
           <el-divider></el-divider>
           <div style="display: flex; padding: 0 1em; flex-wrap: wrap">
             <button

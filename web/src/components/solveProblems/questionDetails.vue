@@ -132,31 +132,30 @@ export default {
 			});
 		},
 		async updatePassRadio() {
-      await this.getDetails(this.problemId)
-			// let res = await this.$ajax.post(
-			// 	"/problem/getProblemById",
-			// 	{
-			// 		id: this.problemId,
-			// 	},
-			// 	{
-			// 		headers: {
-			// 			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			// 		},
-			// 	}
-			// );
-			// if (res.data.code == 0) {
-			// 	this.passRadio = Number(res.data.data.passRadio * 100).toFixed(
-			// 		1
-			// 	);
-			// 	this.myEcharts();
-			// }
+			let res = await this.$ajax.post(
+				"/problem/getProblemById",
+				{
+					id: this.problemId,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
+					},
+				}
+			);
+			if (res.data.code == 0) {
+				this.passRadio = Number(res.data.data.passRadio * 100).toFixed(
+					1
+				);
+				this.myEcharts();
+			}
 		},
 		async getDetails(problemId) {
 			this.loading = true;
 			let res = await this.$ajax.post(
 				"/problem/info",
 				{
-          problemId: problemId,
+					id: problemId,
 				},
 				{
 					headers: {
@@ -174,9 +173,7 @@ export default {
 					).toFixed(1);
 					this.myEcharts();
 					this.$emit("update:title", res.data.data.title);
-          this.codeMax = res.data.data.codeLengthLimit / 1024;
-          this.timeMax = res.data.data.timeLimit;
-          this.memoryMax = (res.data.data.memoryLimit / 1024).toFixed(0);
+					this.getLimits(problemId);
 				} else {
 					this.$message({
 						message: "查无此题",
@@ -191,6 +188,24 @@ export default {
 			}
 			this.loading = false;
 			return res.data.data;
+		},
+		async getLimits(problemId) {
+			let res = await this.$ajax.post(
+				"/problemLimit/getProblemLimit",
+				{
+					id: problemId,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
+					},
+				}
+			);
+			if ((res.data.code = 0 && res.data.data != null)) {
+				this.codeMax = res.data.data.codeMax;
+				this.timeMax = res.data.data.timeMax;
+				this.memoryMax = res.data.data.memoryMax;
+			}
 		},
 		searchProblemsByTag(tag) {
 			this.$router.push({

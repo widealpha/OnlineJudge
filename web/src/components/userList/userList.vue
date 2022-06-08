@@ -96,7 +96,7 @@
               <el-button
                 size="small"
                 type="text"
-								style="color: #ff4d4f"
+                style="color: #ff4d4f"
                 @click.native.prevent="deleteRow(scope.$index)"
               >
                 移除
@@ -113,19 +113,43 @@
     </el-dialog>
     <div v-show="showAddUserList" class="add">
       <el-dialog :visible.sync="showAddUserList" title="添加用户组">
-        <el-input v-model="createUserListName" placeholder="请输入用户组名称">
-        </el-input>
-        <el-input v-model="createUserListType" placeholder="请输入用户组类别">
-        </el-input>
-        <el-input v-model="createUserListDesc" placeholder="请输入用户组描述">
-        </el-input>
-        <el-button
-          style="margin-left: 10px"
-          type="primary"
-          @click="addUserList"
+        <el-form
+          :model="createUserGroupInfo"
+          :rules="createUserGroupRules"
+          ref="ruleForm"
         >
-          添加用户组
-        </el-button>
+          <el-form-item label="请输入用户组名称">
+            <el-input
+              v-model="createUserGroupInfo.createUserListName"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="请选择用户组类别">
+            <el-select v-model="createUserGroupInfo.createUserListType">
+              <el-option
+                v-for="item in types"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="请输入用户组描述">
+            <el-input
+              v-model="createUserGroupInfo.createUserListDesc"
+            ></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              style="margin-left: 10px"
+              type="primary"
+              @click="addUserList"
+            >
+              添加用户组
+            </el-button>
+          </el-form-item>
+        </el-form>
       </el-dialog>
     </div>
   </div>
@@ -137,9 +161,32 @@ export default {
   components: {},
   data() {
     return {
-      createUserListName: "",
-      createUserListDesc: "",
-      createUserListType: "",
+      types: [
+        {
+          value: 1,
+          label: "练习",
+        },
+        {
+          value: 2,
+          label: "作业",
+        },
+        {
+          value: 3,
+          label: "考试",
+        },
+      ],
+      createUserGroupInfo: {
+        createUserListName: "",
+        createUserListDesc: "",
+        createUserListType: 1,
+      },
+      createUserGroupRules: {
+        createUserListName: {
+          required: true,
+          message: "请输入名称",
+          trigger: "blur",
+        },
+      },
       comfirmDel: false,
       userListName: "",
       showAddUserList: false,
@@ -169,7 +216,7 @@ export default {
           },
         }
       );
-       (res);
+      res;
       await this.getUserList();
     },
     async addUserList() {
@@ -192,7 +239,7 @@ export default {
             },
           }
         );
-         (res);
+        res;
         if (res.data.code === 0) {
           this.showAddUserList = false;
           this.$message.success("创建用户组成功!");
@@ -260,7 +307,7 @@ export default {
           },
         }
       );
-       (res);
+      res;
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.userList = res.data.data;
@@ -282,7 +329,7 @@ export default {
           },
         }
       );
-       (res);
+      res;
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.userList = res.data.data;

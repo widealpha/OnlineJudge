@@ -9,9 +9,10 @@ module.exports = {
         Popper: ["popper.js", "default"]
       })
     ]
-  }
-}
+  },
 
+}
+module.exports= {lintOnSave:false}
 // module.exports = {
 //     devServer: {
 //         port: 8080,
