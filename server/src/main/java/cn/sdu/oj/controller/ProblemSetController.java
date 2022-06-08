@@ -533,6 +533,9 @@ public class ProblemSetController {
                 } else {
                     //获取用户组列表
                     List<Integer> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
+                    if (user_group_id_list.isEmpty()){
+                        user_group_id_list.add(problemSetService.problemSetUserGroups(problemSetId, user.getId()).getData().get(0).getId());
+                    }
                     List<Integer> members = userGroupService.getUserGroupMembers(user_group_id_list.get(0));
                     //获取题目列表
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
