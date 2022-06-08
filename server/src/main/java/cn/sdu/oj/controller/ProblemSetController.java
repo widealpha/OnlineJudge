@@ -532,11 +532,13 @@ public class ProblemSetController {
                     return ResultEntity.error(StatusCode.NO_PERMISSION);
                 } else {
                     //获取用户组列表
-                    List<Integer> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
+                    List<UserGroup> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
                     if (user_group_id_list.isEmpty()){
-                        user_group_id_list.add(problemSetService.problemSetUserGroups(problemSetId, user.getId()).getData().get(0).getId());
+                        UserGroup userGroup = new UserGroup();
+                        userGroup.setId(problemSetService.problemSetUserGroups(problemSetId, user.getId()).getData().get(0).getId());
+                        user_group_id_list.add(userGroup);
                     }
-                    List<Integer> members = userGroupService.getUserGroupMembers(user_group_id_list.get(0));
+                    List<Integer> members = userGroupService.getUserGroupMembers(user_group_id_list.get(0).getId());
                     //获取题目列表
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
                     //存放id和分数

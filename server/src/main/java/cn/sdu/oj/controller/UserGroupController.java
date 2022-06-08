@@ -354,6 +354,16 @@ public class UserGroupController {
         return userGroupService.importStudentGroup(list, user.getId());
     }
 
+    @PostMapping("/updateStudentGroup")
+    @PreAuthorize("hasRole('COMMON')")
+    public ResultEntity<Boolean> updateStudentGroup(
+            @ApiParam("上传的excel") @RequestPart MultipartFile file) throws IOException {
+        List<StudentExcelInfo> list = EasyExcel.read(file.getInputStream()).head(StudentExcelInfo.class).sheet().doReadSync();
+        return userGroupService.updateStudentGroup(list);
+    }
+
+
+
     @ApiOperation("获取用户组以及所有子组的信息|TEACHER+")
     @PostMapping("/allSubGroupInfo")
     @PreAuthorize("hasRole('TEACHER')")
