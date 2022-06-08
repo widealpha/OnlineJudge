@@ -136,7 +136,10 @@ public class ProblemSetController {
                     List<User> users = new ArrayList<>();  //返回n个账号
 
                     users = userService.generateCompetitionUserList(problem_set_id, teamNum).getData();
-                    JSONArray userJsonArray = new JSONArray(users);
+                    JSONArray userJsonArray = new JSONArray();
+                    for (User u : users) {
+                        userJsonArray.add(u.getId());
+                    }
                     userGroupService.addMemberToUserGroup(user.getId(), user_group_id, userJsonArray);
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("userGroupId", user_group_id);
