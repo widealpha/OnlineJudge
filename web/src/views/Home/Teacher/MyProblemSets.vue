@@ -17,11 +17,10 @@
           </el-col>
         </el-row>
       </div>
-      <div :v-if="problemSets.length!==0">
+      <div :v-if="problemSets.length !== 0">
         <ul style="list-style: none" class="ul" v-loading="loading">
           <li v-for="(item, index) in problemSets" :key="index">
             <problem-set
-            
               :name="item.name"
               :problemSetId="item.id"
               :type="item.type"
@@ -207,7 +206,7 @@ export default {
     //克隆题目集
     async cloneProblemSet() {
       this.$refs.cloneForm.validate(async (valid) => {
-         (Number(this.cloneForm.problemSetId));
+        Number(this.cloneForm.problemSetId);
         if (valid) {
           let res = await this.$ajax.post(
             "/problemSet/cloneProblemSet",
@@ -221,7 +220,7 @@ export default {
               },
             }
           );
-     
+
           if (res.data.code == 0) {
             this.$notify({
               title: "成功",
@@ -261,23 +260,114 @@ export default {
     createProblemSet() {
       this.$refs.infoForm.validate(async (valid) => {
         if (valid) {
-          let res = await this.$ajax.post(
-            "/problemSet/createProblemSet",
-            {
-              name: this.infoForm.name,
-              introduction: this.infoForm.introduction,
-              type: this.infoForm.type,
-              isPublic: this.infoForm.isPublic,
-              beginTime: this.formatDate(this.infoForm.timeRange[0]),
-              endTime: this.formatDate(this.infoForm.timeRange[1]),
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+          this.adding = false;
+          //练习
+          if (this.infoForm.type === 1) {
+            let res = await this.$ajax.post(
+              "/problemSet/createExerciseProblemSet",
+              {
+                name: this.infoForm.name,
+                introduction: this.infoForm.introduction,
+                type: this.infoForm.type,
+                isPublic: this.infoForm.isPublic,
+                beginTime: this.formatDate(this.infoForm.timeRange[0]),
+                endTime: this.formatDate(this.infoForm.timeRange[1]),
               },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            if (res.data.code == 0) {
+              this.$message.success("创建成功");
+            } else {
+              this.$message.error("创建失败");
             }
-          );
-           (res);
+          }
+          //测验
+          if (this.infoForm.type === 2) {
+            let res = await this.$ajax.post(
+              "/problemSet/createTestProblemSet",
+              {
+                name: this.infoForm.name,
+                introduction: this.infoForm.introduction,
+                type: this.infoForm.type,
+                isPublic: this.infoForm.isPublic,
+                beginTime: this.formatDate(this.infoForm.timeRange[0]),
+                endTime: this.formatDate(this.infoForm.timeRange[1]),
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+            if (res.data.code == 0) {
+              this.$message.success("创建成功");
+            } else {
+              this.$message.error("创建失败");
+            }
+          }
+          //竞赛
+          if (this.infoForm.type === 3) {
+            let res = await this.$ajax.post(
+              "/problemSet/createCompetitionProblemSet",
+              {
+                name: this.infoForm.name,
+                teamNum: 20,
+                competitionType: 0,
+                introduction: this.infoForm.introduction,
+                type: this.infoForm.type,
+                isPublic: this.infoForm.isPublic,
+                beginTime: this.formatDate(this.infoForm.timeRange[0]),
+                endTime: this.formatDate(this.infoForm.timeRange[1]),
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+            if (res.data.code == 0) {
+              this.$message.success("创建成功，正在导出学生名单");
+              let res1 = await this.$ajax.post(
+                "/problemSet/exportCompetitionAccounts",
+                {
+                  problemSetId: res.data.data.problemSetId,
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                  responseType: "blob", // 以 blob 类型接收后端发回的响应数据
+                }
+              );
+
+              const content = res1.data; // 接收响应内容
+              const blob = new Blob([content]); // 构造一个blob对象来处理数据
+              let fileName = `名单.xlsx`;
+              // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+              // IE10以上支持blob但是依然不支持download
+              if ("download" in document.createElement("a")) {
+                //支持a标签download的浏览器
+                const link = document.createElement("a"); // 创建a标签
+                link.download = fileName; // a标签添加属性
+                link.style.display = "none";
+                link.href = URL.createObjectURL(blob);
+                document.body.appendChild(link);
+                link.click(); // 执行下载
+                URL.revokeObjectURL(link.href); // 释放url
+                document.body.removeChild(link); // 释放标签
+              } else {
+                // 其他浏览器
+                navigator.msSaveBlob(blob, fileName);
+              }
+            } else {
+              this.$message.error("创建失败");
+            }
+          }
           if (res.data.code == 0) {
             this.$notify({
               title: "成功",
@@ -328,7 +418,7 @@ export default {
 };
 </script>
 
-<style lang="less" >
+<style lang="less">
 .MyproblemSets {
   .ul li {
     margin-block: 20px;

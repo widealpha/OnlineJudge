@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 首页，我的题目集 -->
-    <ul style="list-style: none" class="ul" >
+    <ul style="list-style: none" class="ul">
       <li v-for="(item, index) in problemSets" :key="index">
         <problem-set
           :name="item.name"
@@ -27,12 +27,13 @@ export default {
     return {
       loading: false,
       problemSets: [],
+      userGroupId: 0,
     };
   },
   methods: {
-    async getMyProblemSets() {
+    async getMyAddedUserGroup() {
       let res = await this.$ajax.post(
-        "/problemSet/getSelfDoneProblemSet",
+        "/userGroup/getSelfJoinedUserGroup",
         {},
         {
           headers: {
@@ -40,11 +41,45 @@ export default {
           },
         }
       );
- console.log(res);
-      if (res.data.code == 0) {
+      this.userGroupId = res.data.data[0].id;
+    },
+    async getUserGroupProblemSet() {
+      let res = await this.$ajax.post(
+        "/userGroup/getUserGroupProblemSet",
+        {
+          id: this.userGroupId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+     
+      if (res.data.code == 0 && res.data.data.length !== 0) {
         this.problemSets = res.data.data;
       }
     },
+    async getProblemSetInfo() {
+      let res = await this.$ajax.post(
+        "/problemSet/getProblemSetInfo",
+        {
+          problemSetId: this.problemSets[0],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log(res.data.data);
+      this.problemSets = [res.data.data];
+    },
+  },
+  async mounted() {
+    await this.getMyAddedUserGroup();
+    await this.getUserGroupProblemSet();
+    this.getProblemSetInfo();
   },
 };
 </script>

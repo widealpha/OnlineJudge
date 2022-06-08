@@ -98,14 +98,14 @@
                   ></el-input>
                   <span class="infos">{{ myInfo.name }}</span>
                 </el-form-item>
-                <el-form-item prop="stuNum" label="学号：">
+                <el-form-item prop="studentId" label="学号：">
                   <el-input
                     v-if="inputingMyInfo"
                     style="width: 10vw"
                     placeholder="请输入学号"
-                    v-model="bindForm.stuNum"
+                    v-model="bindForm.studentId"
                   ></el-input>
-                  <span class="infos">{{ myInfo.stuNum }}</span>
+                  <span class="infos">{{ myInfo.studentId }}</span>
                 </el-form-item>
                 <el-form-item v-if="needBind" prop="code" label="绑定码：">
                   <el-input
@@ -259,7 +259,7 @@ export default {
       inputingMyInfo: false,
       bindForm: {
         name: "",
-        stuNum: "",
+        studentId: "",
         code: "",
       },
       bindRules: {
@@ -270,7 +270,7 @@ export default {
             trigger: ["blur", "change"],
           },
         ],
-        stuNum: [
+        studentId: [
           {
             required: true,
             message: "学号不得为空！",
@@ -314,9 +314,9 @@ export default {
         this.myInfo = res.data.data;
         this.$store.commit("setMyInfo", res.data.data);
         this.$set(this.myInfo, "avatar", res.data.data.avatar);
-        this.$set(this.myInfo, "stuNum", res.data.data.stuNum);
+        this.$set(this.myInfo, "studentId", res.data.data.studentId);
         this.$set(this.myInfo, "name", res.data.data.name);
-        this.needBind = res.data.data.stuNum == null;
+        this.needBind = res.data.data.studentId == null;
       }
     },
 
@@ -390,10 +390,10 @@ export default {
       this.$refs.bindForm.validate(async (valid) => {
         if (valid) {
           let res = await this.$ajax.post(
-            "/bind/bindStuNum",
+            "/bind/bindstudentId",
             {
               name: this.bindForm.name,
-              stuNum: this.bindForm.stuNum,
+              studentId: this.bindForm.studentId,
               code: this.bindForm.code,
             },
             {
@@ -407,7 +407,7 @@ export default {
               this.inputingMyInfo = false;
               this.bindForm = {
                 name: "",
-                stuNum: "",
+                studentId: "",
                 code: "",
               };
               this.$message({
@@ -426,7 +426,7 @@ export default {
     },
     async deleteBind() {
       let res = await this.$ajax.post(
-        "/bind/unBindStuNum",
+        "/bind/unBindstudentId",
         {},
         {
           headers: {

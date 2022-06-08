@@ -112,10 +112,23 @@ export default {
     open: Number,
   },
   methods: {
-
     // 这个地方需要完善，后端接口没给
-    deleteProblemSet(){
-       (this.problemSetId);
+    async deleteProblemSet() {
+      let res = await this.$ajax.post(
+        "/problemSet/deleteProblemSet",
+        {problemSetId:this.problemSetId},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if(res.data.code==0){
+        this.$message.success("删除成功");
+       
+      }else{
+        this.$message.error("删除失败")
+      }
     },
     getStatus() {
       let beginTime = new Date(this.beginTime);

@@ -62,28 +62,12 @@
           <el-table-column
             v-if="!isTeacher"
             fixed
-            label="是否绑定"
+            label="是否公开"
             min-width="100"
-            prop="bind"
+            prop="isPublic"
             show-overflow-tooltip
           >
-            <template slot-scope="scope" style="text-align: center">
-              <span
-                v-if="scope.row.bind === 0"
-                style="cursor: pointer"
-                @click="bindToUserList(scope.row.id)"
-              >
-                <i
-                  class="iconfont icon-click"
-                  style="color: #179cff; font-size: 25px"
-                />
-                点击绑定
-              </span>
-              <span v-if="scope.row.bind === 1">
-                <i class="iconfont icon-pass-copy trueStateIcon" />
-                已绑定
-              </span>
-            </template>
+       
           </el-table-column>
           <el-table-column v-if="isTeacher" label="操作" width="150">
             <template slot-scope="scope">
@@ -220,40 +204,31 @@ export default {
       await this.getUserList();
     },
     async addUserList() {
-      if (
-        this.createUserListName.trim() &&
-        this.createUserListType.trim() &&
-        this.createUserListDesc.trim()
-      ) {
-        let res = await this.$ajax.post(
-          "/userGroup/createUserGroup",
-          {
-            name: this.createUserListName,
-            type: this.createUserListType,
-            introduction: this.createUserListDesc,
-            fatherId: null,
+      let res = await this.$ajax.post(
+        "/userGroup/createUserGroup",
+        {
+          name: this.createUserGroupInfo.createUserListName,
+          type: this.createUserGroupInfo.createUserListType,
+          introduction: this.createUserGroupInfo.createUserListDesc,
+          fatherId: null,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        res;
-        if (res.data.code === 0) {
-          this.showAddUserList = false;
-          this.$message.success("创建用户组成功!");
-          await this.getUserList();
-          this.createUserListName = "";
-          this.createUserListType = "";
-          this.createUserListDesc = "";
-        } else {
-          this.$message.error("创建用户组失败," + res.data.message);
         }
-      } else {
-        this.$message.error("用户组信息不得为空");
+      );
+      
+      if (res.data.code === 0) {
+        this.showAddUserList = false;
+        this.$message.success("创建用户组成功!");
+        await this.getUserList();
+        this.createUserGroupInfo.createUserListName = "";
+        this.createUserGroupInfo.createUserListType = "";
+        this.createUserGroupInfo.createUserListDesc = "";
       }
     },
+
     handleClick(row) {
       this.$router.push({
         name: "userListDetails",
@@ -307,7 +282,7 @@ export default {
           },
         }
       );
-      res;
+   console.log(res);
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.userList = res.data.data;

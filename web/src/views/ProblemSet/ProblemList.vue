@@ -3,10 +3,11 @@
     <el-card>
       <el-button
         type="primary"
+        v-if="this.$store.state.myInfo.roles.includes(`ROLE_TEACHER`)"
         @click="openDialog = true"
         style="float:left;margin-bottom:30px"
         >添加题目</el-button
-      >
+      ><div style="margin:20px 0">题目列表</div>
       <el-table v-loading="loading" :data="problems" style="width=100%">
         <el-table-column label="id" prop="id" />
         <el-table-column label="标题" prop="name" />

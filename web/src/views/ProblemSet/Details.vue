@@ -42,6 +42,9 @@
               <el-descriptions-item label="结束时间">
                 {{ problemSetInfo.endTime }}
               </el-descriptions-item>
+               <el-descriptions-item label="题目集类型">
+                {{ problemSetInfo.type==1?'练习':problemSetInfo.type==2?'测验':'竞赛' }}
+              </el-descriptions-item>
               <el-descriptions-item label="题目集状态">
                 <el-tag
                   size="small"
