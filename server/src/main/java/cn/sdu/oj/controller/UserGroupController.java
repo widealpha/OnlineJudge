@@ -277,9 +277,11 @@ public class UserGroupController {
     public ResultEntity getUserGroupProblemSet(
             @ApiParam(value = "用户组id") @RequestParam(required = true) Integer id,
             @ApiIgnore @AuthenticationPrincipal User user) {
-        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
-            return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
-        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
+        //todo 把权限加回去
+        return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
+//        if (userGroupService.getUserGroupInfoById(id).getCreatorId().equals(user.getId())) {
+//            return ResultEntity.data(userGroupService.getUserGroupProblemSet(id));
+//        } else return ResultEntity.data(StatusCode.NO_PERMISSION);
     }
 
 
