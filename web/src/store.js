@@ -6,7 +6,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
  
-      
+  
         // 编程题
         problemInfo: {
             answer: "",
