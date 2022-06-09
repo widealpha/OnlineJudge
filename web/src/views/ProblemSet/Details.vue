@@ -4,18 +4,12 @@
     <el-card>
       <div slot="header">
         <el-row style="height: 5vh">
-          <el-col
-            :span="12"
-            style="text-align: left; line-height: 5vh"
-          >
+          <el-col :span="12" style="text-align: left; line-height: 5vh">
             <span style="font-weight: bolder; color: gray">{{
               problemSetInfo.name
             }}</span>
           </el-col>
-          <el-col
-            :span="12"
-            style="text-align: right; line-height: 5vh"
-          >
+          <el-col :span="12" style="text-align: right; line-height: 5vh">
             <el-button
               v-if="problemSetInfo.isMyProblemSet"
               icon="el-icon-edit"
@@ -42,8 +36,14 @@
               <el-descriptions-item label="结束时间">
                 {{ problemSetInfo.endTime }}
               </el-descriptions-item>
-               <el-descriptions-item label="题目集类型">
-                {{ problemSetInfo.type==1?'练习':problemSetInfo.type==2?'测验':'竞赛' }}
+              <el-descriptions-item label="题目集类型">
+                {{
+                  problemSetInfo.type == 1
+                    ? "练习"
+                    : problemSetInfo.type == 2
+                    ? "测验"
+                    : "竞赛"
+                }}
               </el-descriptions-item>
               <el-descriptions-item label="题目集状态">
                 <el-tag
@@ -51,6 +51,16 @@
                   :type="problemSetStatus === '进行中' ? '' : 'info'"
                   >{{ problemSetStatus }}</el-tag
                 >
+              </el-descriptions-item>
+              <el-descriptions-item label="题目集id">
+                <el-tag size="small">{{ this.$store.state.problemSetInfo.id }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="克隆码">
+
+                  <el-popconfirm :title="cloneCode">
+                    <el-button slot="reference" @click="getCloneCode">生成克隆码</el-button>
+                  </el-popconfirm>
+             
               </el-descriptions-item>
             </el-descriptions>
           </el-col>
@@ -121,7 +131,7 @@
           <el-form-item label="新名称" prop="name">
             <el-input v-model="infoForm.name" class="input"></el-input>
           </el-form-item>
-       
+
           <el-form-item label=" 新时间范围" prop="timeRange">
             <el-date-picker
               style="width: 100%"
@@ -164,11 +174,12 @@
 export default {
   data() {
     return {
+      cloneCode: null,
       alteringInfo: false,
       infoForm: {
         timeRange: "",
         name: "",
-       
+
         introduction: "",
         openValue: 0,
         open: [
@@ -184,7 +195,7 @@ export default {
             trigger: ["blur", "change"],
           },
         ],
-        
+
         name: [
           {
             required: true,
@@ -215,6 +226,26 @@ export default {
     };
   },
   methods: {
+    //生成克隆码
+    async getCloneCode() {
+      let res = await this.$ajax.post(
+        "/problemSet/getProblemSetCloneCode",
+        {
+          problemSetId: this.$store.state.problemSetInfo.id,
+          day: 365,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (res.data.code == 0) {
+        this.cloneCode = res.data.data;
+      } else {
+        this.$meaasge.error("生成克隆码失败");
+      }
+    },
     //进入问题详情
     getToProblem(index, problem) {
       this.$router.push({
@@ -317,8 +348,7 @@ export default {
       );
       if (res.data.code == 0) {
         this.$store.commit("setProblemSetInfo", res.data.data);
-         (this.$store.state.problemSetInfo);
-         
+        this.$store.state.problemSetInfo;
       } else {
         this.$notify({
           title: "失败",
@@ -329,11 +359,11 @@ export default {
     },
   },
   async created() {
-  await  this.getProblemSetInfo();
+    await this.getProblemSetInfo();
     this.initInfoForm();
   },
   computed: {
-     problemSetInfo() {
+    problemSetInfo() {
       return this.$store.state.problemSetInfo;
     },
     isMyProblemSet() {

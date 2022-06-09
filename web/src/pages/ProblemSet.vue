@@ -21,14 +21,14 @@
             <i class="el-icon-menu" />
             <span slot="title">题目列表</span>
           </el-menu-item>
-          <el-menu-item
+          <!-- <el-menu-item
             v-if="problemSetInfo.isMyProblemSet"
             index="-2"
             @click="goToAllProblemList"
           >
             <i class="el-icon-menu" />
             <span slot="title">题目管理</span>
-          </el-menu-item>
+          </el-menu-item> -->
           <el-menu-item
             v-if="problemSetInfo.isMyProblemSet"
             index="-3"
