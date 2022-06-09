@@ -83,6 +83,7 @@
           
         </el-form-item>
       </el-form>
+    <el-button @click="commit" type="primary">提交题目</el-button>
     </el-card>
   </div>
 </template>
@@ -187,6 +188,9 @@ export default {
     };
   },
   methods: {
+    commit(){
+      this.$message.success("出题成功")
+    },
     // 获取可选标签
     async getTags(node) {
       let res;
