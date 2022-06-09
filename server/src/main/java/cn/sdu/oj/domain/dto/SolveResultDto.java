@@ -139,4 +139,12 @@ public class SolveResultDto {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
+    }
 }
