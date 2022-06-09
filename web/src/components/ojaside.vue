@@ -20,7 +20,7 @@
           <i class="el-icon-location" />
           <span>学生相关</span>
         </template>
-        <el-menu-item index="/student/problems">题目列表</el-menu-item>
+        <!-- <el-menu-item index="/student/problems">题目列表</el-menu-item> -->
         <el-menu-item index="/student/userList">用户组列表</el-menu-item>
       </el-submenu>
 
