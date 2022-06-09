@@ -67,8 +67,8 @@
             prop="isPublic"
             show-overflow-tooltip
           >
-       
           </el-table-column>
+
           <el-table-column v-if="isTeacher" label="操作" width="150">
             <template slot-scope="scope">
               <el-button
@@ -84,6 +84,20 @@
                 @click.native.prevent="deleteRow(scope.$index)"
               >
                 移除
+              </el-button>
+            </template>
+          </el-table-column>
+          <el-table-column
+            v-if="isAddToMyProblemSet && isTeacher"
+            label="是否添加"
+          >
+            <template slot-scope="scope">
+              <el-button
+                size="small"
+                type="success"
+                @click="addToProblemSet(scope.row.id)"
+              >
+                添加到题目集
               </el-button>
             </template>
           </el-table-column>
@@ -142,9 +156,11 @@
 <script>
 export default {
   name: "userList",
-  components: {},
+
+  props: ["isAddToProblemSet"],
   data() {
     return {
+      isAddToMyProblemSet: this.isAddToProblemSet,
       types: [
         {
           value: 1,
@@ -188,6 +204,27 @@ export default {
     }
   },
   methods: {
+    async addToProblemSet(userListId) {
+      let res = await this.$ajax.post(
+        "/userGroup/linkUserGroupProblemSet",
+        {
+          userGroupId: userListId,
+          problemSetId: this.$store.state.problemSetInfo.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (res.status == 200) {
+        if (res.data.code == 0) {
+          this.$message.success("添加用户组到题目集成功");
+        } else {
+          this.$message.error(res.data.message);
+        }
+      }
+    },
     async bindToUserList(id) {
       let res = await this.$ajax.post(
         "/usergroup/bindStudent",
@@ -218,7 +255,7 @@ export default {
           },
         }
       );
-      
+
       if (res.data.code === 0) {
         this.showAddUserList = false;
         this.$message.success("创建用户组成功!");
@@ -282,7 +319,7 @@ export default {
           },
         }
       );
-   console.log(res);
+      console.log(res);
       if (res.status === 200) {
         if (res.data.code === 0) {
           this.userList = res.data.data;
@@ -324,6 +361,9 @@ export default {
 
       this.loading = false;
     },
+  },
+  created() {
+    console.log(this.isAddToMyProblemSet);
   },
   computed: {
     isTeacher() {

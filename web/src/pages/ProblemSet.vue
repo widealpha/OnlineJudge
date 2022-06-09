@@ -37,12 +37,16 @@
             <i class="el-icon-menu" />
             <span slot="title">用户组管理</span>
           </el-menu-item>
-          
-          <el-menu-item index="-4" @click="goToRank">
+
+          <el-menu-item
+            index="-4"
+            @click="goToRank"
+            v-if="this.$store.state.problemSetInfo.type == 3"
+          >
             <i class="el-icon-menu" />
             <span slot="title">竞赛成绩排行</span>
           </el-menu-item>
-       
+
           <el-divider></el-divider>
           <div style="display: flex; padding: 0 1em; flex-wrap: wrap">
             <button
@@ -62,7 +66,7 @@
             >
               <div class="passStatusCover">
                 {{
-                  (function (passedStatus) {
+                  (function(passedStatus) {
                     switch (passedStatus) {
                       case 1:
                         return index + 1;
@@ -128,15 +132,17 @@ export default {
           },
         }
       );
-       console.log(res);
+      console.log(res);
       if (res.data.code == 0) {
         const data = res.data.data;
+        console.log(data);
         const title = data.name;
         const introduction = data.introduction;
         const creatorId = data.creatorId;
         const open = data.isPublic;
         const endTime = data.endTime;
         const beginTime = data.beginTime;
+        const id = data.id;
         const problemDtos = data.problemDtos;
         const type = data.type;
         const isMyProblemSet = creatorId == this.$store.state.myInfo.userId;
@@ -146,6 +152,7 @@ export default {
           introduction,
           creatorId,
           open,
+          id,
           endTime,
           beginTime,
           problemDtos,

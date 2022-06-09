@@ -130,7 +130,7 @@ const routes = [
           },
           {
             path: 'userList',
-            component: resolve => require(['./components/userList/userList'], resolve),
+            component: resolve => require(['./views/Home/Teacher/myUserGroup'], resolve),
             meta: {
               title: '用户组列表'
             },
