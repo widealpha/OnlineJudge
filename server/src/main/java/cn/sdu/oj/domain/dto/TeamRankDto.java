@@ -8,6 +8,8 @@ public class TeamRankDto {
     private double score;
     private int rank;
 
+    private int acCount;
+
     public int getUserId() {
         return userId;
     }
@@ -46,5 +48,13 @@ public class TeamRankDto {
 
     public void setRank(int rank) {
         this.rank = rank;
+    }
+
+    public int getAcCount() {
+        return acCount;
+    }
+
+    public void setAcCount(int acCount) {
+        this.acCount = acCount;
     }
 }

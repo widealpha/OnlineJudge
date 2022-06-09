@@ -549,7 +549,7 @@ public class ProblemSetController {
                     //获取题目列表
                     List<ProblemSetProblem> problems = problemSetService.getProblemSetProblems(problemSetId);
                     //存放id和分数
-                    int[] users = new int[members.size()];
+                    int[] acCount = new int[members.size()];
                     double[] scores = new double[members.size()];
                     int i = 0;
                     //对于每一个用户 区分竞赛类型计算排名
@@ -569,6 +569,7 @@ public class ProblemSetController {
                             if (type == 0) {  //ACM
                                 SolveRecord solveRecord = problemSetProblemVo.getSolveRecord();
                                 if (solveRecord != null) {
+                                    acCount[i]++;
                                     Integer total_correct = solveRecord.getTotalCorrect();
                                     Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
 
@@ -582,6 +583,7 @@ public class ProblemSetController {
                                 } else {
                                     SolveRecord solveRecord = problemSetProblemVo.getSolveRecord();
                                     if (solveRecord != null) {
+                                        acCount[i]++;
                                         //按点给分
                                         Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
                                         Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
@@ -595,6 +597,8 @@ public class ProblemSetController {
                             {   //按点给分
                                 SolveRecord solveRecord = problemSetProblemVo.getSolveRecord();
                                 if (solveRecord != null) {
+                                    acCount[i]++;
+
                                     Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
                                     Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
                                     if (total_correct > 0) {
@@ -619,9 +623,7 @@ public class ProblemSetController {
                         } else {
                             score = 0;
                         }
-
                         //将用户，分数放到数据结构里
-                        users[i] = user.getId();
                         scores[i] = score;
                         i++;
                     }
@@ -633,10 +635,18 @@ public class ProblemSetController {
                         MinorUserInfoDto info = userInfoService.minorUserInfo(rank.getUserId()).getData();
                         rank.setNickname(info.getNickname());
                         rank.setUsername(info.getUsername());
+                        rank.setAcCount(acCount[j]);
                         ranks.add(rank);
                     }
-                    ranks.sort((o1, o2) -> Double.compare(o2.getScore(), o1.getScore()));
-
+                    ranks.sort((o1, o2) -> {
+                        if (o1.getAcCount() > o2.getAcCount()) {
+                            return -1;
+                        } else if (o1.getAcCount() == o2.getAcCount()) {
+                            return Double.compare(o2.getScore(), o1.getScore());
+                        } else {
+                            return 1;
+                        }
+                    });
                     for (int j = 0; j < ranks.size(); j++) {
                         ranks.get(j).setRank(j + 1);
                     }

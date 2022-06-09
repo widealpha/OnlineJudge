@@ -431,6 +431,11 @@ export default {
               },
             }
         );
+        if (res.data.code !== 0) {
+          this.testOutput = res.data.message;
+          this.testing = false;
+        }
+        console.log(res)
         this.getResInterval = setInterval(async () => {
           let res1 = await this.$ajax.post(
               "/solve/solveTaskResult",
