@@ -14,16 +14,19 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 public class CJudgeImpl implements JudgeInterface {
-    File inputFile;
+    File sourceFile;
     File outputFile;
     File errorFile;
     File compiledFile;
+
+    File inputFile;
 
     Path tempDir;
 
     public CJudgeImpl(String prefix) throws IOException {
         tempDir = Files.createTempDirectory("oj-" + prefix);
-        inputFile = Files.createFile(tempDir.resolve("main.cpp")).toFile();
+        sourceFile = Files.createFile(tempDir.resolve("main.cpp")).toFile();
+        inputFile = Files.createFile(tempDir.resolve("input.txt")).toFile();
         outputFile = Files.createFile(tempDir.resolve("output.txt")).toFile();
         errorFile = Files.createFile(tempDir.resolve("error.txt")).toFile();
         compiledFile = Files.createFile(tempDir.resolve("main.exe")).toFile();
@@ -35,14 +38,14 @@ public class CJudgeImpl implements JudgeInterface {
 
     @Override
     public CompileInfo compile(String code) throws IOException, InterruptedException {
-        FileOutputStream outputStream = new FileOutputStream(inputFile);
+        FileOutputStream outputStream = new FileOutputStream(sourceFile);
         outputStream.write(("" + code).getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
 
         //构建进程
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("gcc", inputFile.getAbsolutePath(), "-o", compiledFile.getAbsolutePath());
+        processBuilder.command("gcc", sourceFile.getAbsolutePath(), "-o", compiledFile.getAbsolutePath());
         Process process = processBuilder.start();
         //构建编译信息
         CompileInfo compileInfo = new CompileInfo();
@@ -89,6 +92,17 @@ public class CJudgeImpl implements JudgeInterface {
         runInfo.setError(FileUtil.topLinesFromFile(errorFile, 50));
         runInfo.setOutput(FileUtil.topLinesFromFile(outputFile, 50));
         return runInfo;
+    }
+
+    @Override
+    public RunInfo run(String input, JudgeLimit limit) throws IOException, InterruptedException {
+        Checkpoint checkpoint = new Checkpoint();
+        checkpoint.setInput(inputFile);
+        inputFile.setReadable(true, false);
+        FileWriter fw = new FileWriter(inputFile);
+        fw.write(input);
+        fw.close();
+        return run(checkpoint, limit);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

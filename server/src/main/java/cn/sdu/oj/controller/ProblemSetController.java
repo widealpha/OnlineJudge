@@ -2,9 +2,12 @@ package cn.sdu.oj.controller;
 
 import cn.sdu.oj.domain.bo.JudgeTask;
 import cn.sdu.oj.domain.bo.LanguageEnum;
+import cn.sdu.oj.domain.dto.MinorUserInfoDto;
 import cn.sdu.oj.domain.dto.ProblemDto;
+import cn.sdu.oj.domain.dto.TeamRankDto;
 import cn.sdu.oj.domain.po.ProblemSet;
 import cn.sdu.oj.domain.po.ProblemSetProblem;
+import cn.sdu.oj.domain.po.SolveRecord;
 import cn.sdu.oj.domain.po.UserGroup;
 import cn.sdu.oj.domain.vo.*;
 import cn.sdu.oj.entity.ResultEntity;
@@ -25,6 +28,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
@@ -53,6 +57,9 @@ public class ProblemSetController {
 
     @Autowired
     RedisUtil redisUtil;
+
+    @Resource
+    UserInfoService userInfoService;
 
     @ApiOperation("所有支持的题目集类型")
     @GetMapping("/allTypes")
@@ -522,7 +529,7 @@ public class ProblemSetController {
     @ApiOperation("竞赛查看排名|COMMON+") //竞赛查看排名   所有人可用
     @PostMapping("/getCompetitionRank")
     @PreAuthorize("hasRole('COMMON')")
-    public ResultEntity getCompetitionRank(
+    public ResultEntity<List<TeamRankDto>> getCompetitionRank(
             @ApiParam(value = "题目集id", required = true) @RequestParam Integer problemSetId, //题目集id
             @ApiIgnore @AuthenticationPrincipal User user) {
         try {
@@ -533,7 +540,7 @@ public class ProblemSetController {
                 } else {
                     //获取用户组列表
                     List<UserGroup> user_group_id_list = userGroupService.getSelfJoinedUserGroup(user.getId());
-                    if (user_group_id_list.isEmpty()){
+                    if (user_group_id_list.isEmpty()) {
                         UserGroup userGroup = new UserGroup();
                         userGroup.setId(problemSetService.problemSetUserGroups(problemSetId, user.getId()).getData().get(0).getId());
                         user_group_id_list.add(userGroup);
@@ -569,7 +576,7 @@ public class ProblemSetController {
 
                             } else if (type == 1) {  //OI 赛制不允许比赛中看到排名
                                 if (problemSet.getEndTime().getTime() > new Date().getTime()) {
-                                    return ResultEntity.error("比赛还未结束");
+                                    return ResultEntity.error("比赛还未结束", null);
                                 } else {
                                     //按点给分
                                     Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
@@ -588,36 +595,48 @@ public class ProblemSetController {
                                 }
                             }
                         }
+                        SolveRecord solveRecord = problemSetService.getLastCommit(problemSetId, user.getId());
                         //获取答题时间
-                        long last_commit_time =
-                                problemSetService.getLastCommit(problemSetId, user.getId()).getCreateTime().getTime();
-                        //对于ACM的分数进行特殊处理,加上罚时
-                        if (type == 0) {
-                            Integer punishRecord = problemSetService.getPunishRecord(problemSetId, user.getId());
-                            last_commit_time += punishRecord * 1000 * 60;
+                        if (solveRecord != null) {
+                            long last_commit_time;
+                            last_commit_time = problemSetService.getLastCommit(problemSetId, user.getId()).getCreateTime().getTime();
+                            //对于ACM的分数进行特殊处理,加上罚时
+                            if (type == 0) {
+                                Integer punishRecord = problemSetService.getPunishRecord(problemSetId, user.getId());
+                                last_commit_time += punishRecord * 1000 * 60;
+                            }
+                            long rest_time = problemSet.getEndTime().getTime() - last_commit_time;
+                            //剩一分钟算一分
+                            score += (double) (rest_time / 60000);
+                        } else {
+                            score = 0;
                         }
-                        long rest_time = problemSet.getEndTime().getTime() - last_commit_time;
-                        //剩一分钟算一分
-                        score += (double) (rest_time / 60000);
+
                         //将用户，分数放到数据结构里
                         users[i] = user.getId();
                         scores[i] = score;
                         i++;
                     }
-                    //进行排序返回
-                    QuickSort(users, scores, 0, members.size() - 1);
-                    JSONArray jsonArray = new JSONArray();
-                    for (int j = 0; j < members.size() - 1; j++) {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("userId", users[i]);
-                        jsonObject.put("rank", i);
-                        jsonObject.put("score", scores[i]);
-                        jsonArray.add(jsonObject);
+                    List<TeamRankDto> ranks = new ArrayList<>();
+                    for (int j = 0; j < members.size(); j++) {
+                        TeamRankDto rank = new TeamRankDto();
+                        rank.setScore(scores[j]);
+                        rank.setUserId(members.get(j));
+                        MinorUserInfoDto info = userInfoService.minorUserInfo(rank.getUserId()).getData();
+                        rank.setNickname(info.getNickname());
+                        rank.setUsername(info.getUsername());
+                        ranks.add(rank);
                     }
-                    return ResultEntity.success("排名情况", jsonArray);
+
+                    ranks.sort(Comparator.comparingDouble(TeamRankDto::getScore));
+
+                    for (int j = 0; j < ranks.size(); j++) {
+                        ranks.get(j).setRank(j + 1);
+                    }
+                    return ResultEntity.data(ranks);
 
                 }
-            } else return ResultEntity.error("非竞赛题目集");
+            } else return ResultEntity.error("非竞赛题目集", null);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultEntity.error(StatusCode.COMMON_FAIL);

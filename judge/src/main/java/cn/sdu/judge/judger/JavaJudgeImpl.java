@@ -17,6 +17,7 @@ import java.util.UUID;
  * java编译执行器
  */
 public class JavaJudgeImpl implements JudgeInterface {
+    File sourceFile;
     File inputFile;
     File outputFile;
     File errorFile;
@@ -30,7 +31,8 @@ public class JavaJudgeImpl implements JudgeInterface {
 
     public JavaJudgeImpl(String prefix) throws IOException {
         tempDir = Files.createTempDirectory("oj-" + prefix);
-        inputFile = Files.createFile(tempDir.resolve("Main.java")).toFile();
+        sourceFile = Files.createFile(tempDir.resolve("Main.java")).toFile();
+        inputFile = Files.createFile(tempDir.resolve("input.txt")).toFile();
         outputFile = Files.createFile(tempDir.resolve("output.txt")).toFile();
         errorFile = Files.createFile(tempDir.resolve("error.txt")).toFile();
         compiledFile = Files.createFile(tempDir.resolve("Main.class")).toFile();
@@ -40,14 +42,14 @@ public class JavaJudgeImpl implements JudgeInterface {
     public CompileInfo compile(String code) throws IOException, InterruptedException {
         CompileInfo compileInfo = new CompileInfo();
 
-        FileOutputStream outputStream = new FileOutputStream(inputFile);
+        FileOutputStream outputStream = new FileOutputStream(sourceFile);
         outputStream.write(("" + code).getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
 
         //构建进程，重定向编译输出和错误
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("javac", inputFile.getAbsolutePath(), "-d", compiledFile.getParent(),
+        processBuilder.command("javac", sourceFile.getAbsolutePath(), "-d", compiledFile.getParent(),
                 "-encoding", "UTF-8", "-J-Dfile.encoding=UTF-8");
         Process process = processBuilder.start();
         //构建编译信息
@@ -92,6 +94,17 @@ public class JavaJudgeImpl implements JudgeInterface {
         runInfo.setError(FileUtil.topLinesFromFile(errorFile, 100));
         runInfo.setOutput(FileUtil.topLinesFromFile(outputFile, 100));
         return runInfo;
+    }
+
+    @Override
+    public RunInfo run(String input, JudgeLimit limit) throws IOException, InterruptedException {
+        Checkpoint checkpoint = new Checkpoint();
+        checkpoint.setInput(inputFile);
+        inputFile.setReadable(true, false);
+        FileWriter fw = new FileWriter(inputFile);
+        fw.write(input);
+        fw.close();
+        return run(checkpoint, limit);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

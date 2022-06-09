@@ -17,6 +17,7 @@ import java.util.UUID;
  * python编译执行器
  */
 public class PythonJudgeImpl implements JudgeInterface {
+    File sourceFile;
     File inputFile;
     File outputFile;
     File errorFile;
@@ -25,7 +26,8 @@ public class PythonJudgeImpl implements JudgeInterface {
 
     public PythonJudgeImpl(String prefix) throws IOException {
         tempDir = Files.createTempDirectory("oj-" + prefix);
-        inputFile = Files.createFile(tempDir.resolve("main.py")).toFile();
+        sourceFile = Files.createFile(tempDir.resolve("main.py")).toFile();
+        sourceFile = Files.createFile(tempDir.resolve("input.txt")).toFile();
         outputFile = Files.createFile(tempDir.resolve("output.txt")).toFile();
         errorFile = Files.createFile(tempDir.resolve("error.txt")).toFile();
     }
@@ -42,7 +44,7 @@ public class PythonJudgeImpl implements JudgeInterface {
      */
     @Override
     public CompileInfo compile(String code) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(inputFile);
+        FileOutputStream outputStream = new FileOutputStream(sourceFile);
         outputStream.write(("" + code).getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
@@ -62,7 +64,7 @@ public class PythonJudgeImpl implements JudgeInterface {
                 "-i", checkpoint.getInput().getAbsolutePath(),
                 "-o", outputFile.getAbsolutePath(),
                 "-e", errorFile.getAbsolutePath(),
-                "--args", inputFile.getAbsolutePath(),
+                "--args", sourceFile.getAbsolutePath(),
                 "--max-memory", String.valueOf(limit.getMemory()),
                 "--max-cpu-time", String.valueOf(limit.getCpuTime()),
                 "--max-real-time", String.valueOf(limit.getRealTime()));
@@ -88,6 +90,17 @@ public class PythonJudgeImpl implements JudgeInterface {
         return runInfo;
     }
 
+
+    @Override
+    public RunInfo run(String input, JudgeLimit limit) throws IOException, InterruptedException {
+        Checkpoint checkpoint = new Checkpoint();
+        checkpoint.setInput(inputFile);
+        inputFile.setReadable(true, false);
+        FileWriter fw = new FileWriter(inputFile);
+        fw.write(input);
+        fw.close();
+        return run(checkpoint, limit);
+    }
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void clean() {

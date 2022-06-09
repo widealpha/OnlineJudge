@@ -62,11 +62,16 @@ public class JudgeTaskService {
             if (compileInfo.isSuccess()) {
                 for (int i = 1; i <= checkpointList.size(); i++) {
                     Checkpoint checkpoint = checkpointList.get(i - 1);
-                    RunInfo runInfo = judge.run(checkpoint, task.getLimit());
+                    RunInfo runInfo;
+                    if (task.isTestMode()) {
+                        runInfo = judge.run(task.getTestInput(), task.getLimit());
+                    } else {
+                        runInfo = judge.run(checkpoint, task.getLimit());
+                    }
                     if (!runInfo.isSuccess()) {
                         StatusCode statusCode = mapStatusCode(runInfo.getSignal());
                         //如果评测机器没有报错但是测试点未通过
-                        if (statusCode == StatusCode.JUDGE_SUCCESS){
+                        if (statusCode == StatusCode.JUDGE_SUCCESS) {
                             statusCode = StatusCode.JUDGE_WRONG_ANSWER;
                             judgeResult.getErrors().put(i, "测试点未通过");
                         } else {
