@@ -605,7 +605,7 @@ public class ProblemSetController {
                         }
                         SolveRecord solveRecord = problemSetService.getLastCommit(problemSetId, user.getId());
                         //获取答题时间
-                        if (solveRecord != null) {
+                        if (solveRecord != null && solveRecord.getUserId() == members.get(i)) {
                             long last_commit_time;
                             last_commit_time = problemSetService.getLastCommit(problemSetId, user.getId()).getCreateTime().getTime();
                             //对于ACM的分数进行特殊处理,加上罚时
@@ -635,8 +635,7 @@ public class ProblemSetController {
                         rank.setUsername(info.getUsername());
                         ranks.add(rank);
                     }
-
-                    ranks.sort(Comparator.comparingDouble(TeamRankDto::getScore));
+                    ranks.sort((o1, o2) -> Double.compare(o2.getScore(), o1.getScore()));
 
                     for (int j = 0; j < ranks.size(); j++) {
                         ranks.get(j).setRank(j + 1);
