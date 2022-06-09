@@ -567,31 +567,39 @@ public class ProblemSetController {
                             problemSetProblemVos.add(problemSetProblemVo);
                             //累计分数，不同比赛类型有不同的累计规则
                             if (type == 0) {  //ACM
-                                Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
-                                Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
+                                SolveRecord solveRecord = problemSetProblemVo.getSolveRecord();
+                                if (solveRecord != null) {
+                                    Integer total_correct = solveRecord.getTotalCorrect();
+                                    Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
 
-                                if (total_correct > 0 && total_correct == check_point_size) {  //全有
-                                    score += problemSetProblemVo.getScore(); //记分
+                                    if (total_correct > 0 && total_correct == check_point_size) {  //全有
+                                        score += problemSetProblemVo.getScore(); //记分
+                                    }
                                 }
-
                             } else if (type == 1) {  //OI 赛制不允许比赛中看到排名
                                 if (problemSet.getEndTime().getTime() > new Date().getTime()) {
                                     return ResultEntity.error("比赛还未结束", null);
                                 } else {
-                                    //按点给分
-                                    Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
-                                    Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
-                                    if (total_correct > 0) {
-                                        score += problemSetProblemVo.getScore() * total_correct / check_point_size;
+                                    SolveRecord solveRecord = problemSetProblemVo.getSolveRecord();
+                                    if (solveRecord != null) {
+                                        //按点给分
+                                        Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
+                                        Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
+                                        if (total_correct > 0) {
+                                            score += problemSetProblemVo.getScore() * total_correct / check_point_size;
+                                        }
                                     }
                                 }
 
                             } else   //IOI
                             {   //按点给分
-                                Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
-                                Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
-                                if (total_correct > 0) {
-                                    score += problemSetProblemVo.getScore() * total_correct / check_point_size;
+                                SolveRecord solveRecord = problemSetProblemVo.getSolveRecord();
+                                if (solveRecord != null) {
+                                    Integer total_correct = problemSetProblemVo.getSolveRecord().getTotalCorrect();
+                                    Integer check_point_size = problemSetProblemVo.getSolveRecord().getCheckpointSize();
+                                    if (total_correct > 0) {
+                                        score += problemSetProblemVo.getScore() * total_correct / check_point_size;
+                                    }
                                 }
                             }
                         }

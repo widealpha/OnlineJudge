@@ -267,6 +267,7 @@ public class SolveService {
         record.setStatus(resultEntity.getCode());
         record.setCheckpointSize(judgeResult.getCheckPointSize());
         record.setTotalCorrect(0);
+        record.setOutput(judgeResult.getOutput());
 
         //判题成功,插入判题的数据
         if (resultEntity.getCode() == JudgeStatus.JUDGE_SUCCESS.getCode()) {

@@ -65,6 +65,7 @@ public class JudgeTaskService {
                     RunInfo runInfo;
                     if (task.isTestMode()) {
                         runInfo = judge.run(task.getTestInput(), task.getLimit());
+                        judgeResult.setOutput(runInfo.getOutput());
                     } else {
                         runInfo = judge.run(checkpoint, task.getLimit());
                     }

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -47,9 +48,9 @@ public class SolveController {
         ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
         if (problemSet == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
-        } else if (problemSet.getEndTime().getTime() < new Date().getTime()
-                || problemSet.getBeginTime().getTime() > new Date().getTime()) {
-            return ResultEntity.error("已过题目集截止时间", null);
+        } else if (new Date().before(problemSet.getBeginTime()) ||
+                new Date().after(problemSet.getEndTime())) {
+            return ResultEntity.error("不在答题时间内", null);
         }
         JudgeTask judgeTask = new JudgeTask();
         judgeTask.setProblemId(problemId);
@@ -73,9 +74,9 @@ public class SolveController {
         ProblemSet problemSet = problemSetService.getProblemSetInfo(problemSetId);
         if (problemSet == null) {
             return ResultEntity.error(StatusCode.DATA_NOT_EXIST, "题目集不存在");
-        } else if (problemSet.getEndTime().getTime() < new Date().getTime()
-                || problemSet.getBeginTime().getTime() > new Date().getTime()) {
-            return ResultEntity.error("禁止在非作答时间提交测试", null);
+        } else if (new Date().before(problemSet.getBeginTime()) ||
+                new Date().after(problemSet.getEndTime())) {
+            return ResultEntity.error("不在答题时间内", null);
         }
         JudgeTask judgeTask = new JudgeTask();
         judgeTask.setProblemId(problemId);
