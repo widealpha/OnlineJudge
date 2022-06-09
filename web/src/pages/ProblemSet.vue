@@ -40,7 +40,7 @@
           
           <el-menu-item index="-4" @click="goToRank">
             <i class="el-icon-menu" />
-            <span slot="title">成绩排行</span>
+            <span slot="title">竞赛成绩排行</span>
           </el-menu-item>
        
           <el-divider></el-divider>
