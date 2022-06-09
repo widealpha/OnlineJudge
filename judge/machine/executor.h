@@ -17,6 +17,7 @@
 #include "result.h"
 #include "rule/rule.h"
 #include "rule/cpp_rule.h"
+#include "rule/java_rule.h"
 #include "executor_error.h"
 
 class Executor {

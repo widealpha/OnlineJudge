@@ -118,6 +118,9 @@ void Executor::applySeccompRule() {
         case 0:
             rule_config = new CppRule();
             break;
+        case 1:
+            rule_config = new JavaRule();
+            break;
         default:
             rule_config = new CppRule();
     }
