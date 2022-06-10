@@ -9,6 +9,8 @@ public class SolveResultDto {
     private int problemId;
     private String language;
     private String error;
+
+    private String output;
     /**
      * 单位ms
      */
@@ -46,6 +48,7 @@ public class SolveResultDto {
         solveResultDto.error = solveRecord.getError();
         solveResultDto.date = solveRecord.getCreateTime();
         solveResultDto.code = solveRecord.getCode();
+        solveResultDto.output = solveRecord.getOutput();
         return solveResultDto;
     }
 
@@ -135,5 +138,13 @@ public class SolveResultDto {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 }

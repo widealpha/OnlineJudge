@@ -7,6 +7,8 @@ public class JudgeTask {
     private String code;
     private JudgeLimit limit;
     private boolean specialJudge;
+    private boolean testMode = false;
+    private String testInput;
     private LanguageEnum specialJudgeLanguage;
 
     public LanguageEnum getLanguage() {
@@ -63,6 +65,22 @@ public class JudgeTask {
 
     public void setSpecialJudgeLanguage(LanguageEnum specialJudgeLanguage) {
         this.specialJudgeLanguage = specialJudgeLanguage;
+    }
+
+    public boolean isTestMode() {
+        return testMode;
+    }
+
+    public void setTestMode(boolean testMode) {
+        this.testMode = testMode;
+    }
+
+    public String getTestInput() {
+        return testInput;
+    }
+
+    public void setTestInput(String testInput) {
+        this.testInput = testInput;
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.io.IOException;
 
 public interface JudgeInterface {
     String machine = "/machine/machine";
+
     /**
      * 编译文件
      *
@@ -29,6 +30,8 @@ public interface JudgeInterface {
      * @throws InterruptedException 等待进程运行时发生的异常
      */
     RunInfo run(Checkpoint checkpoint, JudgeLimit limit) throws IOException, InterruptedException;
+
+    RunInfo run(String input, JudgeLimit limit) throws IOException, InterruptedException;
 
     /**
      * 清理编译中间以及结果产物

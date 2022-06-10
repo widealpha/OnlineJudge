@@ -422,8 +422,8 @@ export default {
               problemId: this.problemId,
               problemSetId: this.$store.state.problemSetInfo.id,
               code: this.code,
-              language: this.langVersion[1],
-              input: this.testInput,
+              language: this.lang,
+              customInput: this.testInput,
             },
             {
               headers: {
@@ -431,10 +431,30 @@ export default {
               },
             }
         );
-        if (res.data.code === 0) {
-          this.testOutput = res.data.data.result;
+        if (res.data.code !== 0) {
+          this.testOutput = res.data.message;
+          this.testing = false;
         }
-        this.testing = false;
+        console.log(res)
+        this.getResInterval = setInterval(async () => {
+          let res1 = await this.$ajax.post(
+              "/solve/solveTaskResult",
+              {
+                taskId: res.data.data,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+          );
+          if (res1.status === 200 && res1.data.code !== 0) {
+            clearInterval(this.getResInterval);
+            this.testOutput = res1.data.data.output;
+            this.testing = false;
+          }
+
+        }, 2000);
       } else {
         this.$alert("请选择编译器并输入代码", "错误", {
           type: "error",

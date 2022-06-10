@@ -30,6 +30,10 @@ public class SolveRecord {
 
     private int totalCorrect = 0;
 
+    private boolean testMode = false;
+
+    private String output;
+
     private Date createTime;
 
     private int status;
@@ -144,5 +148,21 @@ public class SolveRecord {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public boolean isTestMode() {
+        return testMode;
+    }
+
+    public void setTestMode(boolean testMode) {
+        this.testMode = testMode;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 }

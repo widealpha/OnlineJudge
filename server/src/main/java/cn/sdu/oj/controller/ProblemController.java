@@ -45,7 +45,7 @@ public class ProblemController {
 
     @ApiOperation("题目详细信息|TEACHER+")
     @PostMapping("info")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('COMMON')")
     public ResultEntity<ProblemDto> problemInfo(
             @ApiIgnore @AuthenticationPrincipal User user,
             @ApiParam("题目id") @RequestParam int problemId) {

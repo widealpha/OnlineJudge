@@ -50,7 +50,7 @@ public interface SolveRecordMapper {
      */
     @Update("UPDATE solve_record " +
             "SET `memory` = #{memory}, cpu_time = #{cpuTime}, " +
-            "checkpoint_size = #{checkpointSize}, total_correct = #{totalCorrect}, error = #{error}, `status` = #{status} " +
+            "checkpoint_size = #{checkpointSize}, total_correct = #{totalCorrect}, error = #{error}, output = #{output}, `status` = #{status} " +
             "WHERE id = #{id}")
     boolean updateSolveRecordByPrimaryKey(SolveRecord record);
 

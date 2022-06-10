@@ -2,9 +2,10 @@
 	<div class="rank">
 		<div class="basicInfo">
 			<span class="totalNum">
-				题目总数 : {{ this.total_num }}
+				队伍总数 : {{ this.total_num }}
 			</span>
-			<el-button :disabled="tableData.length===0" class="export" size="small" type="text" @click="exportExcel">
+      当前排名 : {{ this.now_rank }}
+      <el-button :disabled="tableData.length===0" class="export" size="small" type="text" @click="exportExcel">
 				导出excel文件
 				<i class="el-icon-download"></i>
 			</el-button>
@@ -16,7 +17,9 @@
 				</el-table-column>
 				<el-table-column label="ID" prop="userId" width="200">
 				</el-table-column>
-				<el-table-column label="通过数" prop="acNum">
+				<el-table-column label="昵称" prop="nickname" width="200">
+				</el-table-column>
+				<el-table-column label="通过数" prop="acCount">
 				</el-table-column>
 				<el-table-column label="分数" prop="score">
 				</el-table-column>
@@ -34,6 +37,7 @@ export default {
 	data() {
 		return {
 			total_num: 0,
+      now_rank: 1,
 			tableData: [],
 		};
 	},
@@ -71,9 +75,9 @@ export default {
 
 		async getRank() {
 			let res = await this.$ajax.post(
-				"/problemset/getProblemsetRank",
+				"/problemSet/getCompetitionRank",
 				{
-					id: this.$store.state.problemSetInfo.problemSetId,
+          problemSetId: this.$store.state.problemSetInfo.problemSetId,
 				},
 				{
 					headers: {
@@ -81,8 +85,12 @@ export default {
 					},
 				}
 			);
-			 (res);
-			this.tableData = res.data.data.rankList;
+			this.tableData = res.data.data;
+      this.tableData.forEach((item, index) => {
+        if (item.userId === this.$store.state.myInfo.userId) {
+          this.now_rank = index + 1;
+        }
+      });
 			this.total_num = this.tableData.length;
 		},
 	},

@@ -66,6 +66,9 @@ public class FileUtil {
      * @return 文件内容相同返回true, 否则返回false
      */
     public static boolean fileSame(File file1, File file2) {
+        if (file1 == null || file2 == null){
+            return false;
+        }
         if (!file1.exists() || !file2.exists()) {
             return false;
         }

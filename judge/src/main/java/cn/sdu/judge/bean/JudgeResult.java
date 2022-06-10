@@ -10,6 +10,8 @@ public class JudgeResult {
     private Map<Integer, JudgeLimit> details;
     private Map<Integer, String> errors;
 
+    private String output;
+
     public JudgeResult() {
         details = new HashMap<>();
         errors = new HashMap<>();
@@ -53,5 +55,13 @@ public class JudgeResult {
 
     public void setErrors(Map<Integer, String> errors) {
         this.errors = errors;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 }
