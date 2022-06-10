@@ -13,6 +13,21 @@
         >
           添加用户组
         </el-button>
+        <el-button
+          v-if="isStudent"
+          type="success"
+          @click="showInviteCodeInput = true"
+        >
+          添加到用户组
+        </el-button>
+        <el-input
+        style="width: 200px;float:left"
+          placeholder="请输入邀请码"
+          v-model="inviteCode"
+          @blur="addToUserGroup"
+          v-show="showInviteCodeInput"
+        >
+        </el-input>
         <el-table
           v-loading="loading"
           :data="userList"
@@ -160,6 +175,8 @@ export default {
   props: ["isAddToProblemSet"],
   data() {
     return {
+      inviteCode: "",
+      showInviteCodeInput: false,
       isAddToMyProblemSet: this.isAddToProblemSet,
       types: [
         {
@@ -204,6 +221,28 @@ export default {
     }
   },
   methods: {
+    async addToUserGroup() {
+      let res = await this.$ajax.post(
+        "/userGroup/joinUserGroupByInviteCode",
+        {
+          inviteCode: this.inviteCode,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      this.showInviteCodeInput = false;
+      this.inviteCode = "";
+      if (res.status == 200) {
+        if (res.data.code == 0) {
+          this.$message.success("加入用户组成功");
+        } else {
+          this.$message.error(res.data.message);
+        }
+      }
+    },
     async addToProblemSet(userListId) {
       let res = await this.$ajax.post(
         "/userGroup/linkUserGroupProblemSet",
@@ -366,6 +405,9 @@ export default {
     console.log(this.isAddToMyProblemSet);
   },
   computed: {
+    isStudent() {
+      return this.$store.state.myInfo.roles.includes("ROLE_STUDENT");
+    },
     isTeacher() {
       return this.$store.state.myInfo.roles.includes("ROLE_TEACHER");
     },
