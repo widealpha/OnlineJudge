@@ -90,6 +90,12 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="参与人数" prop="teamNum" v-if="infoForm.type>=3">
+            <el-input
+                v-model="infoForm.teamNum"
+                placeholder="请输入参赛人数"
+            ></el-input>
+          </el-form-item>
           <el-form-item label="是否公开：">
             <el-switch
               v-model="infoForm.isPublic"
@@ -148,11 +154,14 @@ export default {
         introduction: "",
         isPublic: 0,
         type: "",
+        teamNum: 20,
       },
       typeOptions: [
         { type: 1, label: "练习" },
         { type: 2, label: "测验" },
-        { type: 3, label: "竞赛" },
+        { type: 3, label: "ACM竞赛" },
+        { type: 4, label: "IO竞赛" },
+        { type: 5, label: "IOI竞赛" },
       ],
       cloneRules: {
         problemSetId: [
@@ -310,14 +319,14 @@ export default {
               this.$message.error("创建失败");
             }
           }
-          //竞赛
-          if (this.infoForm.type === 3) {
+          //竞赛 todo
+          if (this.infoForm.type >= 3) {
             let res = await this.$ajax.post(
               "/problemSet/createCompetitionProblemSet",
               {
                 name: this.infoForm.name,
-                teamNum: 20,
-                competitionType: 0,
+                teamNum: this.infoForm.teamNum,
+                competitionType: this.infoForm.type - 3,
                 introduction: this.infoForm.introduction,
                 type: this.infoForm.type,
                 isPublic: this.infoForm.isPublic,
